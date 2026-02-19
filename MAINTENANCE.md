@@ -7,3 +7,4 @@ Routine checks, audits, and tests.
 - 2026-02-19 — general housekeeping
 - 2026-02-19 — audited dependencies, no advisories
 - 2026-02-19 — checked auth and session handling
+- 2026-02-19 — checked auth and session handling
