@@ -39,3 +39,4 @@ Routine checks, audits, and tests.
 - 2026-02-24 — reviewed env and config
 - 2026-02-24 — checked mobile layouts
 - 2026-02-24 — audited dependencies, no advisories
+- 2026-02-24 — checked auth and session handling
