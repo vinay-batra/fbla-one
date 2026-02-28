@@ -101,3 +101,4 @@ Routine checks, audits, and tests.
 - 2026-02-28 — verified API responses
 - 2026-02-28 — checked mobile layouts
 - 2026-02-28 — verified API responses
+- 2026-02-28 — smoke-tested core user flows, all green
