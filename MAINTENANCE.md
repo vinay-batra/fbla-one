@@ -83,3 +83,4 @@ Routine checks, audits, and tests.
 - 2026-02-27 — general housekeeping
 - 2026-02-27 — audited dependencies, no advisories
 - 2026-02-27 — checked auth and session handling
+- 2026-02-27 — checked mobile layouts
