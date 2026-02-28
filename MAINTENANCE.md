@@ -97,3 +97,4 @@ Routine checks, audits, and tests.
 - 2026-02-28 — reviewed env and config
 - 2026-02-28 — reviewed env and config
 - 2026-02-28 — ran regression pass, no regressions
+- 2026-02-28 — reviewed dependency updates
