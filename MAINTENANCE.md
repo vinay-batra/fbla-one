@@ -92,3 +92,4 @@ Routine checks, audits, and tests.
 - 2026-02-28 — reviewed dependency updates
 - 2026-02-28 — lint + format clean
 - 2026-02-28 — reviewed env and config
+- 2026-02-28 — reviewed error logging
