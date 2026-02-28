@@ -88,3 +88,4 @@ Routine checks, audits, and tests.
 - 2026-02-27 — routine maintenance
 - 2026-02-27 — reviewed env and config
 - 2026-02-27 — smoke-tested core user flows, all green
+- 2026-02-28 — lint + format clean
