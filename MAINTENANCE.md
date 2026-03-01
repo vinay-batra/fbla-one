@@ -104,3 +104,4 @@ Routine checks, audits, and tests.
 - 2026-02-28 — smoke-tested core user flows, all green
 - 2026-03-01 — e2e sanity check passed
 - 2026-03-01 — checked mobile layouts
+- 2026-03-01 — routine maintenance
