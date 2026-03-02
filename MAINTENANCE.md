@@ -107,3 +107,4 @@ Routine checks, audits, and tests.
 - 2026-03-01 — routine maintenance
 - 2026-03-01 — e2e sanity check passed
 - 2026-03-02 — lint + format clean
+- 2026-03-02 — checked mobile layouts
