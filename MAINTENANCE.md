@@ -119,3 +119,4 @@ Routine checks, audits, and tests.
 - 2026-03-03 — smoke-tested core user flows, all green
 - 2026-03-03 — checked auth and session handling
 - 2026-03-03 — checked auth and session handling
+- 2026-03-03 — audited dependencies, no advisories
