@@ -131,3 +131,4 @@ Routine checks, audits, and tests.
 - 2026-03-03 — smoke-tested core user flows, all green
 - 2026-03-03 — accessibility pass, minor notes
 - 2026-03-03 — reviewed env and config
+- 2026-03-03 — e2e sanity check passed
