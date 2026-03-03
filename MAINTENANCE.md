@@ -129,3 +129,4 @@ Routine checks, audits, and tests.
 - 2026-03-03 — accessibility pass, minor notes
 - 2026-03-03 — reviewed error logging
 - 2026-03-03 — smoke-tested core user flows, all green
+- 2026-03-03 — accessibility pass, minor notes
