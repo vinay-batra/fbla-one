@@ -126,3 +126,4 @@ Routine checks, audits, and tests.
 - 2026-03-03 — routine maintenance
 - 2026-03-03 — general housekeeping
 - 2026-03-03 — reviewed env and config
+- 2026-03-03 — accessibility pass, minor notes
