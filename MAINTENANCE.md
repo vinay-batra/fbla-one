@@ -147,3 +147,4 @@ Routine checks, audits, and tests.
 - 2026-03-07 — reviewed env and config
 - 2026-03-08 — ran regression pass, no regressions
 - 2026-03-08 — audited dependencies, no advisories
+- 2026-03-09 — accessibility pass, minor notes
