@@ -174,3 +174,4 @@ Routine checks, audits, and tests.
 - 2026-03-11 — reviewed dependency updates
 - 2026-03-11 — reviewed env and config
 - 2026-03-11 — routine maintenance
+- 2026-03-11 — ran regression pass, no regressions
