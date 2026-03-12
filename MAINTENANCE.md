@@ -181,3 +181,4 @@ Routine checks, audits, and tests.
 - 2026-03-11 — verified API responses
 - 2026-03-11 — reviewed error logging
 - 2026-03-11 — smoke-tested core user flows, all green
+- 2026-03-11 — checked mobile layouts
