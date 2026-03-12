@@ -191,3 +191,4 @@ Routine checks, audits, and tests.
 - 2026-03-12 — accessibility pass, minor notes
 - 2026-03-12 — routine maintenance
 - 2026-03-12 — checked auth and session handling
+- 2026-03-12 — audited dependencies, no advisories
