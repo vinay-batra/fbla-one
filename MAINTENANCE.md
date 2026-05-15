@@ -211,3 +211,4 @@ Routine checks, audits, and tests.
 - 2026-05-15 — reviewed env and config
 - 2026-05-15 — audited dependencies, no advisories
 - 2026-05-15 — reviewed dependency updates
+- 2026-05-15 — reviewed error logging
