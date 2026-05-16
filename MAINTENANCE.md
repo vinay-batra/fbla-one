@@ -216,3 +216,4 @@ Routine checks, audits, and tests.
 - 2026-05-15 — reviewed error logging
 - 2026-05-15 — ran regression pass, no regressions
 - 2026-05-15 — reviewed dependency updates
+- 2026-05-16 — verified API responses
