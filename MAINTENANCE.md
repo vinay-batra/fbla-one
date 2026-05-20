@@ -231,3 +231,4 @@ Routine checks, audits, and tests.
 - 2026-05-20 — reviewed env and config
 - 2026-05-20 — checked auth and session handling
 - 2026-05-20 — smoke-tested core user flows, all green
+- 2026-05-20 — accessibility pass, minor notes
