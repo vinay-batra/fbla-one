@@ -233,3 +233,4 @@ Routine checks, audits, and tests.
 - 2026-05-20 — smoke-tested core user flows, all green
 - 2026-05-20 — accessibility pass, minor notes
 - 2026-05-20 — verified production build output
+- 2026-05-21 — reviewed dependency updates
