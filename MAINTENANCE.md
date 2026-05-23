@@ -254,3 +254,4 @@ Routine checks, audits, and tests.
 - 2026-05-23 — verified production build output
 - 2026-05-23 — verified API responses
 - 2026-05-23 — audited dependencies, no advisories
+- 2026-05-23 — smoke-tested core user flows, all green
