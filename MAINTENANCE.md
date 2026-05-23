@@ -252,3 +252,4 @@ Routine checks, audits, and tests.
 - 2026-05-23 — reviewed env and config
 - 2026-05-23 — accessibility pass, minor notes
 - 2026-05-23 — verified production build output
+- 2026-05-23 — verified API responses
