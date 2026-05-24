@@ -283,3 +283,4 @@ Routine checks, audits, and tests.
 - 2026-05-24 — verified API responses
 - 2026-05-24 — ran regression pass, no regressions
 - 2026-05-24 — e2e sanity check passed
+- 2026-05-24 — general housekeeping
