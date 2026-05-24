@@ -271,3 +271,4 @@ Routine checks, audits, and tests.
 - 2026-05-23 — lint + format clean
 - 2026-05-23 — routine maintenance
 - 2026-05-24 — verified production build output
+- 2026-05-24 — reviewed error logging
