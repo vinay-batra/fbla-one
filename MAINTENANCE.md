@@ -287,3 +287,4 @@ Routine checks, audits, and tests.
 - 2026-05-24 — smoke-tested core user flows, all green
 - 2026-05-24 — verified production build output
 - 2026-05-24 — checked auth and session handling
+- 2026-05-24 — audited dependencies, no advisories
