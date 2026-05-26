@@ -298,3 +298,4 @@ Routine checks, audits, and tests.
 - 2026-05-26 — lint + format clean
 - 2026-05-26 — audited dependencies, no advisories
 - 2026-05-26 — ran regression pass, no regressions
+- 2026-05-26 — accessibility pass, minor notes
