@@ -295,3 +295,4 @@ Routine checks, audits, and tests.
 - 2026-05-26 — verified production build output
 - 2026-05-26 — reviewed env and config
 - 2026-05-26 — e2e sanity check passed
+- 2026-05-26 — lint + format clean
