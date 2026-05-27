@@ -89,7 +89,6 @@ fbla-one/
     (marketing)/
       layout.tsx                 <- PublicNav + Footer wrapper for marketing pages
       page.tsx                   <- /
-      pricing/page.tsx
       about/page.tsx
       faq/page.tsx
       privacy/page.tsx

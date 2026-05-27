@@ -18,15 +18,15 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Who is it for?",
-        a: "Two audiences: FBLA members preparing for competitions, and FBLA advisors managing their chapter. The free Student tier serves members. The Chapter tier (coming soon) adds the advisor features.",
+        a: "Two audiences: FBLA members preparing for competitions, and FBLA advisors managing their chapter. Both get the full feature set.",
       },
       {
-        q: "Is it free?",
-        a: "The Student tier is free forever. The Chapter tier is $29/month per chapter (waitlist now). The District tier is custom pricing for state-level admins.",
+        q: "Is it really free?",
+        a: "Yes. FBLA One is free for every student and every chapter, forever. No paid tiers, no upsells, no card required.",
       },
       {
         q: "Do I need an account?",
-        a: "You can browse competitions without an account. To track your prep, save resources, or join a chapter, you need to sign up. Free.",
+        a: "You can browse competitions without an account. To track your prep, save resources, or join a chapter, sign up. Free.",
       },
     ],
   },
@@ -69,19 +69,19 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    title: "Billing",
+    title: "Chapters & advisors",
     items: [
       {
-        q: "How does the Chapter tier work?",
-        a: "Flat $29/month per chapter, not per member. Whether you have 15 members or 150, it's the same fee. The advisor signs up once for the whole chapter.",
+        q: "How do advisors use it?",
+        a: "Advisor features (member roster, chapter-wide deadlines, sign-up overview) are still being built. They'll ship free for every chapter when ready.",
       },
       {
-        q: "When can I sign my chapter up?",
-        a: "Chapter tier launches after the FBLA officer meeting on August 25, 2026. Join the waitlist to lock in $29/month forever.",
+        q: "How do I get my chapter on?",
+        a: "There's no chapter onboarding flow yet - members just sign up individually for now. Multi-member chapter accounts ship with the advisor features.",
       },
       {
-        q: "Can I cancel anytime?",
-        a: "Yes, anytime, no contract. Your members keep access to the Student tier (free) features.",
+        q: "Is FBLA One affiliated with FBLA?",
+        a: "No. Independent platform built by an FBLA student for FBLA students. Not endorsed by FBLA-PBL Inc.",
       },
     ],
   },

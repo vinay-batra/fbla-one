@@ -101,7 +101,7 @@ export default function Landing() {
                   letterSpacing: "0.08em",
                 }}
               >
-                FREE DURING PILOT · NO CARD REQUIRED · BUILT FOR FBLA STUDENTS, BY AN FBLA STUDENT
+                ALWAYS FREE · NO CARD REQUIRED · BUILT FOR FBLA STUDENTS, BY AN FBLA STUDENT
               </p>
             </ScrollReveal>
           </div>
@@ -399,8 +399,8 @@ export default function Landing() {
                   Get your chapter on <span style={{ color: "var(--accent)" }}>FBLA One.</span>
                 </h2>
                 <p style={{ maxWidth: 560, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
-                  Free during pilot. No setup. No spreadsheets. Sign up and your competitions are
-                  ready to track in under a minute.
+                  Always free for FBLA students. No setup. No spreadsheets. Sign up and your
+                  competitions are ready to track in under a minute.
                 </p>
                 <div style={{ marginTop: 32, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <Link href="/auth" className="btn btn-accent btn-lg cta-shimmer">

@@ -21,8 +21,8 @@ export default function ChapterPage() {
         <p className="eyebrow" style={{ marginBottom: 8 }}>Chapter</p>
         <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>{chapter || "Set up your chapter"}</h1>
         <p style={{ fontSize: 14, color: "var(--text3)", marginTop: 6 }}>
-          Single-member mode for the pilot. Chapter-wide features (advisor dashboard, deadline calendar,
-          member roster) ship with the Chapter tier — join the waitlist below.
+          Set your chapter name now. Advisor dashboard, member roster, and chapter-wide deadlines
+          are still being built and will roll out free for every chapter.
         </p>
       </div>
 
@@ -62,7 +62,7 @@ export default function ChapterPage() {
       </Card>
 
       <Card variant="accent">
-        <HeroBadge>Coming with Chapter tier</HeroBadge>
+        <HeroBadge>Coming soon — free for every chapter</HeroBadge>
         <h2 style={{ fontSize: 22, marginTop: 14, marginBottom: 14, letterSpacing: "-0.02em" }}>
           Run your whole chapter from one place.
         </h2>
@@ -101,10 +101,7 @@ export default function ChapterPage() {
             </li>
           ))}
         </ul>
-        <div style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link href="/pricing" className="btn btn-accent btn-sm btn-pill cta-shimmer">
-            See pricing
-          </Link>
+        <div style={{ marginTop: 22 }}>
           <Link href="mailto:hello@fbla.one" className="btn btn-ghost btn-sm btn-pill">
             Email me when it launches
           </Link>

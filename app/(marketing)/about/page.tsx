@@ -80,10 +80,9 @@ export default function About() {
                   every chapter has the same problem we did.
                 </p>
                 <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
-                  The Student tier stays free forever. The Chapter and District
-                  tiers fund the platform when they launch. No per-seat creep, no
-                  dark patterns, no selling student data. Just a tool that makes
-                  competing in FBLA easier.
+                  FBLA One is free for every student and every chapter, forever.
+                  No paywall, no per-seat creep, no dark patterns, no selling
+                  student data. Just a tool that makes competing in FBLA easier.
                 </p>
               </Card>
             </div>
@@ -112,8 +111,8 @@ export default function About() {
           >
             {[
               {
-                title: "Free for students, forever.",
-                body: "An individual member should never have to pay to study for their competition. The Student tier stays free. Chapters fund the rest.",
+                title: "Free for everyone, forever.",
+                body: "No student or chapter should have to pay to compete in FBLA. The platform stays free. Always.",
               },
               {
                 title: "No fluff. No filler content.",

@@ -16,7 +16,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 **Last shipped: v0.2 (May 27, 2026) — full v1 platform.** Massive Corvo-quality rebuild on top of the v0.1 scaffold.
 
-- Full marketing site at `/`, `/pricing`, `/about`, `/faq`, `/privacy`, `/terms` under the `(marketing)` route group sharing PublicNav + Footer.
+- Full marketing site at `/`, `/about`, `/faq`, `/privacy`, `/terms` under the `(marketing)` route group sharing PublicNav + Footer. **FBLA One is always free** — no pricing page, no paid tiers, no upsells.
 - 55-event FBLA competition registry in `lib/competitions.ts` with full content for ~25 objective-test events (Accounting I/II, Marketing, Cyber Security, Economics, etc.) and stubs for prompt-based events.
 - `/competitions` — filterable + searchable grid (search, category, content depth). Statically generated.
 - `/competitions/[slug]` — per-event detail page, SSG for all 55 events. Long description, test topics chip grid, curated external study resources, official rubric link, RegisterButton.
@@ -24,7 +24,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - `/app` shell — sidebar (Dashboard / My competitions / Practice tracker / Chapter / Settings) + topbar (theme toggle, Browse Competitions). Dashboard with stats, active competitions, recent practice, suggested actions checklist.
 - `/app/competitions` — registered events with last-practice timestamp + average score.
 - `/app/tracker` — practice log form + history table.
-- `/app/chapter` — chapter name editor + Chapter-tier waitlist.
+- `/app/chapter` — chapter name editor + coming-soon advisor features (free).
 - `/app/settings` — display name, chapter, theme, sign out, clear local data.
 - **localStorage-first state** via `lib/storage.ts` — works in preview mode with no Supabase, mirrors to DB when configured.
 - Supabase schema (`supabase/migrations/0001_init.sql`) — profiles, chapters, registrations, practice_logs, saved_resources, deadlines, all RLS-protected with idempotent migration.
@@ -101,7 +101,6 @@ fbla-one/
     (marketing)/                <- route group: PublicNav + Footer wrap
       layout.tsx
       page.tsx                  <- / landing (hero, bento, competitions preview, how-it-works, categories, CTA)
-      pricing/page.tsx          <- /pricing (3 tiers: Student free / Chapter $29 / District custom)
       about/page.tsx            <- /about (origin story + 3 principles)
       faq/page.tsx              <- /faq (4 sections accordion)
       privacy/page.tsx          <- /privacy
@@ -257,7 +256,6 @@ Shipped in one session:
 - **Competition registry**: `lib/competitions.ts` with 55 FBLA events. Full content (long description, test topics, study resources) for ~25 objective-test events. Coming-soon stubs for ~25 prompt-based events. Helpers: `getCompetition`, `getCompetitionsByCategory`, `getPopularCompetitions`, `getAvailableCompetitions`, `COMPETITION_STATS`.
 - **Marketing site**: `(marketing)` route group with shared PublicNav + Footer.
   - `/` — hero with floating accent orbs + stats row + bento feature grid + popular competitions + how-it-works + categories grid + final CTA card.
-  - `/pricing` — 3 tiers (Student free / Chapter $29 highlighted / District custom) + 4-quick-FAQ grid.
   - `/about` — origin story + 3 principles cards.
   - `/faq` — 4-section accordion with smooth height transitions.
   - `/privacy`, `/terms` — content-only stubs with hero badge + section helper.
@@ -269,7 +267,7 @@ Shipped in one session:
   - `/app` — greeting (time-of-day + display name), 4 stat cards (Registered / Logs this week / Total practice / Saved resources), active competitions grid (per-comp log count + last log time), Last 5 logs sidebar card, Suggested actions checklist (4 setup steps with checkmark/strikethrough states).
   - `/app/competitions` — table-style list of registered events with category + format + log count + average score + Prep + Remove actions.
   - `/app/tracker` — 2-col: log form (competition select + score + out-of + duration + notes) + history table (date + competition + score + % + minutes + delete).
-  - `/app/chapter` — chapter name editor + Chapter-tier coming-soon card with 5 feature bullets + waitlist CTA.
+  - `/app/chapter` — chapter name editor + coming-soon-free card with 5 advisor feature bullets.
   - `/app/settings` — display name + chapter + theme picker + auth status + clear-local-data danger button.
 - **Storage layer**: `lib/storage.ts` — localStorage-first persistence with custom-event broadcast + cross-tab sync. Maps 1:1 to Supabase tables so DB-backed implementation can layer on later without component changes.
 - **Supabase**: `lib/supabase.ts` updated to use `createBrowserClient` properly. New `lib/supabase-server.ts` for server components with hardened cookies. `proxy.ts` (Next 16's renamed middleware) for SSR session refresh, with try/catch around getUser and explicit cookie hardening.

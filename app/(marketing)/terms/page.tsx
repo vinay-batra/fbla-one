@@ -29,8 +29,8 @@ export default function Terms() {
           <p>Study resources link to third-party sources. We make a good-faith effort to link to legitimate, free educational content, but we don't own or warrant external resources. Official FBLA rubrics and event guides are the property of FBLA-PBL Inc. and are linked, not hosted.</p>
         </Section>
 
-        <Section title="Pricing & paid tiers">
-          <p>The Student tier is free indefinitely. The Chapter tier ($29/month per chapter) and District tier (custom) launch after the FBLA officer meeting on August 25, 2026. Waitlist members lock in the launch price. Paid tiers can be cancelled anytime; no contract.</p>
+        <Section title="Pricing">
+          <p>FBLA One is free for every student and every chapter, forever. There are no paid tiers, no per-seat fees, and no upsells. If that ever changes, we'll notify all account holders at least 30 days before any pricing takes effect.</p>
         </Section>
 
         <Section title="Disclaimer">
