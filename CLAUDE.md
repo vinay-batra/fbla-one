@@ -49,7 +49,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 - **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19
 - **Styling**: CSS variables only (no Tailwind). Inter + Space Mono + Space Grotesk via Google Fonts `@import` in globals.css.
-- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Graceful degradation when env vars unset.
+- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref: `osxoygndwazbygiqyjhu`. URL: `https://osxoygndwazbygiqyjhu.supabase.co`.
 - **Animation**: framer-motion (installed; ScrollReveal currently uses pure IntersectionObserver per Corvo audit).
 - **Hosting**: Vercel (planned). Domain: fbla.one.
 - **Local path**: `~/Downloads/fbla-one/`
