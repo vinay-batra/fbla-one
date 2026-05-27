@@ -1,3 +1,5 @@
+"use client";
+
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -8,6 +10,11 @@ export const isSupabaseConfigured = Boolean(url && anonKey);
 
 let client: SupabaseClient | null = null;
 
+/**
+ * Browser-side Supabase client singleton.
+ * Returns null when env vars aren't set, so callers can degrade gracefully
+ * (show preview-mode banner, disable account features, etc).
+ */
 export function getSupabase(): SupabaseClient | null {
   if (!isSupabaseConfigured) return null;
   if (!client) {

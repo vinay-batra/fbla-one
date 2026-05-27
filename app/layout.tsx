@@ -1,31 +1,40 @@
 import type { Metadata } from "next";
-import { Inter, Space_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ConditionalAmbientOrbs } from "@/components/ConditionalAmbientOrbs";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const spaceMono = Space_Mono({
-  variable: "--font-space-mono",
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "FBLA One — The all-in-one FBLA chapter platform",
-  description:
-    "Competition guides, study resources, prep tracker, and chapter management for FBLA chapters. Built for FBLA students, by an FBLA student.",
   metadataBase: new URL("https://fbla.one"),
+  title: {
+    default: "FBLA One — The all-in-one FBLA chapter platform",
+    template: "%s · FBLA One",
+  },
+  description:
+    "Competition guides, study resources, prep tracker, deadline calendar, and chapter management for FBLA chapters. Built for FBLA students, by an FBLA student.",
+  applicationName: "FBLA One",
+  authors: [{ name: "FBLA One" }],
+  keywords: [
+    "FBLA",
+    "Future Business Leaders of America",
+    "FBLA competitions",
+    "FBLA study guide",
+    "FBLA tracker",
+    "FBLA chapter",
+    "competition prep",
+  ],
   openGraph: {
     title: "FBLA One",
-    description: "The all-in-one FBLA chapter platform.",
+    description: "Everything your FBLA chapter needs, in one place.",
     type: "website",
+    url: "https://fbla.one",
+    siteName: "FBLA One",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "FBLA One",
+    description: "Everything your FBLA chapter needs, in one place.",
+  },
+  robots: { index: true, follow: true },
 };
 
 const THEME_INIT = `
@@ -34,20 +43,17 @@ const THEME_INIT = `
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${spaceMono.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ConditionalAmbientOrbs />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,100 +1,133 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 
+type FooterCol = {
+  title: string;
+  links: { href: string; label: string }[];
+};
+
+const COLS: FooterCol[] = [
+  {
+    title: "Product",
+    links: [
+      { href: "/competitions", label: "Competitions" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/auth", label: "Sign in" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/faq", label: "FAQ" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
+    ],
+  },
+];
+
 export function Footer() {
   return (
     <footer
       style={{
-        borderTop: "1px solid var(--border)",
-        marginTop: 80,
-        padding: "48px 0 32px",
+        position: "relative",
+        zIndex: 1,
+        borderTop: "0.5px solid var(--border)",
+        marginTop: 120,
+        padding: "56px 0 28px",
+        background: "var(--bg2)",
       }}
     >
       <div className="container">
         <div
+          className="footer-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 2fr) 1fr 1fr",
+            gridTemplateColumns: "minmax(0, 2fr) 1fr 1fr 1fr",
             gap: 40,
           }}
         >
           <div>
-            <Logo />
+            <Logo size="md" />
             <p
               style={{
                 marginTop: 14,
                 color: "var(--text3)",
                 fontSize: 14,
                 maxWidth: 360,
-                lineHeight: 1.6,
+                lineHeight: 1.65,
               }}
             >
-              The all-in-one platform for FBLA chapters. Competition guides,
-              study resources, prep tracker, and chapter management.
+              The all-in-one platform for FBLA chapters. Competition guides, study
+              resources, prep tracker, and chapter management - built for FBLA
+              students, by an FBLA student.
             </p>
             <p
               style={{
                 marginTop: 18,
                 color: "var(--text-muted)",
-                fontSize: 12,
+                fontSize: 11,
+                lineHeight: 1.6,
               }}
             >
-              Not affiliated with Future Business Leaders of America, Inc.
+              Not affiliated with Future Business Leaders of America, Inc. FBLA
+              competition names referenced for educational use only.
             </p>
           </div>
 
-          <FooterCol title="Product">
-            <FooterLink href="/competitions">Competitions</FooterLink>
-            <FooterLink href="/tracker">Tracker</FooterLink>
-            <FooterLink href="/chapter">Chapter</FooterLink>
-            <FooterLink href="/pricing">Pricing</FooterLink>
-          </FooterCol>
-
-          <FooterCol title="Company">
-            <FooterLink href="/about">About</FooterLink>
-            <FooterLink href="/privacy">Privacy</FooterLink>
-            <FooterLink href="/terms">Terms</FooterLink>
-          </FooterCol>
+          {COLS.map((col) => (
+            <div key={col.title}>
+              <p className="eyebrow" style={{ marginBottom: 14 }}>{col.title}</p>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="footer-link">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         <div
           style={{
-            marginTop: 36,
-            paddingTop: 22,
-            borderTop: "1px solid var(--border)",
+            marginTop: 56,
+            paddingTop: 24,
+            borderTop: "0.5px solid var(--border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 16,
+            flexWrap: "wrap",
             color: "var(--text-muted)",
             fontSize: 12,
           }}
         >
-          © {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.
+          <span>© {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.</span>
+          <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
+            v0.2 · fbla.one
+          </span>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .footer-grid > div:first-child {
+            grid-column: 1 / -1;
+            margin-bottom: 8px;
+          }
+        }
+      `}</style>
     </footer>
-  );
-}
-
-function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="eyebrow" style={{ marginBottom: 14 }}>{title}</p>
-      {children}
-    </div>
-  );
-}
-
-function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      style={{
-        display: "block",
-        color: "var(--text2)",
-        fontSize: 14,
-        padding: "4px 0",
-        transition: "color 0.2s ease",
-      }}
-    >
-      {children}
-    </Link>
   );
 }
