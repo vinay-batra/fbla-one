@@ -19,33 +19,13 @@ export default function Landing() {
       <section
         style={{
           position: "relative",
-          overflow: "hidden",
           padding: "100px 0 120px",
+          background: `
+            radial-gradient(60% 70% at 15% 25%, rgba(var(--brand-rgb), 0.28) 0%, rgba(var(--brand-rgb), 0.10) 35%, transparent 65%),
+            radial-gradient(55% 65% at 85% 78%, rgba(var(--accent-rgb), 0.18) 0%, rgba(var(--accent-rgb), 0.06) 38%, transparent 68%)
+          `,
         }}
       >
-        <div
-          className="bg-orb"
-          style={{
-            width: 560,
-            height: 560,
-            background: "var(--brand)",
-            top: -180,
-            left: "-12%",
-            opacity: 0.4,
-          }}
-        />
-        <div
-          className="bg-orb"
-          style={{
-            width: 440,
-            height: 440,
-            background: "var(--accent)",
-            bottom: -160,
-            right: "-12%",
-            opacity: 0.22,
-          }}
-        />
-
         <div className="container" style={{ position: "relative" }}>
           <div style={{ maxWidth: 920, marginInline: "auto", textAlign: "center" }}>
             <ScrollReveal>
@@ -161,7 +141,6 @@ export default function Landing() {
                 badge="01"
                 title="Competition guides"
                 body={`A page for every event: what it is, what's on the test, the official rubric, and curated study resources. ${COMPETITION_STATS.withContent} events have full content today; the rest get fleshed out as the year goes.`}
-                accent
                 large
               />
             </ScrollReveal>
@@ -460,26 +439,15 @@ function FeatureCard({
   badge,
   title,
   body,
-  accent,
   large,
 }: {
   badge: string;
   title: string;
   body: string;
-  accent?: boolean;
   large?: boolean;
 }) {
   return (
-    <Card
-      variant="hover"
-      style={{
-        height: "100%",
-        background: accent
-          ? "linear-gradient(155deg, var(--card-bg) 0%, var(--card-bg) 60%, rgba(var(--accent-rgb), 0.08) 100%)"
-          : "var(--card-bg)",
-        borderColor: accent ? "var(--accent-border)" : "var(--border)",
-      }}
-    >
+    <Card variant="hover" style={{ height: "100%" }}>
       <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <div
           className="font-mono"

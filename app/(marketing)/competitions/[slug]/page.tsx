@@ -37,18 +37,14 @@ export default async function CompetitionDetail({ params }: Props) {
   return (
     <>
       {/* HERO */}
-      <section style={{ position: "relative", padding: "60px 0 40px", overflow: "hidden" }}>
-        <div
-          className="bg-orb"
-          style={{
-            width: 400,
-            height: 400,
-            background: "var(--brand)",
-            top: -160,
-            left: "-10%",
-            opacity: 0.28,
-          }}
-        />
+      <section
+        style={{
+          position: "relative",
+          padding: "60px 0 40px",
+          background:
+            "radial-gradient(55% 65% at 18% 30%, rgba(var(--brand-rgb), 0.22) 0%, rgba(var(--brand-rgb), 0.07) 35%, transparent 65%)",
+        }}
+      >
         <div className="container" style={{ position: "relative" }}>
           <Link
             href="/competitions"

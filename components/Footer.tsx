@@ -39,8 +39,9 @@ export function Footer() {
         zIndex: 1,
         borderTop: "0.5px solid var(--border)",
         marginTop: 120,
-        padding: "56px 0 28px",
+        padding: "56px 0 0",
         background: "var(--bg2)",
+        overflow: "hidden",
       }}
     >
       <div className="container">
@@ -108,12 +109,41 @@ export function Footer() {
             flexWrap: "wrap",
             color: "var(--text-muted)",
             fontSize: 12,
+            position: "relative",
+            zIndex: 2,
           }}
         >
           <span>© {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.</span>
           <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
             v0.2 · fbla.one
           </span>
+        </div>
+
+        {/* Watermark mark — sits behind the bottom row, opacity-faded, decorative only */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "relative",
+            height: 120,
+            marginTop: -24,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-end",
+            pointerEvents: "none",
+            opacity: 0.08,
+            overflow: "hidden",
+          }}
+        >
+          { /* eslint-disable-next-line @next/next/no-img-element */ }
+          <img
+            src="/logo-mark.png"
+            alt=""
+            style={{
+              width: "min(520px, 70vw)",
+              height: "auto",
+              transform: "translateY(40%)",
+            }}
+          />
         </div>
       </div>
 

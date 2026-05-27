@@ -129,32 +129,12 @@ export default function Auth() {
           justifyContent: "center",
           padding: "60px 24px",
           position: "relative",
-          overflow: "hidden",
+          background: `
+            radial-gradient(50% 60% at 15% 30%, rgba(var(--brand-rgb), 0.22) 0%, rgba(var(--brand-rgb), 0.06) 38%, transparent 68%),
+            radial-gradient(45% 55% at 88% 78%, rgba(var(--accent-rgb), 0.18) 0%, rgba(var(--accent-rgb), 0.05) 40%, transparent 70%)
+          `,
         }}
       >
-        <div
-          className="bg-orb"
-          style={{
-            width: 480,
-            height: 480,
-            background: "var(--brand)",
-            top: -180,
-            left: "-15%",
-            opacity: 0.3,
-          }}
-        />
-        <div
-          className="bg-orb"
-          style={{
-            width: 380,
-            height: 380,
-            background: "var(--accent)",
-            bottom: -120,
-            right: "-12%",
-            opacity: 0.22,
-          }}
-        />
-
         <div
           style={{
             position: "relative",
