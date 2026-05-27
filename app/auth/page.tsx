@@ -72,7 +72,7 @@ export default function Auth() {
     try {
       const { error } = await supa.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/app` },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) throw error;
     } catch (err) {
