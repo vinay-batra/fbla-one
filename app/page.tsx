@@ -1,66 +1,201 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from "next/link";
+import { PublicNav } from "@/components/PublicNav";
+import { Footer } from "@/components/Footer";
+import { Reveal } from "@/components/Reveal";
 
-export default function Home() {
+export default function Landing() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <PublicNav />
+      <main>
+        {/* Hero */}
+        <section
+          style={{
+            position: "relative",
+            overflow: "hidden",
+            padding: "110px 0 130px",
+          }}
+        >
+          <div
+            className="bg-orb"
+            style={{
+              width: 540,
+              height: 540,
+              background: "var(--brand)",
+              top: -180,
+              left: -180,
+              opacity: 0.35,
+            }}
+          />
+          <div
+            className="bg-orb"
+            style={{
+              width: 420,
+              height: 420,
+              background: "var(--accent)",
+              bottom: -120,
+              right: -120,
+              opacity: 0.22,
+            }}
+          />
+
+          <div
+            className="container"
+            style={{
+              position: "relative",
+              textAlign: "center",
+              maxWidth: 900,
+            }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <Reveal>
+              <p className="eyebrow" style={{ marginBottom: 20 }}>
+                For FBLA Chapters
+              </p>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <h1>
+                Everything your FBLA chapter needs,{" "}
+                <span style={{ color: "var(--accent)" }}>in one place.</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p
+                style={{
+                  fontSize: 19,
+                  marginTop: 24,
+                  maxWidth: 640,
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                Competition guides, study resources, prep tracker, deadline
+                calendar, advisor dashboard. Built so your chapter can stop
+                juggling spreadsheets and start winning.
+              </p>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 14,
+                  justifyContent: "center",
+                  marginTop: 40,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Link href="/auth" className="btn btn-accent btn-lg">
+                  Get started
+                </Link>
+                <Link href="/competitions" className="btn btn-ghost btn-lg">
+                  Browse competitions
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* Feature grid */}
+        <section style={{ padding: "60px 0" }}>
+          <div className="container">
+            <Reveal>
+              <div style={{ textAlign: "center", marginBottom: 56 }}>
+                <p className="eyebrow" style={{ marginBottom: 12 }}>
+                  What&apos;s inside
+                </p>
+                <h2>Three things, done right.</h2>
+              </div>
+            </Reveal>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: 20,
+              }}
+            >
+              <Feature
+                eyebrow="01"
+                title="Competition Guides"
+                body="A page for every FBLA event. What it is, what's on the test, study resources, rubric — all in one place. No more digging through old Drive folders."
+                delay={0.05}
+              />
+              <Feature
+                eyebrow="02"
+                title="Prep Tracker"
+                body="Log practice tests, track scores, save study resources. See your progress over time. Know exactly where you stand before competition."
+                delay={0.1}
+              />
+              <Feature
+                eyebrow="03"
+                title="Chapter Management"
+                body="Sign up for competitions, track deadlines, get reminders. Advisors see who's signed up for what at a glance."
+                delay={0.15}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section style={{ padding: "80px 0 120px" }}>
+          <div className="container">
+            <Reveal>
+              <div
+                className="card"
+                style={{
+                  textAlign: "center",
+                  padding: "56px 32px",
+                  background: "var(--card-bg)",
+                  border: "1px solid var(--accent-border)",
+                }}
+              >
+                <p className="eyebrow" style={{ marginBottom: 14 }}>
+                  Ready?
+                </p>
+                <h2>Get your chapter on FBLA One.</h2>
+                <p
+                  style={{
+                    marginTop: 14,
+                    maxWidth: 560,
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                  }}
+                >
+                  Free for chapters during the pilot. No setup, no spreadsheets.
+                </p>
+                <div style={{ marginTop: 28 }}>
+                  <Link href="/auth" className="btn btn-accent btn-lg">
+                    Sign up free
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
       </main>
-    </div>
+      <Footer />
+    </>
+  );
+}
+
+function Feature({
+  eyebrow,
+  title,
+  body,
+  delay,
+}: {
+  eyebrow: string;
+  title: string;
+  body: string;
+  delay?: number;
+}) {
+  return (
+    <Reveal delay={delay}>
+      <div className="card card-hover" style={{ height: "100%" }}>
+        <p className="eyebrow" style={{ marginBottom: 12 }}>
+          {eyebrow}
+        </p>
+        <h3 style={{ marginBottom: 10 }}>{title}</h3>
+        <p style={{ fontSize: 14 }}>{body}</p>
+      </div>
+    </Reveal>
   );
 }
