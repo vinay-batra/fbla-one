@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { DeadlineAlert } from "./DeadlineAlert";
 import { getSupabase } from "@/lib/supabase";
 
 type NavItem = {
@@ -307,6 +308,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             minWidth: 0,
           }}
         >
+          <DeadlineAlert />
           {children}
         </main>
       </div>

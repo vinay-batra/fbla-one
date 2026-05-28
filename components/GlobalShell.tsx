@@ -8,10 +8,12 @@
 
 import { CommandPalette } from "./CommandPalette";
 import { FeedbackButton } from "./FeedbackButton";
+import { OnboardingModal } from "./OnboardingModal";
 
 export function GlobalShell() {
   return (
     <>
+      <OnboardingModal />
       <CommandPalette />
       <FeedbackButton />
     </>

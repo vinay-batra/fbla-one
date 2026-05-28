@@ -44,6 +44,31 @@ function memberName(m: MemberRow): string {
   return m.display_name?.trim() || m.email?.split("@")[0] || "Anonymous";
 }
 
+function exportRosterCSV(members: MemberRow[], chapterName: string) {
+  const headers = ["Name", "Email", "Role", "Events Count", "Registered Events"];
+  const rows = members.map((m) => [
+    memberName(m),
+    m.email ?? "",
+    m.role,
+    String(m.registrations.length),
+    m.registrations.map((slug) => getCompetition(slug)?.name ?? slug).join("; "),
+  ]);
+  const csv = [headers, ...rows]
+    .map((row) =>
+      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+    )
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${chapterName.replace(/\s+/g, "-").toLowerCase()}-roster-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function roleBadgeStyle(role: string): React.CSSProperties {
   if (role === "advisor") return { background: "var(--accent-dim)", color: "var(--accent)" };
   if (role === "officer") return { background: "var(--brand-dim)", color: "var(--brand)" };
@@ -316,6 +341,23 @@ export default function ChapterPage() {
             eyebrow="Advisor view"
             title="Member roster"
             tagline="Every member in your chapter and the events they are prepping for."
+            right={
+              members.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => exportRosterCSV(members, chapter?.name ?? "chapter")}
+                  className="btn btn-ghost btn-sm"
+                  style={{ gap: 6, display: "flex", alignItems: "center" }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <path d="M7 10l5 5 5-5" />
+                    <path d="M12 15V3" />
+                  </svg>
+                  Export CSV
+                </button>
+              ) : undefined
+            }
           />
           {members.length === 0 ? (
             <div className="empty-state" style={{ marginTop: 12 }}>
