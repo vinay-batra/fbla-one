@@ -14,7 +14,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v0.3 (May 28, 2026) - deployment + full Supabase integration + production audit. Latest commit: `cbdb8b8`.
+**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v0.4 (May 28, 2026) - competition content, deadline calendar, command palette, feedback button, SVG logo. Latest commit: `e9b5c2d`.
 
 **Status: fully deployed and working.**
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
@@ -25,10 +25,15 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 **What's built and verified working:**
 - Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page.
-- 55-event competition registry (`lib/competitions.ts`), ~31 with full content. All study-resource links audited + working.
+- 55-event competition registry (`lib/competitions.ts`). **45 complete, 10 partial, 0 coming-soon.** All events have longDescription + topics + studyResources.
 - `/competitions` (filterable grid) + `/competitions/[slug]` (SSG detail, 55 pages).
 - `/auth` - Google OAuth + email/password + magic link. **GitHub OAuth removed.** PKCE flow via `/auth/callback`.
 - `/app/*` - **auth-gated** (redirects to `/auth` when signed out). Dashboard, my competitions, tracker, chapter, settings (with avatar upload + delete account).
+- **Chapter page** (`/app/chapter`): deadline calendar (add/view/delete, linked to competitions, countdown badges), registered events chip grid, advisor coming-soon card.
+- **Deadline storage**: `Deadline` type + CRUD in `lib/storage.ts` (key: `fbla_deadlines`). Local-first, Supabase sync not yet wired (DB table exists: `public.deadlines`).
+- **Command palette** (`components/CommandPalette.tsx`): Cmd+K / Ctrl+K. Searches all 55 competitions + navigates to any app page. Arrow keys + Enter + Escape.
+- **Feedback button** (`components/FeedbackButton.tsx`): fixed FAB (bottom-right), opens compose panel, fires `mailto:hello@fbla.one`.
+- **SVG logo** (`components/Logo.tsx`): inline SVG shield+torch using `var(--brand)` + `var(--accent)` - auto-adapts to light/dark. PNG files (`public/logo-mark.png`) still used for favicon/OG.
 - **Data sync (verified via live integration test):** registrations / practice logs / saved resources persist to Supabase when signed in, sync across devices, migrate preview-mode data up on first sign-in. Driven by `components/DataSync.tsx` + `lib/storage.ts`.
 - Profile auto-created **app-side** on sign-in (`ensureProfile` in storage.ts) - NOT via DB trigger (see gotchas).
 - UserMenu dropdown (avatar/initials, Escape-to-close), auth-reactive nav.
@@ -39,11 +44,12 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Build clean (75 routes), lint clean. No em dashes in source.
 
 ### Next up
-1. Replace AI-generated logo (`public/logo.png` + `public/logo-mark.png`) with a cleaner version if desired. Current one is the user's shield+torch, background stripped, generated `logo-mark.png` + favicon set + og-image from it.
-2. Write content for the ~24 partial / coming-soon competition events.
-3. Branded auth emails: create Resend account, verify `fbla.one`, point Supabase Auth -> SMTP at Resend. `lib/email.ts` is scaffolded (fetch-based, no-ops without `RESEND_API_KEY`).
-4. Optional: disable Supabase email confirmation for frictionless signup (Auth -> Providers -> Email -> Confirm email toggle).
-5. Deadline reminders, chapter advisor dashboard (the `/app/chapter` "coming soon" features), feedback button, command palette (Cmd+K).
+1. Branded auth emails: create Resend account, verify `fbla.one`, point Supabase Auth -> SMTP at Resend. `lib/email.ts` is scaffolded (fetch-based, no-ops without `RESEND_API_KEY`).
+2. Optional: disable Supabase email confirmation for frictionless signup (Auth -> Providers -> Email -> Confirm email toggle).
+3. Wire `Deadline` CRUD to Supabase `public.deadlines` table (already exists in DB, needs chapter_id - requires chapter advisor flow first).
+4. Chapter advisor dashboard: member roster, advisor role assignment, chapter-wide deadline sync.
+5. Dashboard deadline widget: surface upcoming deadlines from `getUpcomingDeadlines()` on the `/app` dashboard.
+6. Command palette on marketing pages: add Cmd+K trigger to `PublicNav.tsx` (palette already works globally but no trigger on marketing side).
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
