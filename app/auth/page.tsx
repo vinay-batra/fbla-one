@@ -205,7 +205,7 @@ export default function Auth() {
                   transition: "all 0.15s ease",
                 }}
               >
-                {tab === "magic" ? "Magic link" : tab[0].toUpperCase() + tab.slice(1)}
+                {tab === "magic" ? "Magic" : tab[0].toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </div>
