@@ -169,10 +169,10 @@ export default function Dashboard() {
           gap: 14,
         }}
       >
-        <Stat label="Registered" value={String(registeredCompetitions.length)} sub={`of ${COMPETITIONS.length} events`} />
-        <Stat label="Logs this week" value={String(logsThisWeek)} sub={logsThisWeek === 0 ? "Log your first practice" : "keep going"} />
-        <Stat label="Total practice" value={String(logs.length)} sub="all-time" />
-        <Stat label="Saved resources" value={String(saved.length)} sub="across all events" />
+        <Stat label="Registered" value={String(registeredCompetitions.length)} sub={`of ${COMPETITIONS.length} events`} href="/app/competitions" />
+        <Stat label="Logs this week" value={String(logsThisWeek)} sub={logsThisWeek === 0 ? "Log your first practice" : "keep going"} href="/app/tracker" />
+        <Stat label="Total practice" value={String(logs.length)} sub="all-time" href="/app/tracker" />
+        <Stat label="Saved resources" value={String(saved.length)} sub="across all events" href="/app/resources" />
       </div>
 
       {/* Upcoming deadlines strip (only shown when deadlines exist) */}
@@ -387,16 +387,9 @@ export default function Dashboard() {
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div
-      style={{
-        background: "var(--card-bg)",
-        border: "0.5px solid var(--border)",
-        borderRadius: 12,
-        padding: "18px 18px",
-      }}
-    >
+function Stat({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
+  const inner = (
+    <>
       <p
         className="font-mono"
         style={{
@@ -411,8 +404,30 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       </p>
       <div className="metric-number" style={{ marginTop: 8, color: "var(--text)" }}>{value}</div>
       {sub && <p style={{ marginTop: 4, fontSize: 11, color: "var(--text3)" }}>{sub}</p>}
-    </div>
+    </>
   );
+  const baseStyle = {
+    background: "var(--card-bg)",
+    border: "0.5px solid var(--border)",
+    borderRadius: 12,
+    padding: "18px 18px",
+    display: "block",
+    textDecoration: "none",
+    transition: "border-color 0.15s",
+  };
+  if (href) {
+    return (
+      <Link
+        href={href}
+        style={baseStyle}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent-border)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return <div style={{ ...baseStyle, cursor: "default" }}>{inner}</div>;
 }
 
 function Suggestion({ done, text, href }: { done: boolean; text: string; href: string }) {

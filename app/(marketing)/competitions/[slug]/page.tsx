@@ -5,6 +5,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
 import { COMPETITIONS, FORMAT_LABEL, getCompetition } from "@/lib/competitions";
+import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -255,57 +256,14 @@ export default async function CompetitionDetail({ params }: Props) {
 
                   {c.studyResources && c.studyResources.length > 0 && (
                     <Card style={{ marginTop: 20 }}>
-                      <h2 style={{ fontSize: 20, marginBottom: 16, letterSpacing: "-0.01em" }}>
-                        Study resources
-                      </h2>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6, gap: 12 }}>
+                        <h2 style={{ fontSize: 20, letterSpacing: "-0.01em" }}>Study resources</h2>
+                        <span style={{ fontSize: 12, color: "var(--text3)" }}>Bookmark to save</span>
+                      </div>
                       <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 18 }}>
                         Curated by FBLA One. Free unless noted. External links open in a new tab.
                       </p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                        {c.studyResources.map((r) => (
-                          <a
-                            key={r.url}
-                            href={r.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="resource-link"
-                          >
-                            <span
-                              className="font-mono"
-                              style={{
-                                flexShrink: 0,
-                                fontSize: 9,
-                                letterSpacing: "0.14em",
-                                color: "var(--accent)",
-                                fontWeight: 700,
-                                padding: "5px 9px",
-                                borderRadius: 6,
-                                background: "var(--accent-dim)",
-                                border: "0.5px solid var(--accent-border)",
-                                textTransform: "uppercase",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              {r.kind}
-                            </span>
-                            <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
-                                {r.title}
-                              </span>
-                              {r.note && (
-                                <span style={{ display: "block", fontSize: 12, color: "var(--text3)", marginTop: 3 }}>
-                                  {r.note}
-                                </span>
-                              )}
-                            </span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                              <path d="M15 3h6v6" />
-                              <path d="M10 14L21 3" />
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
+                      <StudyResourcesList resources={c.studyResources} competitionSlug={c.slug} />
                     </Card>
                   )}
                 </>
