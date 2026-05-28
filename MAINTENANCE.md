@@ -305,3 +305,4 @@ Routine checks, audits, and tests.
 - 2026-05-26 — audited dependencies, no advisories
 - 2026-05-28 — ran regression pass, no regressions
 - 2026-05-28 — checked auth and session handling
+- 2026-05-28 — checked mobile layouts
