@@ -161,7 +161,7 @@ export default function Auth() {
                 lineHeight: 1.55,
               }}
             >
-              Preview mode. Auth isn't wired to Supabase yet — explore the dashboard at{" "}
+              Preview mode. Auth isn't wired to Supabase yet - explore the dashboard at{" "}
               <Link href="/app" style={{ textDecoration: "underline" }}>/app</Link>.
             </div>
           )}

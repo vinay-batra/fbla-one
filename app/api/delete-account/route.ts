@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * DELETE /api/delete-account
  * Deletes the authenticated user's account (auth.users cascade → profiles).
- * Requires service role key — never call this from the client directly.
+ * Requires service role key - never call this from the client directly.
  */
 export async function DELETE() {
   const supabase = await getSupabaseServer();

@@ -134,7 +134,7 @@ export default function MyCompetitions() {
                         color: avgScore != null ? "var(--accent)" : "var(--text3)",
                       }}
                     >
-                      {avgScore != null ? `${avgScore}%` : "—"}
+                      {avgScore != null ? `${avgScore}%` : "-"}
                     </p>
                   </div>
 

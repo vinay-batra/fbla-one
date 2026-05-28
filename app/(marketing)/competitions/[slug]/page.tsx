@@ -19,6 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: c.name,
     description: c.description,
+    alternates: { canonical: `/competitions/${c.slug}` },
+    openGraph: {
+      title: `${c.name} · FBLA One`,
+      description: c.description,
+    },
   };
 }
 

@@ -76,7 +76,7 @@ export default function About() {
                 <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7 }}>
                   Pilot at Council Rock South this year. Use it ourselves. Find what
                   breaks. Get advisor buy-in. Then open it up to other chapters
-                  nationally. There are 230,000+ FBLA members across the country —
+                  nationally. There are 230,000+ FBLA members across the country -
                   every chapter has the same problem we did.
                 </p>
                 <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>

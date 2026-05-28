@@ -97,7 +97,7 @@ export default function Settings() {
 
   const deleteAccount = async () => {
     if (!confirm("This permanently deletes your account and all your data. Are you sure?")) return;
-    if (!confirm("Last chance — this cannot be undone.")) return;
+    if (!confirm("Last chance - this cannot be undone.")) return;
     setDeleting(true);
     try {
       const res = await fetch("/api/delete-account", { method: "DELETE" });

@@ -168,12 +168,12 @@ export default function Tracker() {
                           )}
                         </Td>
                         <Td right mono>
-                          {l.score != null && l.outOf != null ? `${l.score} / ${l.outOf}` : "—"}
+                          {l.score != null && l.outOf != null ? `${l.score} / ${l.outOf}` : "-"}
                         </Td>
                         <Td right mono accent={pct != null && pct >= 80}>
-                          {pct != null ? `${pct}%` : "—"}
+                          {pct != null ? `${pct}%` : "-"}
                         </Td>
-                        <Td right mono>{l.durationMin ?? "—"}</Td>
+                        <Td right mono>{l.durationMin ?? "-"}</Td>
                         <Td right>
                           <button
                             type="button"

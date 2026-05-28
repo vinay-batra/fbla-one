@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://fbla.one"),
   title: {
-    default: "FBLA One — The all-in-one FBLA chapter platform",
+    default: "FBLA One - The all-in-one FBLA chapter platform",
     template: "%s · FBLA One",
   },
   description:
@@ -28,11 +28,13 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://fbla.one",
     siteName: "FBLA One",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "FBLA One" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "FBLA One",
     description: "Everything your FBLA chapter needs, in one place.",
+    images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },
   icons: {

@@ -2,7 +2,7 @@
  * FBLA Competitive Events Registry
  *
  * Source of truth for every competition tracked by FBLA One.
- * Based on the FBLA Competitive Events Guide. Re-verify each year — FBLA
+ * Based on the FBLA Competitive Events Guide. Re-verify each year - FBLA
  * adds/renames events for the new program of work.
  *
  * Events that require unique year-specific prompts (most "production",
@@ -93,7 +93,7 @@ export const COMPETITIONS: Competition[] = [
     format: "objective-test",
     description: "Foundational accounting concepts: the accounting equation, journals, ledgers, financial statements, and adjusting entries.",
     longDescription:
-      "Accounting I tests your understanding of the basic accounting cycle for sole proprietorships and partnerships. Expect questions on debits/credits, posting to the general ledger, preparing trial balances, adjusting and closing entries, and reading the four primary financial statements. This is the entry-level accounting event — Accounting II covers corporations, manufacturing, and managerial accounting.",
+      "Accounting I tests your understanding of the basic accounting cycle for sole proprietorships and partnerships. Expect questions on debits/credits, posting to the general ledger, preparing trial balances, adjusting and closing entries, and reading the four primary financial statements. This is the entry-level accounting event - Accounting II covers corporations, manufacturing, and managerial accounting.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Accounting equation",
@@ -111,10 +111,10 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Accounting I Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Financial Accounting", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/accounting-and-financial-stateme" },
-      { title: "AccountingCoach (free) — Bookkeeping Basics", kind: "Course", url: "https://www.accountingcoach.com/bookkeeping/explanation" },
-      { title: "Investopedia — Accounting Cycle", kind: "Article", url: "https://www.investopedia.com/terms/a/accounting-cycle.asp" },
-      { title: "Quizlet — FBLA Accounting I Practice Sets", kind: "Practice", url: "https://quizlet.com/subject/fbla-accounting-i/" },
+      { title: "Khan Academy - Financial Accounting", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/accounting-and-financial-stateme" },
+      { title: "AccountingCoach (free) - Bookkeeping Basics", kind: "Course", url: "https://www.accountingcoach.com/bookkeeping/explanation" },
+      { title: "Investopedia - Accounting Cycle", kind: "Article", url: "https://www.investopedia.com/terms/a/accounting-cycle.asp" },
+      { title: "Quizlet - FBLA Accounting I Practice Sets", kind: "Practice", url: "https://quizlet.com/subject/fbla-accounting-i/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -143,9 +143,9 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Accounting II Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "AccountingCoach — Managerial Accounting", kind: "Course", url: "https://www.accountingcoach.com/managerial-accounting/explanation" },
-      { title: "Investopedia — Cost-Volume-Profit Analysis", kind: "Article", url: "https://www.investopedia.com/terms/c/cost-volume-profit-analysis.asp" },
-      { title: "Khan Academy — Stocks & Bonds", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/stock-and-bonds" },
+      { title: "AccountingCoach - Managerial Accounting", kind: "Course", url: "https://www.accountingcoach.com/managerial-accounting/explanation" },
+      { title: "Investopedia - Cost-Volume-Profit Analysis", kind: "Article", url: "https://www.investopedia.com/terms/c/cost-volume-profit-analysis.asp" },
+      { title: "Khan Academy - Stocks & Bonds", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/stock-and-bonds" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -158,7 +158,7 @@ export const COMPETITIONS: Competition[] = [
     format: "objective-test",
     description: "Budgeting, credit, investing, insurance, taxes, and major life-stage financial planning.",
     longDescription:
-      "Personal Finance tests practical money management for individuals: building a budget, managing credit and debt, investing (stocks, bonds, mutual funds, retirement accounts), insurance types (auto, health, life, property), and federal taxation basics. Heavy emphasis on real-world decision making — what's the better loan, which account to use for which goal, how compound interest works over decades.",
+      "Personal Finance tests practical money management for individuals: building a budget, managing credit and debt, investing (stocks, bonds, mutual funds, retirement accounts), insurance types (auto, health, life, property), and federal taxation basics. Heavy emphasis on real-world decision making - what's the better loan, which account to use for which goal, how compound interest works over decades.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Budgeting & saving",
@@ -174,9 +174,9 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Personal Finance Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "NGPF — Next Gen Personal Finance Curriculum", kind: "Course", url: "https://www.ngpf.org/curriculum/" },
-      { title: "Khan Academy — Personal Finance", kind: "Course", url: "https://www.khanacademy.org/college-careers-more/personal-finance" },
-      { title: "Investopedia — Personal Finance", kind: "Reference", url: "https://www.investopedia.com/personal-finance-4427760" },
+      { title: "NGPF - Next Gen Personal Finance Curriculum", kind: "Course", url: "https://www.ngpf.org/curriculum/" },
+      { title: "Khan Academy - Personal Finance", kind: "Course", url: "https://www.khanacademy.org/college-careers-more/personal-finance" },
+      { title: "Investopedia - Personal Finance", kind: "Reference", url: "https://www.investopedia.com/personal-finance-4427760" },
       { title: "CFPB Money Smart for Young People", kind: "Course", url: "https://www.consumerfinance.gov/consumer-tools/educator-tools/youth-financial-education/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -202,8 +202,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Financial Math Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Interest & Debt", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/interest-tutorial" },
-      { title: "Investopedia — Time Value of Money", kind: "Article", url: "https://www.investopedia.com/terms/t/timevalueofmoney.asp" },
+      { title: "Khan Academy - Interest & Debt", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/interest-tutorial" },
+      { title: "Investopedia - Time Value of Money", kind: "Article", url: "https://www.investopedia.com/terms/t/timevalueofmoney.asp" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -218,7 +218,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Percentages", "Markup & discount", "Simple interest", "Payroll math", "Sales tax", "Tipping & gratuity"],
     studyResources: [
       { title: "FBLA Intro to Financial Math Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Percents", kind: "Course", url: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates/pre-algebra-percent" },
+      { title: "Khan Academy - Percents", kind: "Course", url: "https://www.khanacademy.org/math/pre-algebra/pre-algebra-ratios-rates/pre-algebra-percent" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -243,8 +243,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Securities & Investments Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Investopedia — Investing Basics", kind: "Reference", url: "https://www.investopedia.com/investing-4427685" },
-      { title: "SEC.gov Investor.gov — Investing Basics", kind: "Reference", url: "https://www.investor.gov/introduction-investing" },
+      { title: "Investopedia - Investing Basics", kind: "Reference", url: "https://www.investopedia.com/investing-4427685" },
+      { title: "SEC.gov Investor.gov - Investing Basics", kind: "Reference", url: "https://www.investor.gov/introduction-investing" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -269,7 +269,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Risk types", "Insurance principles", "Auto/home/life/health insurance", "Commercial insurance", "Underwriting", "Claims process"],
     studyResources: [
       { title: "FBLA Insurance & Risk Management Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Investopedia — Insurance Basics", kind: "Reference", url: "https://www.investopedia.com/insurance-4427716" },
+      { title: "Investopedia - Insurance Basics", kind: "Reference", url: "https://www.investopedia.com/insurance-4427716" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -299,8 +299,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Business Management Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "OpenStax — Principles of Management", kind: "Book", url: "https://openstax.org/details/books/principles-management" },
-      { title: "MindTools — Management Skills", kind: "Reference", url: "https://www.mindtools.com/" },
+      { title: "OpenStax - Principles of Management", kind: "Book", url: "https://openstax.org/details/books/principles-management" },
+      { title: "MindTools - Management Skills", kind: "Reference", url: "https://www.mindtools.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -329,8 +329,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Business Law Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Cornell LII — Wex Legal Encyclopedia", kind: "Reference", url: "https://www.law.cornell.edu/wex" },
-      { title: "Investopedia — Business Law", kind: "Article", url: "https://www.investopedia.com/terms/b/business-law.asp" },
+      { title: "Cornell LII - Wex Legal Encyclopedia", kind: "Reference", url: "https://www.law.cornell.edu/wex" },
+      { title: "Investopedia - Business Law", kind: "Article", url: "https://www.investopedia.com/terms/b/business-law.asp" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -345,7 +345,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Percent & markup", "Payroll & gross pay", "Discount calculations", "Statistics (mean, median, mode)", "Probability", "Word problems"],
     studyResources: [
       { title: "FBLA Business Calculations Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Statistics & Probability", kind: "Course", url: "https://www.khanacademy.org/math/statistics-probability" },
+      { title: "Khan Academy - Statistics & Probability", kind: "Course", url: "https://www.khanacademy.org/math/statistics-probability" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -360,7 +360,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Grammar", "Punctuation & mechanics", "Business letter format", "Memos & emails", "Reports", "Active vs. passive voice", "Tone & register", "Editing"],
     studyResources: [
       { title: "FBLA Business Communication Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Purdue OWL — Business Writing", kind: "Reference", url: "https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/index.html" },
+      { title: "Purdue OWL - Business Writing", kind: "Reference", url: "https://owl.purdue.edu/owl/subject_specific_writing/professional_technical_writing/index.html" },
       { title: "Grammar Bytes!", kind: "Course", url: "https://chompchomp.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -388,8 +388,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Economics Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Macroeconomics", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/macroeconomics" },
-      { title: "Khan Academy — Microeconomics", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/microeconomics" },
+      { title: "Khan Academy - Macroeconomics", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/macroeconomics" },
+      { title: "Khan Academy - Microeconomics", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/microeconomics" },
       { title: "AP Economics CrashCourse (YouTube)", kind: "Video", url: "https://www.youtube.com/playlist?list=PLG3-zZqJtNVB6X-fdmHfDM2eRtmgrDC1u" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -417,8 +417,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Marketing Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "HubSpot Academy — Marketing", kind: "Course", url: "https://academy.hubspot.com/courses?topics=marketing" },
-      { title: "Coursera — Intro to Marketing (Wharton)", kind: "Course", url: "https://www.coursera.org/learn/wharton-marketing" },
+      { title: "HubSpot Academy - Marketing", kind: "Course", url: "https://academy.hubspot.com/courses?topics=marketing" },
+      { title: "Coursera - Intro to Marketing (Wharton)", kind: "Course", url: "https://www.coursera.org/learn/wharton-marketing" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -434,7 +434,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Advertising history", "Media planning & buying", "Creative process", "Copywriting", "Print, broadcast & digital ads", "Brand campaigns", "Ethics & regulation"],
     studyResources: [
       { title: "FBLA Advertising Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Google Skillshop — Ads Certifications", kind: "Course", url: "https://skillshop.withgoogle.com/" },
+      { title: "Google Skillshop - Ads Certifications", kind: "Course", url: "https://skillshop.withgoogle.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -449,7 +449,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Sports marketing", "Event management", "Sponsorship sales", "Venue & ticketing", "Talent management", "Broadcasting rights"],
     studyResources: [
       { title: "FBLA Sports & Entertainment Management Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "SportsBusiness Journal — Articles", kind: "Reference", url: "https://www.sportsbusinessjournal.com/" },
+      { title: "SportsBusiness Journal - Articles", kind: "Reference", url: "https://www.sportsbusinessjournal.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -488,7 +488,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["US healthcare system", "Insurance (private, Medicare, Medicaid)", "HIPAA & patient privacy", "Hospital operations", "Healthcare regulation (ACA)", "Healthcare ethics"],
     studyResources: [
       { title: "FBLA Health Care Administration Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "KFF (Kaiser Family Foundation) — Health Policy", kind: "Reference", url: "https://www.kff.org/" },
+      { title: "KFF (Kaiser Family Foundation) - Health Policy", kind: "Reference", url: "https://www.kff.org/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -517,7 +517,7 @@ export const COMPETITIONS: Competition[] = [
     format: "objective-test",
     description: "Microsoft Office mastery: Word, Excel, PowerPoint, plus general productivity software.",
     longDescription:
-      "Computer Applications tests practical productivity skills with a strong Microsoft Office bias. Excel questions go deep — formulas (VLOOKUP, IF, SUMIF, INDEX/MATCH), pivot tables, charting, conditional formatting. Word covers formatting, mail merge, styles, tables of contents. PowerPoint covers transitions, animations, slide masters. Plus general topics: file management, basic networking, accessibility.",
+      "Computer Applications tests practical productivity skills with a strong Microsoft Office bias. Excel questions go deep - formulas (VLOOKUP, IF, SUMIF, INDEX/MATCH), pivot tables, charting, conditional formatting. Word covers formatting, mail merge, styles, tables of contents. PowerPoint covers transitions, animations, slide masters. Plus general topics: file management, basic networking, accessibility.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "MS Word (formatting, mail merge, styles)",
@@ -530,9 +530,9 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Computer Applications Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Microsoft Learn — Office Training", kind: "Course", url: "https://support.microsoft.com/en-us/training" },
-      { title: "GCFGlobal — Microsoft Office Tutorials", kind: "Course", url: "https://edu.gcfglobal.org/en/topics/office/" },
-      { title: "ExcelJet — Functions & Formulas", kind: "Reference", url: "https://exceljet.net/" },
+      { title: "Microsoft Learn - Office Training", kind: "Course", url: "https://support.microsoft.com/en-us/training" },
+      { title: "GCFGlobal - Microsoft Office Tutorials", kind: "Course", url: "https://edu.gcfglobal.org/en/topics/office/" },
+      { title: "ExcelJet - Functions & Formulas", kind: "Reference", url: "https://exceljet.net/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -549,7 +549,7 @@ export const COMPETITIONS: Competition[] = [
     studyResources: [
       { title: "FBLA Computer Problem Solving Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
       { title: "CompTIA A+ Study Materials", kind: "Course", url: "https://www.comptia.org/certifications/a" },
-      { title: "Professor Messer — A+ Free Course", kind: "Video", url: "https://www.professormesser.com/" },
+      { title: "Professor Messer - A+ Free Course", kind: "Video", url: "https://www.professormesser.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -577,8 +577,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Cyber Security Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Professor Messer — Security+ Free Course", kind: "Video", url: "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/" },
-      { title: "CISA — Cybersecurity Best Practices", kind: "Reference", url: "https://www.cisa.gov/topics/cybersecurity-best-practices" },
+      { title: "Professor Messer - Security+ Free Course", kind: "Video", url: "https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/" },
+      { title: "CISA - Cybersecurity Best Practices", kind: "Reference", url: "https://www.cisa.gov/topics/cybersecurity-best-practices" },
       { title: "OWASP Top 10", kind: "Reference", url: "https://owasp.org/www-project-top-ten/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -595,7 +595,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["OSI & TCP/IP models", "IP addressing & subnetting", "Routing & switching", "Wireless standards", "Network topologies", "Cabling", "Common protocols (DNS, DHCP, HTTP)", "Network security basics"],
     studyResources: [
       { title: "FBLA Networking Infrastructures Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Professor Messer — Network+ Free Course", kind: "Video", url: "https://www.professormesser.com/network-plus/n10-008/n10-008-training-course/" },
+      { title: "Professor Messer - Network+ Free Course", kind: "Video", url: "https://www.professormesser.com/network-plus/n10-008/n10-008-training-course/" },
       { title: "Cisco Networking Academy", kind: "Course", url: "https://www.netacad.com/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -611,7 +611,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Hardware basics", "Software types", "Internet fundamentals", "Productivity software", "Digital citizenship", "Cyber hygiene"],
     studyResources: [
       { title: "FBLA Intro to IT Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Code.org — Computer Science Principles", kind: "Course", url: "https://code.org/educate/csp" },
+      { title: "Code.org - Computer Science Principles", kind: "Course", url: "https://code.org/educate/csp" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -626,7 +626,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Database concepts (SQL basics)", "ERP & CRM systems", "Business intelligence", "Data warehousing", "System development lifecycle", "IT governance"],
     studyResources: [
       { title: "FBLA MIS Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "MIT OpenCourseWare — Information Technology", kind: "Course", url: "https://ocw.mit.edu/" },
+      { title: "MIT OpenCourseWare - Information Technology", kind: "Course", url: "https://ocw.mit.edu/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -641,8 +641,8 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Variables & types", "Control flow (if/loop)", "Functions", "Arrays & collections", "OOP fundamentals", "Recursion", "Big-O basics", "Debugging"],
     studyResources: [
       { title: "FBLA Coding & Programming Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Codecademy — Intro to Programming", kind: "Course", url: "https://www.codecademy.com/" },
-      { title: "Khan Academy — Intro to Computer Programming", kind: "Course", url: "https://www.khanacademy.org/computing/computer-programming" },
+      { title: "Codecademy - Intro to Programming", kind: "Course", url: "https://www.codecademy.com/" },
+      { title: "Khan Academy - Intro to Computer Programming", kind: "Course", url: "https://www.khanacademy.org/computing/computer-programming" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -702,7 +702,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Economic systems", "Business types", "Marketing basics", "Management basics", "Personal finance basics", "Entrepreneurship"],
     studyResources: [
       { title: "FBLA Intro to Business Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — Entrepreneurship & Innovation", kind: "Course", url: "https://www.khanacademy.org/college-careers-more/career-content/intro-to-business" },
+      { title: "Khan Academy - Entrepreneurship & Innovation", kind: "Course", url: "https://www.khanacademy.org/college-careers-more/career-content/intro-to-business" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -718,7 +718,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Grammar basics", "Punctuation", "Email etiquette", "Business letters", "Professionalism"],
     studyResources: [
       { title: "FBLA Intro to Business Communication Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Purdue OWL — General Writing", kind: "Reference", url: "https://owl.purdue.edu/owl/general_writing/index.html" },
+      { title: "Purdue OWL - General Writing", kind: "Reference", url: "https://owl.purdue.edu/owl/general_writing/index.html" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -745,7 +745,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["US Constitution", "Branches of government", "Civil liberties & rights", "Elections & parties", "Political theory", "International relations basics"],
     studyResources: [
       { title: "FBLA Political Science Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy — AP US Government", kind: "Course", url: "https://www.khanacademy.org/humanities/ap-us-government-and-politics" },
+      { title: "Khan Academy - AP US Government", kind: "Course", url: "https://www.khanacademy.org/humanities/ap-us-government-and-politics" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",

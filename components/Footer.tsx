@@ -119,7 +119,7 @@ export function Footer() {
           </span>
         </div>
 
-        {/* Watermark mark — sits behind the bottom row, opacity-faded, decorative only */}
+        {/* Watermark mark - sits behind the bottom row, opacity-faded, decorative only */}
         <div
           aria-hidden="true"
           style={{
@@ -138,6 +138,9 @@ export function Footer() {
           <img
             src="/logo-mark.png"
             alt=""
+            aria-hidden="true"
+            width={520}
+            height={520}
             style={{
               width: "min(520px, 70vw)",
               height: "auto",

@@ -30,7 +30,7 @@ npm run build                    # production build + type check
 npm run lint                     # ESLint
 ```
 
-Without `.env.local`, the site runs in **preview mode** — every page works, the
+Without `.env.local`, the site runs in **preview mode** - every page works, the
 app dashboard uses `localStorage` for state, and the auth page shows a "preview
 mode" banner. Wire up Supabase to enable real auth and DB persistence.
 
@@ -45,7 +45,7 @@ mode" banner. Wire up Supabase to enable real auth and DB persistence.
    NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-KEY
    ```
-4. Open the **SQL Editor** and paste the contents of `supabase/migrations/0001_init.sql`. Run it. (Idempotent — safe to re-run.)
+4. Open the **SQL Editor** and paste the contents of `supabase/migrations/0001_init.sql`. Run it. (Idempotent - safe to re-run.)
 5. Optional: enable Google + GitHub OAuth providers in **Authentication → Providers**. Set the redirect URL to `https://fbla.one/auth/callback` (and `http://localhost:3000/auth/callback` for local).
 6. Restart `npm run dev`. The auth page will switch from preview banner to live, OAuth buttons will appear, and the app dashboard will use the DB.
 
@@ -137,9 +137,9 @@ fbla-one/
 
 See `CLAUDE.md` for the full list. The non-negotiable ones:
 
-- CSS variables only — never hardcode hex colors.
+- CSS variables only - never hardcode hex colors.
 - Theme via `data-theme="dark"|"light"` on `<html>`.
 - No emojis in UI, no em dashes in source.
 - localStorage key is `fbla_theme` (not `corvo_theme`, not `lark_theme`).
 - Space Mono for every number, eyebrow, and chip.
-- Always commit + push after a set of changes (no remote yet — push goes live once GitHub is connected).
+- Always commit + push after a set of changes (no remote yet - push goes live once GitHub is connected).

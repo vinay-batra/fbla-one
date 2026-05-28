@@ -34,13 +34,20 @@ export function UserMenu() {
     });
   }, []);
 
-  // Close on outside click
+  // Close on outside click + Escape key
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const click = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", click);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("mousedown", click);
+      document.removeEventListener("keydown", key);
+    };
   }, []);
 
   const displayName = profile?.display_name || email?.split("@")[0] || "";
@@ -87,6 +94,8 @@ export function UserMenu() {
       <AnimatePresence>
         {open && (
           <motion.div
+            role="menu"
+            aria-label="Profile menu"
             initial={{ opacity: 0, y: -6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.97 }}

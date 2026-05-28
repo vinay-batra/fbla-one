@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -10,11 +11,36 @@ import {
   FORMAT_LABEL,
 } from "@/lib/competitions";
 
+export const metadata: Metadata = {
+  title: { absolute: "FBLA One - Everything your FBLA chapter needs, in one place" },
+  description:
+    "Free all-in-one platform for FBLA chapters: study guides for every competition, prep tracker, deadline calendar, and chapter management. Built for FBLA students, by an FBLA student.",
+  alternates: { canonical: "/" },
+};
+
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "FBLA One",
+  url: "https://fbla.one",
+  description: "All-in-one platform for FBLA chapters: competition guides, study resources, prep tracker, and chapter management.",
+  publisher: {
+    "@type": "Organization",
+    name: "FBLA One",
+    url: "https://fbla.one",
+    logo: "https://fbla.one/icon-512.png",
+  },
+};
+
 export default function Landing() {
   const popular = getPopularCompetitions().slice(0, 6);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* ─── HERO ───────────────────────────────────────────── */}
       <section
         style={{

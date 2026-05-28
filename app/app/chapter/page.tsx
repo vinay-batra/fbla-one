@@ -62,13 +62,13 @@ export default function ChapterPage() {
       </Card>
 
       <Card variant="accent">
-        <HeroBadge>Coming soon — free for every chapter</HeroBadge>
+        <HeroBadge>Coming soon - free for every chapter</HeroBadge>
         <h2 style={{ fontSize: 22, marginTop: 14, marginBottom: 14, letterSpacing: "-0.02em" }}>
           Run your whole chapter from one place.
         </h2>
         <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
           {[
-            "Advisor dashboard — see who's signed up for what across every event",
+            "Advisor dashboard - see who's signed up for what across every event",
             "Member roster with officer / member roles",
             "Chapter-wide deadline calendar with email reminders",
             "Custom chapter announcements",
