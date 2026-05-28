@@ -80,7 +80,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const supa = getSupabase();
     if (!supa) return;
+    // Immediate check
     supa.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    // Stay reactive to sign-in / sign-out
+    const { data: { subscription } } = supa.auth.onAuthStateChange((_, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => setDrawerOpen(false), [pathname]);

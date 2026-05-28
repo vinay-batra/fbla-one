@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
+import { getSupabase } from "@/lib/supabase";
 
 type NavLinkSpec = { href: string; label: string };
 
@@ -20,6 +22,32 @@ export function PublicNav() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const lastY = useRef(0);
   const accum = useRef(0);
+  // null = loading, true = signed in, false = signed out
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supa = getSupabase();
+    if (!supa) { setLoggedIn(false); return; }
+    // Seed from cache to avoid flash on remount
+    try {
+      const c = localStorage.getItem("fbla_logged_in");
+      if (c === "1") setLoggedIn(true);
+      else if (c === "0") setLoggedIn(false);
+    } catch {}
+    // Authoritative check
+    supa.auth.getUser().then(({ data }) => {
+      const li = !!data.user;
+      setLoggedIn(li);
+      try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
+    });
+    // Stay reactive
+    const { data: { subscription } } = supa.auth.onAuthStateChange((_, session) => {
+      const li = !!session?.user;
+      setLoggedIn(li);
+      try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -90,13 +118,15 @@ export function PublicNav() {
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <ThemeToggle />
-            <Link
-              href="/auth"
-              className="btn btn-accent btn-pill btn-sm cta-shimmer"
-              style={{ paddingLeft: 18, paddingRight: 18 }}
-            >
-              Get started
-            </Link>
+            {loggedIn === null ? (
+              <div aria-hidden style={{ width: 110, height: 36, opacity: 0 }} />
+            ) : loggedIn ? (
+              <UserMenu />
+            ) : (
+              <Link href="/auth" className="btn btn-accent btn-pill btn-sm cta-shimmer" style={{ paddingLeft: 18, paddingRight: 18 }}>
+                Get started
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => setDrawerOpen((p) => !p)}
