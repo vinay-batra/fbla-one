@@ -102,6 +102,20 @@ export default async function CompetitionDetail({ params }: Props) {
             <ScrollReveal delay={0.16}>
               <div style={{ marginTop: 32, display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {!isSoon && <RegisterButton slug={c.slug} name={c.name} />}
+                {c.contentStatus === "complete" &&
+                  (c.format === "objective-test" ||
+                    c.format === "objective-and-presentation" ||
+                    c.format === "team-test") && (
+                  <Link
+                    href={`/app/coach?slug=${c.slug}`}
+                    className="btn btn-brand btn-pill"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
+                    </svg>
+                    AI Practice Test
+                  </Link>
+                )}
                 {c.rubricUrl && (
                   <a
                     href={c.rubricUrl}

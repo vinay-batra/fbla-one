@@ -60,6 +60,15 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/app/coach",
+    label: "AI Practice",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
+      </svg>
+    ),
+  },
+  {
     href: "/app/settings",
     label: "Settings",
     icon: (
