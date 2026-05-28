@@ -307,3 +307,4 @@ Routine checks, audits, and tests.
 - 2026-05-28 — checked auth and session handling
 - 2026-05-28 — checked mobile layouts
 - 2026-05-28 — reviewed error logging
+- 2026-05-28 — e2e sanity check passed
