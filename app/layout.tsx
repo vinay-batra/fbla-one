@@ -1,7 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ConditionalAmbientOrbs } from "@/components/ConditionalAmbientOrbs";
+import { DataSync } from "@/components/DataSync";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#060c16" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fbla.one"),
@@ -12,6 +22,7 @@ export const metadata: Metadata = {
   description:
     "Competition guides, study resources, prep tracker, deadline calendar, and chapter management for FBLA chapters. Built for FBLA students, by an FBLA student.",
   applicationName: "FBLA One",
+  appleWebApp: { capable: true, title: "FBLA One", statusBarStyle: "black-translucent" },
   authors: [{ name: "FBLA One" }],
   keywords: [
     "FBLA",
@@ -63,6 +74,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
+          <DataSync />
           <ConditionalAmbientOrbs />
           {children}
         </ThemeProvider>

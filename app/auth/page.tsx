@@ -45,11 +45,18 @@ export default function Auth() {
         if (error) throw error;
         router.push("/app");
       } else if (mode === "signup") {
-        const { error } = await supa.auth.signUp({ email, password });
+        const { error } = await supa.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        });
         if (error) throw error;
         setInfo("Check your inbox to confirm your email, then sign in.");
       } else {
-        const { error } = await supa.auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/app` } });
+        const { error } = await supa.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        });
         if (error) throw error;
         setInfo("Sign-in link sent. Check your inbox.");
       }

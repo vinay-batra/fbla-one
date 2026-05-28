@@ -1,8 +1,13 @@
 /**
- * Local-first storage layer. Reads/writes localStorage with safe SSR fallbacks.
- * When Supabase auth is configured + the user is signed in, downstream code can
- * mirror these writes to the DB. Until then, the dashboard runs entirely client-side.
+ * Local-first storage with Supabase sync.
+ *
+ * Reads are always synchronous from localStorage (fast, works offline + in
+ * preview mode). When a signed-in user is registered via setSyncUser(), every
+ * mutation also fire-and-forgets to Supabase, and pullFromSupabase() merges the
+ * server state down on sign-in (migrating any preview-mode data up first).
  */
+
+import { getSupabase } from "./supabase";
 
 export type PracticeLog = {
   id: string;
@@ -67,6 +72,126 @@ export function onStorageChange(cb: () => void): () => void {
   };
 }
 
+/* ───── Supabase sync plumbing ───────────────────────────── */
+
+let syncUserId: string | null = null;
+
+export function setSyncUser(id: string | null): void {
+  syncUserId = id;
+}
+
+function devError(label: string, e: unknown): void {
+  if (process.env.NODE_ENV !== "production") console.error(label, e);
+}
+
+/** Pull server state, merge with any local (preview) data, push local-only up. */
+export async function pullFromSupabase(userId: string): Promise<void> {
+  const supa = getSupabase();
+  if (!supa) return;
+  setSyncUser(userId);
+
+  try {
+    const [{ data: regs }, { data: logs }, { data: saved }] = await Promise.all([
+      supa.from("registrations").select("competition_slug").eq("user_id", userId),
+      supa.from("practice_logs").select("*").eq("user_id", userId).order("logged_at", { ascending: false }),
+      supa.from("saved_resources").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+    ]);
+
+    // ── Registrations: union, push local-only up ──
+    const remoteSlugs = (regs ?? []).map((r) => r.competition_slug as string);
+    const localSlugs = getRegistered();
+    const onlyLocalSlugs = localSlugs.filter((s) => !remoteSlugs.includes(s));
+    if (onlyLocalSlugs.length) {
+      await supa.from("registrations").upsert(
+        onlyLocalSlugs.map((slug) => ({ user_id: userId, competition_slug: slug })),
+        { onConflict: "user_id,competition_slug" }
+      );
+    }
+    write(KEYS.registered, Array.from(new Set([...remoteSlugs, ...localSlugs])));
+
+    // ── Practice logs: union by id, push local-only up ──
+    const remoteLogs: PracticeLog[] = (logs ?? []).map(dbToLog);
+    const remoteLogIds = new Set(remoteLogs.map((l) => l.id));
+    const localLogs = getPracticeLogs();
+    const onlyLocalLogs = localLogs.filter((l) => !remoteLogIds.has(l.id));
+    if (onlyLocalLogs.length) {
+      await supa.from("practice_logs").insert(onlyLocalLogs.map((l) => logToDb(l, userId)));
+    }
+    const mergedLogs = [...remoteLogs, ...onlyLocalLogs].sort(
+      (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
+    );
+    write(KEYS.practice, mergedLogs);
+
+    // ── Saved resources: union by id, push local-only up ──
+    const remoteSaved: SavedResource[] = (saved ?? []).map(dbToSaved);
+    const remoteSavedIds = new Set(remoteSaved.map((r) => r.id));
+    const localSaved = getSavedResources();
+    const onlyLocalSaved = localSaved.filter((r) => !remoteSavedIds.has(r.id));
+    if (onlyLocalSaved.length) {
+      await supa.from("saved_resources").insert(onlyLocalSaved.map((r) => savedToDb(r, userId)));
+    }
+    write(KEYS.saved, [...remoteSaved, ...onlyLocalSaved]);
+  } catch (e) {
+    devError("pullFromSupabase failed:", e);
+  }
+}
+
+/** Clear sync user + wipe local app data (on sign-out). */
+export function clearSyncedData(): void {
+  setSyncUser(null);
+  write(KEYS.registered, []);
+  write(KEYS.practice, []);
+  write(KEYS.saved, []);
+}
+
+function dbToLog(r: Record<string, unknown>): PracticeLog {
+  return {
+    id: String(r.id),
+    competitionSlug: String(r.competition_slug),
+    score: r.score == null ? null : Number(r.score),
+    outOf: r.out_of == null ? null : Number(r.out_of),
+    durationMin: r.duration_min == null ? null : Number(r.duration_min),
+    notes: (r.notes as string) ?? "",
+    loggedAt: String(r.logged_at),
+  };
+}
+
+function logToDb(l: PracticeLog, userId: string) {
+  return {
+    id: l.id,
+    user_id: userId,
+    competition_slug: l.competitionSlug,
+    score: l.score,
+    out_of: l.outOf,
+    duration_min: l.durationMin,
+    notes: l.notes,
+    logged_at: l.loggedAt,
+  };
+}
+
+function dbToSaved(r: Record<string, unknown>): SavedResource {
+  return {
+    id: String(r.id),
+    competitionSlug: (r.competition_slug as string) ?? null,
+    title: String(r.title),
+    url: String(r.url),
+    note: (r.note as string) ?? null,
+    createdAt: String(r.created_at),
+  };
+}
+
+function savedToDb(r: SavedResource, userId: string) {
+  return {
+    id: r.id,
+    user_id: userId,
+    competition_slug: r.competitionSlug,
+    title: r.title,
+    url: r.url,
+    note: r.note,
+    created_at: r.createdAt,
+  };
+}
+
 /* ───── Registered competitions ──────────────────────────── */
 export function getRegistered(): string[] {
   return read<string[]>(KEYS.registered, []);
@@ -78,12 +203,27 @@ export function isRegistered(slug: string): boolean {
 
 export function registerCompetition(slug: string): void {
   const cur = getRegistered();
-  if (!cur.includes(slug)) write(KEYS.registered, [...cur, slug]);
+  if (cur.includes(slug)) return;
+  write(KEYS.registered, [...cur, slug]);
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("registrations")
+      .upsert({ user_id: syncUserId, competition_slug: slug }, { onConflict: "user_id,competition_slug" })
+      .then(({ error }) => error && devError("register sync:", error));
+  }
 }
 
 export function unregisterCompetition(slug: string): void {
   const cur = getRegistered();
   write(KEYS.registered, cur.filter((s) => s !== slug));
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("registrations")
+      .delete()
+      .eq("user_id", syncUserId)
+      .eq("competition_slug", slug)
+      .then(({ error }) => error && devError("unregister sync:", error));
+  }
 }
 
 export function toggleRegistration(slug: string): boolean {
@@ -101,19 +241,27 @@ export function getPracticeLogs(): PracticeLog[] {
 }
 
 export function addPracticeLog(log: Omit<PracticeLog, "id" | "loggedAt">): PracticeLog {
-  const entry: PracticeLog = {
-    ...log,
-    id: cryptoId(),
-    loggedAt: new Date().toISOString(),
-  };
-  const cur = getPracticeLogs();
-  write(KEYS.practice, [entry, ...cur]);
+  const entry: PracticeLog = { ...log, id: cryptoId(), loggedAt: new Date().toISOString() };
+  write(KEYS.practice, [entry, ...getPracticeLogs()]);
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("practice_logs")
+      .insert(logToDb(entry, syncUserId))
+      .then(({ error }) => error && devError("addPracticeLog sync:", error));
+  }
   return entry;
 }
 
 export function removePracticeLog(id: string): void {
-  const cur = getPracticeLogs();
-  write(KEYS.practice, cur.filter((l) => l.id !== id));
+  write(KEYS.practice, getPracticeLogs().filter((l) => l.id !== id));
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("practice_logs")
+      .delete()
+      .eq("user_id", syncUserId)
+      .eq("id", id)
+      .then(({ error }) => error && devError("removePracticeLog sync:", error));
+  }
 }
 
 export function getPracticeLogsForCompetition(slug: string): PracticeLog[] {
@@ -126,17 +274,27 @@ export function getSavedResources(): SavedResource[] {
 }
 
 export function addSavedResource(r: Omit<SavedResource, "id" | "createdAt">): SavedResource {
-  const entry: SavedResource = {
-    ...r,
-    id: cryptoId(),
-    createdAt: new Date().toISOString(),
-  };
+  const entry: SavedResource = { ...r, id: cryptoId(), createdAt: new Date().toISOString() };
   write(KEYS.saved, [entry, ...getSavedResources()]);
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("saved_resources")
+      .insert(savedToDb(entry, syncUserId))
+      .then(({ error }) => error && devError("addSavedResource sync:", error));
+  }
   return entry;
 }
 
 export function removeSavedResource(id: string): void {
   write(KEYS.saved, getSavedResources().filter((r) => r.id !== id));
+  if (syncUserId) {
+    const supa = getSupabase();
+    supa?.from("saved_resources")
+      .delete()
+      .eq("user_id", syncUserId)
+      .eq("id", id)
+      .then(({ error }) => error && devError("removeSavedResource sync:", error));
+  }
 }
 
 /* ───── Profile (display name, chapter) ──────────────────── */
