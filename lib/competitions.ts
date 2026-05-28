@@ -111,7 +111,7 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Accounting I Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Khan Academy - Financial Accounting", kind: "Course", url: "https://www.khanacademy.org/economics-finance-domain/core-finance/accounting-and-financial-stateme" },
+      { title: "AccountingCoach - Accounting Basics", kind: "Course", url: "https://www.accountingcoach.com/accounting-basics/explanation" },
       { title: "AccountingCoach (free) - Bookkeeping Basics", kind: "Course", url: "https://www.accountingcoach.com/bookkeeping/explanation" },
       { title: "Investopedia - Accounting Cycle", kind: "Article", url: "https://www.investopedia.com/terms/a/accounting-cycle.asp" },
       { title: "Quizlet - FBLA Accounting I Practice Sets", kind: "Practice", url: "https://quizlet.com/subject/fbla-accounting-i/" },
@@ -530,8 +530,8 @@ export const COMPETITIONS: Competition[] = [
     ],
     studyResources: [
       { title: "FBLA Computer Applications Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Microsoft Learn - Office Training", kind: "Course", url: "https://support.microsoft.com/en-us/training" },
-      { title: "GCFGlobal - Microsoft Office Tutorials", kind: "Course", url: "https://edu.gcfglobal.org/en/topics/office/" },
+      { title: "Microsoft Office Help & Training", kind: "Course", url: "https://support.microsoft.com/en-us/office" },
+      { title: "GCFGlobal - Excel Tutorials", kind: "Course", url: "https://edu.gcfglobal.org/en/excel/" },
       { title: "ExcelJet - Functions & Formulas", kind: "Reference", url: "https://exceljet.net/" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
@@ -657,7 +657,7 @@ export const COMPETITIONS: Competition[] = [
     topics: ["Document formatting", "Styles & themes", "Mail merge", "Tables & lists", "TOC & cross-references", "Track changes", "Macros & forms", "Templates"],
     studyResources: [
       { title: "FBLA Word Processing Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
-      { title: "Microsoft Word Training", kind: "Course", url: "https://support.microsoft.com/en-us/training/word" },
+      { title: "Microsoft Word Help & Training", kind: "Course", url: "https://support.microsoft.com/en-us/word" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
