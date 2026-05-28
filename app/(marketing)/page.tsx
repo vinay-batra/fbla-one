@@ -12,9 +12,9 @@ import {
 } from "@/lib/competitions";
 
 export const metadata: Metadata = {
-  title: { absolute: "FBLA One - Everything your FBLA chapter needs, in one place" },
+  title: { absolute: "FBLA One - AI Practice Tests for Every FBLA Objective Event" },
   description:
-    "Free all-in-one platform for FBLA chapters: study guides for every competition, prep tracker, deadline calendar, and chapter management. Built for FBLA students, by an FBLA student.",
+    "Generate unlimited AI practice tests for every FBLA objective event. 100 questions, instant explanations, score tracking. Plus study guides, deadline calendar, and advisor dashboard -- all free.",
   alternates: { canonical: "/" },
 };
 
@@ -23,7 +23,7 @@ const JSON_LD = {
   "@type": "WebSite",
   name: "FBLA One",
   url: "https://fbla.one",
-  description: "All-in-one platform for FBLA chapters: competition guides, study resources, prep tracker, and chapter management.",
+  description: "AI-powered FBLA prep: unlimited practice tests, study guides, deadline calendar, and chapter management.",
   publisher: {
     "@type": "Organization",
     name: "FBLA One",
@@ -41,7 +41,7 @@ export default function Landing() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
-      {/* ─── HERO ───────────────────────────────────────────── */}
+      {/* --- HERO ------------------------------------------------ */}
       <section
         style={{
           position: "relative",
@@ -55,12 +55,12 @@ export default function Landing() {
         <div className="container" style={{ position: "relative" }}>
           <div style={{ maxWidth: 920, marginInline: "auto", textAlign: "center" }}>
             <ScrollReveal>
-              <HeroBadge>For FBLA Chapters</HeroBadge>
+              <HeroBadge>AI-Powered FBLA Prep</HeroBadge>
             </ScrollReveal>
             <ScrollReveal delay={0.06}>
               <h1 style={{ marginTop: 22 }}>
-                Everything your FBLA chapter needs,{" "}
-                <span style={{ color: "var(--accent)" }}>in one place.</span>
+                Practice smarter.{" "}
+                <span style={{ color: "var(--accent)" }}>Score higher at regionals.</span>
               </h1>
             </ScrollReveal>
             <ScrollReveal delay={0.12}>
@@ -74,9 +74,9 @@ export default function Landing() {
                   lineHeight: 1.6,
                 }}
               >
-                Competition guides, study resources, prep tracker, deadline calendar,
-                advisor dashboard. Stop juggling spreadsheets and Drive folders.
-                Start winning.
+                Generate unlimited AI practice tests for every FBLA objective event. 100 questions,
+                instant explanations, score tracking. Plus study guides, deadline calendar, and
+                advisor dashboard -- all free.
               </p>
             </ScrollReveal>
             <ScrollReveal delay={0.18}>
@@ -89,8 +89,8 @@ export default function Landing() {
                   flexWrap: "wrap",
                 }}
               >
-                <Link href="/auth" className="btn btn-accent btn-lg cta-shimmer">
-                  Get started free
+                <Link href="/app/coach" className="btn btn-accent btn-lg cta-shimmer">
+                  Try AI Practice Tests
                 </Link>
                 <Link href="/competitions" className="btn btn-ghost btn-lg">
                   Browse competitions
@@ -107,7 +107,7 @@ export default function Landing() {
                   letterSpacing: "0.08em",
                 }}
               >
-                ALWAYS FREE · NO CARD REQUIRED · BUILT FOR FBLA STUDENTS, BY AN FBLA STUDENT
+                ALWAYS FREE · BUILT BY AN FBLA STUDENT · 45 OBJECTIVE EVENTS WITH AI TESTS
               </p>
             </ScrollReveal>
           </div>
@@ -129,10 +129,10 @@ export default function Landing() {
                 marginInline: "auto",
               }}
             >
-              <StatBlock value={String(COMPETITION_STATS.total)} label="Competitions tracked" />
-              <StatBlock value={String(COMPETITION_STATS.withContent)} label="Full study guides" />
-              <StatBlock value={String(COMPETITION_STATS.categories)} label="Categories" />
-              <StatBlock value="Aug 25" label="Officer-meeting launch" />
+              <StatBlock value="55" label="Competitions tracked" />
+              <StatBlock value="45" label="AI practice test events" />
+              <StatBlock value="100" label="Questions per test" />
+              <StatBlock value="Free" label="Always, forever" />
             </div>
           </ScrollReveal>
         </div>
@@ -144,7 +144,7 @@ export default function Landing() {
         `}</style>
       </section>
 
-      {/* ─── FEATURES BENTO ─────────────────────────────────── */}
+      {/* --- FEATURES BENTO ------------------------------------- */}
       <section style={{ padding: "60px 0" }}>
         <div className="container">
           <SectionHeader
@@ -165,23 +165,23 @@ export default function Landing() {
             <ScrollReveal>
               <FeatureCard
                 badge="01"
-                title="Competition guides"
-                body={`A page for every event: what it is, what's on the test, the official rubric, and curated study resources. ${COMPETITION_STATS.withContent} events have full content today; the rest get fleshed out as the year goes.`}
+                title="AI Practice Tests"
+                body="Claude generates realistic 100-question practice tests calibrated to each event's exact topics and difficulty. Wrong-answer explanations for every question. Generate a new test instantly -- no two are ever the same."
                 large
               />
             </ScrollReveal>
             <ScrollReveal delay={0.05}>
               <FeatureCard
                 badge="02"
-                title="Prep tracker"
-                body="Log practice tests. Save resources. See your progress per competition. Know exactly where you stand before regionals."
+                title="Study guides"
+                body={`A full prep page for all ${COMPETITION_STATS.total} FBLA events: format breakdown, topic list, curated study resources, and a direct link to the official event page.`}
               />
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
               <FeatureCard
                 badge="03"
-                title="Chapter management"
-                body="Comp sign-up flow, deadline calendar with email reminders, and an advisor dashboard that shows who's signed up for what."
+                title="Chapter tools"
+                body="Advisor dashboard, deadline calendar with countdowns, member roster. Stop coordinating your chapter through a group chat and a spreadsheet."
               />
             </ScrollReveal>
           </div>
@@ -194,13 +194,13 @@ export default function Landing() {
         `}</style>
       </section>
 
-      {/* ─── COMPETITIONS PREVIEW ───────────────────────────── */}
+      {/* --- COMPETITIONS PREVIEW ------------------------------- */}
       <section style={{ padding: "100px 0 40px" }}>
         <div className="container">
           <SectionHeader
             eyebrow="Most picked"
             title="Start where most of your chapter does."
-            tagline="The events members actually sign up for. Click any one to see the full prep page."
+            tagline="Click any event to open the full prep page and launch an AI practice test."
           />
 
           <div
@@ -270,7 +270,7 @@ export default function Landing() {
         `}</style>
       </section>
 
-      {/* ─── HOW IT WORKS ──────────────────────────────────── */}
+      {/* --- HOW IT WORKS -------------------------------------- */}
       <section style={{ padding: "100px 0" }}>
         <div className="container">
           <SectionHeader eyebrow="How it works" title="Three steps to a winning chapter." />
@@ -287,18 +287,18 @@ export default function Landing() {
             {[
               {
                 step: "01",
-                title: "Pick your events",
-                body: `Browse the registry of ${COMPETITION_STATS.total} FBLA events. Filter by category or format. Sign up the ones you want to compete in.`,
+                title: "Register for your events",
+                body: `Browse all ${COMPETITION_STATS.total} FBLA competitions. Filter by category or format. Add the events you plan to compete in to your personal queue.`,
               },
               {
                 step: "02",
-                title: "Prep with structure",
-                body: "Each event has a study page with the test format, topics, and curated resources. Log practice tests as you go.",
+                title: "Train with AI",
+                body: "Generate a 10, 25, or 50-question practice test for any objective event. Claude writes questions calibrated to the exact FBLA topic outline. Review every wrong answer with a full explanation.",
               },
               {
                 step: "03",
-                title: "Win regionals",
-                body: "Your advisor sees who's signed up for what. Deadlines auto-remind. Nothing falls through the cracks.",
+                title: "Track and win",
+                body: "Your scores log automatically after every test. Your advisor sees who is prepping and for what. Nothing falls through the cracks before regionals.",
               },
             ].map((s, i) => (
               <ScrollReveal key={s.step} delay={i * 0.06}>
@@ -332,7 +332,7 @@ export default function Landing() {
         `}</style>
       </section>
 
-      {/* ─── CATEGORIES ─────────────────────────────────────── */}
+      {/* --- CATEGORIES ---------------------------------------- */}
       <section style={{ padding: "80px 0" }}>
         <div className="container">
           <SectionHeader
@@ -374,7 +374,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ─── FINAL CTA ──────────────────────────────────────── */}
+      {/* --- FINAL CTA ----------------------------------------- */}
       <section style={{ padding: "100px 0 80px" }}>
         <div className="container">
           <ScrollReveal>
@@ -401,11 +401,12 @@ export default function Landing() {
               <div style={{ position: "relative" }}>
                 <HeroBadge>Ready to upgrade your chapter?</HeroBadge>
                 <h2 style={{ marginTop: 16, marginBottom: 14 }}>
-                  Get your chapter on <span style={{ color: "var(--accent)" }}>FBLA One.</span>
+                  Get your chapter on{" "}
+                  <span style={{ color: "var(--accent)" }}>FBLA One.</span>
                 </h2>
                 <p style={{ maxWidth: 560, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
-                  Always free for FBLA students. No setup. No spreadsheets. Sign up and your
-                  competitions are ready to track in under a minute.
+                  Free for every FBLA member. Sign up in under a minute -- no credit card, no setup.
+                  AI practice tests, study guides, and chapter management, all in one place.
                 </p>
                 <div style={{ marginTop: 32, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <Link href="/auth" className="btn btn-accent btn-lg cta-shimmer">

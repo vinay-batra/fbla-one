@@ -38,6 +38,10 @@ export default async function CompetitionDetail({ params }: Props) {
     .slice(0, 3);
 
   const isSoon = c.contentStatus === "coming-soon";
+  const isObjectiveTest =
+    c.format === "objective-test" ||
+    c.format === "objective-and-presentation" ||
+    c.format === "team-test";
 
   return (
     <>
@@ -165,6 +169,63 @@ export default async function CompetitionDetail({ params }: Props) {
                     </Card>
                   )}
 
+                  {isObjectiveTest && !isSoon && (
+                    <Card style={{ marginTop: 20, marginBottom: 0 }}>
+                      <div style={{ marginBottom: 18 }}>
+                        <p className="eyebrow" style={{ marginBottom: 6 }}>Test day</p>
+                        <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.01em" }}>What to expect</h2>
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        {[
+                          {
+                            icon: (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 6v6l4 2" />
+                              </svg>
+                            ),
+                            title: c.format === "team-test"
+                              ? "Two-part event: written test + live demonstration"
+                              : "60 minutes, 100 questions",
+                            body: c.format === "team-test"
+                              ? "The written test (30 questions) covers parliamentary procedure knowledge. The live demonstration requires your team to conduct a mock meeting using proper Robert's Rules of Order procedure."
+                              : "You have 60 minutes to answer 100 multiple-choice questions. Each question has four options (A, B, C, D) with exactly one correct answer. There is no penalty for wrong answers -- always fill in your best guess.",
+                          },
+                          {
+                            icon: (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 11l3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                              </svg>
+                            ),
+                            title: "Computer-graded, instant results",
+                            body: "Tests are machine-scored. Questions are drawn from the official FBLA topic outline for this event, distributed proportionally across all topic areas. Expect a mix of recall (definitions, formulas), application (scenario-based), and analysis questions.",
+                          },
+                          {
+                            icon: (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                              </svg>
+                            ),
+                            title: "Top scorers advance",
+                            body: "The highest-scoring competitors at each regional advance to the state competition. State winners compete at the National Leadership Conference (NLC). Study the official FBLA topic outline -- it lists the exact subject areas and their approximate weight on the test.",
+                          },
+                        ].map(({ icon, title, body }) => (
+                          <div key={title} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                            <div style={{ flexShrink: 0, marginTop: 2 }}>{icon}</div>
+                            <div>
+                              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{title}</p>
+                              <p style={{ fontSize: 13.5, color: "var(--text2)", lineHeight: 1.65 }}>{body}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
                   {c.topics && c.topics.length > 0 && (
                     <Card style={{ marginTop: 20 }}>
                       <h2 style={{ fontSize: 20, marginBottom: 14, letterSpacing: "-0.01em" }}>
@@ -253,6 +314,69 @@ export default async function CompetitionDetail({ params }: Props) {
 
             {/* Sidebar */}
             <aside style={{ position: "sticky", top: 96 }}>
+              {isObjectiveTest && !isSoon && c.contentStatus === "complete" && (
+                <Link
+                  href={`/app/coach?slug=${c.slug}`}
+                  className="btn btn-accent btn-pill cta-shimmer"
+                  style={{ width: "100%", justifyContent: "center", display: "flex", gap: 8, marginBottom: 16 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
+                  </svg>
+                  Generate AI practice test
+                </Link>
+              )}
+
+              {isObjectiveTest && !isSoon && (
+                <div style={{ background: "var(--card-bg)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20, marginBottom: 16 }}>
+                  <p className="eyebrow" style={{ marginBottom: 14 }}>Test format</p>
+
+                  {[
+                    {
+                      label: "Time limit",
+                      value: c.format === "team-test" ? "30 min (test) + 10 min demo" : "60 minutes",
+                    },
+                    {
+                      label: "Questions",
+                      value: c.format === "team-test" ? "30 questions + live demo" : "100 multiple choice",
+                    },
+                    {
+                      label: "Options",
+                      value: "A, B, C, D -- one correct",
+                    },
+                    {
+                      label: "Guessing",
+                      value: "No penalty -- always answer",
+                    },
+                    {
+                      label: c.isTeam ? "Team size" : "Individual",
+                      value: c.isTeam ? "Varies by event" : "Solo event",
+                    },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "8px 0", borderBottom: "0.5px solid var(--border-dim)" }}>
+                      <span style={{ fontSize: 12, color: "var(--text3)" }}>{label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", textAlign: "right" }}>{value}</span>
+                    </div>
+                  ))}
+
+                  <div style={{ marginTop: 14 }}>
+                    <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>Competition levels</p>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      {["Regional", "State", "NLC"].map((level, i) => (
+                        <span key={level} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text2)" }}>{level}</span>
+                          {i < 2 && (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round">
+                              <path d="M5 12h14M13 5l7 7-7 7" />
+                            </svg>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Card>
                 <p className="eyebrow" style={{ marginBottom: 14 }}>At a glance</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>

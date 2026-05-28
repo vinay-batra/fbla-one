@@ -56,9 +56,16 @@ const CalIcon = () => (
   </svg>
 );
 
+const SparkleIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
+  </svg>
+);
+
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/app", group: "Navigate", icon: <GridIcon /> },
   { label: "My competitions", href: "/app/competitions", group: "Navigate", icon: <TrophyIcon /> },
+  { label: "AI Practice Tests", href: "/app/coach", group: "Navigate", icon: <SparkleIcon /> },
   { label: "Practice tracker", href: "/app/tracker", group: "Navigate", icon: <ChartIcon /> },
   { label: "Chapter & deadlines", href: "/app/chapter", group: "Navigate", icon: <CalIcon /> },
   { label: "Settings", href: "/app/settings", group: "Navigate", icon: <GearIcon /> },

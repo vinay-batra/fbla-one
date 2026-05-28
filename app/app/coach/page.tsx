@@ -580,6 +580,7 @@ function CoachInner() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 720 }}>
       {/* Score banner */}
       <div
+        className="coach-score-banner"
         style={{
           background: meta.bg,
           border: `0.5px solid ${meta.color}`,
@@ -663,7 +664,7 @@ function CoachInner() {
                 <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: "var(--text)" }}>{q.question}</p>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 12 }}>
+              <div className="coach-options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 12 }}>
                 {(["A", "B", "C", "D"] as Option[]).map((opt) => {
                   const isUser = userAns === opt;
                   const isRight = q.correct === opt;
@@ -705,6 +706,12 @@ function CoachInner() {
         })}
       </div>
 
+      <style>{`
+        @media (max-width: 600px) {
+          .coach-options-grid { grid-template-columns: 1fr !important; }
+          .coach-score-banner { flex-direction: column !important; }
+        }
+      `}</style>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingBottom: 32 }}>
         <button type="button" onClick={generate} className="btn btn-accent btn-pill">
           Generate new test

@@ -11,7 +11,104 @@ import {
   getDisplayName,
   getUpcomingDeadlines,
   onStorageChange,
+  type PracticeLog,
 } from "@/lib/storage";
+import type { Competition } from "@/lib/competitions";
+
+// ── Score trend chart ──────────────────────────────────────────
+
+function MiniBarChart({ pcts }: { pcts: number[] }) {
+  const W = 120;
+  const H = 40;
+  const n = pcts.length;
+  const barW = Math.max(4, Math.floor((W - (n - 1) * 3) / n));
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
+      {pcts.map((p, i) => {
+        const h = Math.max(3, Math.round((p / 100) * (H - 4)));
+        const x = i * (barW + 3);
+        const y = H - h;
+        const color = p >= 80 ? "var(--green)" : p >= 60 ? "var(--accent)" : "var(--red)";
+        return (
+          <rect key={i} x={x} y={y} width={barW} height={h} rx={2} fill={color} opacity={i === n - 1 ? 1 : 0.55} />
+        );
+      })}
+    </svg>
+  );
+}
+
+function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; registeredCompetitions: Competition[] }) {
+  // Per-competition: last 8 scored logs, only comps with 2+ scored logs
+  const entries = registeredCompetitions
+    .map((comp) => {
+      const compLogs = logs
+        .filter((l) => l.competitionSlug === comp.slug && l.score != null && l.outOf != null)
+        .slice(0, 8);
+      if (compLogs.length < 2) return null;
+      const pcts = compLogs.map((l) => Math.round((l.score! / l.outOf!) * 100)).reverse();
+      const latest = pcts[pcts.length - 1];
+      const avg = Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
+      return { comp, pcts, latest, avg };
+    })
+    .filter(Boolean)
+    .slice(0, 4) as { comp: Competition; pcts: number[]; latest: number; avg: number }[];
+
+  if (entries.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader
+        eyebrow="AI Practice"
+        title="Score trends"
+        tagline="Your last 8 scored practice tests per competition."
+        right={
+          <Link href="/app/coach" className="btn btn-ghost btn-sm">
+            New test
+          </Link>
+        }
+      />
+      <div
+        className="score-trends-grid"
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginTop: 18 }}
+      >
+        {entries.map(({ comp, pcts, latest, avg }) => (
+          <Link
+            key={comp.slug}
+            href={`/app/coach?slug=${comp.slug}`}
+            style={{ textDecoration: "none" }}
+          >
+            <div
+              style={{
+                padding: "14px 16px",
+                borderRadius: 10,
+                border: "0.5px solid var(--border)",
+                background: "var(--bg2)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                transition: "border-color 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent-border)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
+            >
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)", lineHeight: 1.3 }}>{comp.name}</p>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
+                <MiniBarChart pcts={pcts} />
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <p className="font-mono" style={{ fontSize: 20, fontWeight: 700, lineHeight: 1, color: latest >= 80 ? "var(--green)" : latest >= 60 ? "var(--accent)" : "var(--red)" }}>
+                    {latest}<span style={{ fontSize: 12 }}>%</span>
+                  </p>
+                  <p style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>avg {avg}%</p>
+                </div>
+              </div>
+              <p style={{ fontSize: 10, color: "var(--text3)" }}>{pcts.length} test{pcts.length !== 1 ? "s" : ""} logged</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </Card>
+  );
+}
 
 function timeOfDay(): string {
   const h = new Date().getHours();
@@ -208,6 +305,11 @@ export default function Dashboard() {
           </div>
         )}
       </Card>
+
+      {/* Score trends (only shown once there are 3+ scored logs) */}
+      {logs.filter((l) => l.score != null && l.outOf != null).length >= 3 && (
+        <ScoreTrends logs={logs} registeredCompetitions={registeredCompetitions} />
+      )}
 
       {/* Recent activity */}
       <div className="dash-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
