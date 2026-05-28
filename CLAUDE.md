@@ -14,34 +14,39 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**Last shipped: v0.2 (May 27, 2026) - full v1 platform.** Massive Corvo-quality rebuild on top of the v0.1 scaffold.
+**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v0.3 (May 28, 2026) - deployment + full Supabase integration + production audit. Latest commit: `cbdb8b8`.
 
-- Full marketing site at `/`, `/about`, `/faq`, `/privacy`, `/terms` under the `(marketing)` route group sharing PublicNav + Footer. **FBLA One is always free** - no pricing page, no paid tiers, no upsells.
-- 55-event FBLA competition registry in `lib/competitions.ts` with full content for ~25 objective-test events (Accounting I/II, Marketing, Cyber Security, Economics, etc.) and stubs for prompt-based events.
-- `/competitions` - filterable + searchable grid (search, category, content depth). Statically generated.
-- `/competitions/[slug]` - per-event detail page, SSG for all 55 events. Long description, test topics chip grid, curated external study resources, official rubric link, RegisterButton.
-- `/auth` - sign in / sign up / magic link tabs + Google + GitHub OAuth. Graceful degradation when Supabase env vars missing (preview-mode banner).
-- `/app` shell - sidebar (Dashboard / My competitions / Practice tracker / Chapter / Settings) + topbar (theme toggle, Browse Competitions). Dashboard with stats, active competitions, recent practice, suggested actions checklist.
-- `/app/competitions` - registered events with last-practice timestamp + average score.
-- `/app/tracker` - practice log form + history table.
-- `/app/chapter` - chapter name editor + coming-soon advisor features (free).
-- `/app/settings` - display name, chapter, theme, sign out, clear local data.
-- **localStorage-first state** via `lib/storage.ts` - works in preview mode with no Supabase, mirrors to DB when configured.
-- Supabase schema (`supabase/migrations/0001_init.sql`) - profiles, chapters, registrations, practice_logs, saved_resources, deadlines, all RLS-protected with idempotent migration.
-- `proxy.ts` (Next.js 16's renamed middleware) - Supabase session refresh + hardened cookies (httpOnly, sameSite=lax, secure in prod).
-- Corvo-grade theme system: 3-color palette, Inter + Space Mono + Space Grotesk via `@import`, 0.5px hairline borders, button library, input system, animations, mobile rules.
-- AmbientOrbs (dark-mode-only) + ScrollReveal (IntersectionObserver-based per Corvo audit).
-- Lint clean. Build clean (71 routes generated, all 55 competition pages prerendered).
-- Domain bought: `fbla.one`. GitHub + Vercel + Supabase setup still pending (see README for steps).
+**Status: fully deployed and working.**
+- GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
+- Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
+- Supabase: project `osxoygndwazbygiqyjhu`, migrations 0001 + 0002 + 0003 all run
+- Google OAuth: live (consent screen branded "FBLA One")
+- All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+
+**What's built and verified working:**
+- Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page.
+- 55-event competition registry (`lib/competitions.ts`), ~31 with full content. All study-resource links audited + working.
+- `/competitions` (filterable grid) + `/competitions/[slug]` (SSG detail, 55 pages).
+- `/auth` - Google OAuth + email/password + magic link. **GitHub OAuth removed.** PKCE flow via `/auth/callback`.
+- `/app/*` - **auth-gated** (redirects to `/auth` when signed out). Dashboard, my competitions, tracker, chapter, settings (with avatar upload + delete account).
+- **Data sync (verified via live integration test):** registrations / practice logs / saved resources persist to Supabase when signed in, sync across devices, migrate preview-mode data up on first sign-in. Driven by `components/DataSync.tsx` + `lib/storage.ts`.
+- Profile auto-created **app-side** on sign-in (`ensureProfile` in storage.ts) - NOT via DB trigger (see gotchas).
+- UserMenu dropdown (avatar/initials, Escape-to-close), auth-reactive nav.
+- SEO: per-page metadata, `sitemap.ts` (61 URLs), `robots.ts`, OG image (`public/og-image.png`, brand fonts), WebSite JSON-LD.
+- PWA: `manifest.ts` (installable), theme-color, apple-web-app meta.
+- Branded `not-found.tsx`, `error.tsx`, `global-error.tsx`.
+- Corvo-grade theme system (light + dark), logo wired into nav + footer watermark + favicons.
+- Build clean (75 routes), lint clean. No em dashes in source.
 
 ### Next up
-1. Push to GitHub, import to Vercel, point `fbla.one` DNS.
-2. Create Supabase project + run `0001_init.sql` + add env vars to Vercel.
-3. Replace AI-generated logo PNG (`public/logo.png`) with a transparent-background version, wire into nav.
-4. Write content for remaining ~30 partial / coming-soon competition events as the year goes.
-5. Implement DB-backed state on top of the storage helpers when ready (the localStorage layer maps 1:1 to the Supabase schema).
-6. Email reminders for deadlines (Resend or Supabase Functions).
-7. Chapter-tier launch: advisor dashboard, member roster, chapter-wide deadlines.
+1. Replace AI-generated logo (`public/logo.png` + `public/logo-mark.png`) with a cleaner version if desired. Current one is the user's shield+torch, background stripped, generated `logo-mark.png` + favicon set + og-image from it.
+2. Write content for the ~24 partial / coming-soon competition events.
+3. Branded auth emails: create Resend account, verify `fbla.one`, point Supabase Auth -> SMTP at Resend. `lib/email.ts` is scaffolded (fetch-based, no-ops without `RESEND_API_KEY`).
+4. Optional: disable Supabase email confirmation for frictionless signup (Auth -> Providers -> Email -> Confirm email toggle).
+5. Deadline reminders, chapter advisor dashboard (the `/app/chapter` "coming soon" features), feedback button, command palette (Cmd+K).
+
+### How to verify the DB path after schema changes
+There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
 
 ---
 
@@ -50,9 +55,11 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19
 - **Styling**: CSS variables only (no Tailwind). Inter + Space Mono + Space Grotesk via Google Fonts `@import` in globals.css.
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref: `osxoygndwazbygiqyjhu`. URL: `https://osxoygndwazbygiqyjhu.supabase.co`.
-- **Animation**: framer-motion (installed; ScrollReveal currently uses pure IntersectionObserver per Corvo audit).
-- **Hosting**: Vercel (planned). Domain: fbla.one.
+- **Animation**: framer-motion (UserMenu dropdown); ScrollReveal uses pure IntersectionObserver per Corvo audit.
+- **Hosting**: Vercel (live). Domain: `fbla.one` (SSL active). Push to `main` auto-deploys.
+- **GitHub**: `github.com/vinay-batra/fbla-one`
 - **Local path**: `~/Downloads/fbla-one/`
+- **git note**: commits land under `vinaybatra@Vinays-MacBook-Air.local` (git identity not globally configured; harmless). School/proxy network sometimes blocks `git push` with an SSL cert error - retry on a different network.
 
 ---
 
@@ -70,6 +77,9 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - **`proxy.ts`, not `middleware.ts`** - Next.js 16 renamed it. Exported function is also `proxy`, not `middleware`.
 - **Always commit + push after changes**. Per Vinay's workflow.
 - **0.5px borders** are intentional - they read as hairlines and match Corvo's aesthetic. Don't bump to 1px.
+- **New public.* tables need explicit GRANTs to `authenticated`** or every insert fails with "permission denied for table" (RLS is never even reached). Raw `CREATE TABLE` in the SQL editor does NOT auto-grant. See `0003_grants_and_trigger_fix.sql`; `alter default privileges` now covers future tables.
+- **Don't create triggers on `auth.users`** - the SQL editor runs as `postgres` which doesn't own that table, so `CREATE TRIGGER` silently no-ops. Profile rows are created app-side via `ensureProfile()` in `lib/storage.ts`, called from `DataSync` on sign-in (insert-only upsert, never clobbers edits).
+- **Google brand colors** (`#4285f4` etc.) in the OAuth button SVG and the `#fff` checkmark are intentional exceptions to the no-hardcoded-color rule.
 
 ---
 
@@ -244,6 +254,11 @@ Open http://localhost:3000.
 ---
 
 ## What was built
+
+See [`CHANGELOG.md`](./CHANGELOG.md) for the full version history. Summary below.
+
+### v0.3 (May 28, 2026) - Deployment + Supabase + production audit
+Went live at fbla.one. GitHub + Vercel + custom domain + Google OAuth wired. Real Supabase data sync (registrations / practice logs / saved resources persist + cross-device), auth-gated `/app`, UserMenu, avatar upload, delete account. Production audit: removed all em dashes, SEO (sitemap/robots/OG/JSON-LD), PWA manifest, branded error/404 pages, a11y. Caught + fixed a critical table-GRANT bug (no signed-in user could save) and 4 broken study-resource links - both via live integration testing. See CHANGELOG for detail.
 
 ### v0.2 (May 27, 2026) - Corvo-quality v1 platform
 

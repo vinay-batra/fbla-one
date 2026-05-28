@@ -2,9 +2,16 @@
 
 All-in-one platform for FBLA chapters: competition guides, study resources, prep tracker, and chapter management.
 
-Live target: **[fbla.one](https://fbla.one)**
-Pilot at: Council Rock High School South FBLA chapter
-Deadline: Aug 25, 2026 (FBLA officer meeting)
+**Live at [fbla.one](https://fbla.one)** · Pilot: Council Rock High School South · Deadline: Aug 25, 2026 (FBLA officer meeting)
+
+| | |
+|---|---|
+| Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
+| Hosting | Vercel, domain `fbla.one` (SSL active) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0003 run) |
+| Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
+
+See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules, [`CHANGELOG.md`](./CHANGELOG.md) for version history.
 
 ---
 
@@ -15,8 +22,6 @@ Deadline: Aug 25, 2026 (FBLA officer meeting)
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`)
 - **Hosting**: Vercel (frontend), Supabase Postgres (DB)
 - **Domain**: fbla.one
-
-See [`CLAUDE.md`](./CLAUDE.md) for full architecture notes, rules, and conventions.
 
 ---
 
@@ -36,39 +41,32 @@ mode" banner. Wire up Supabase to enable real auth and DB persistence.
 
 ---
 
-## Setting up Supabase
+## Supabase (already configured)
 
-1. Create a new project at [supabase.com](https://supabase.com) (the FBLA One project).
-2. From **Project Settings → API**, copy the **Project URL** and **anon public key**.
-3. Add them to `.env.local`:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR-ANON-KEY
-   ```
-4. Open the **SQL Editor** and paste the contents of `supabase/migrations/0001_init.sql`. Run it. (Idempotent - safe to re-run.)
-5. Optional: enable Google + GitHub OAuth providers in **Authentication → Providers**. Set the redirect URL to `https://fbla.one/auth/callback` (and `http://localhost:3000/auth/callback` for local).
-6. Restart `npm run dev`. The auth page will switch from preview banner to live, OAuth buttons will appear, and the app dashboard will use the DB.
+Project `osxoygndwazbygiqyjhu` is connected and all migrations are run. The
+`.env.local` on the dev machine and the Vercel env vars hold:
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+**If you ever rebuild the DB from scratch**, run the migrations in order in the
+SQL Editor: `0001_init.sql`, `0002_profile_trigger_avatar.sql`,
+`0003_grants_and_trigger_fix.sql`. The 0003 grants are essential - without them
+every signed-in insert fails with "permission denied for table."
+
+Google OAuth is live (Authentication -> Providers -> Google). Redirect URLs in
+**Authentication -> URL Configuration**: `https://fbla.one/auth/callback` +
+`http://localhost:3000/auth/callback`. Site URL: `https://fbla.one`.
 
 ---
 
-## Deploying to Vercel
+## Deploying (already live)
 
-### One-time setup
+The Vercel project is connected to the GitHub repo - **every push to `main`
+auto-deploys**. No manual deploy step.
 
-1. Push the repo to GitHub:
-   ```bash
-   gh repo create vinay-batra/fbla-one --public --source=. --remote=origin --push
-   ```
-   (Or create the repo at github.com/new and follow its push instructions.)
+To reproduce from scratch: import the repo at [vercel.com/new](https://vercel.com/new),
+framework auto-detects as Next.js, add the three env vars above, deploy.
 
-2. At [vercel.com/new](https://vercel.com/new), import the GitHub repo.
-3. Framework preset: **Next.js** (auto-detected).
-4. Add environment variables (copy from your `.env.local`):
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. Click **Deploy**. First build takes ~2 min.
-
-### Connecting fbla.one
+### Domain (already connected)
 
 1. In Vercel, **Project Settings → Domains** → add `fbla.one` and `www.fbla.one`.
 2. Vercel will show DNS records to add (usually an A record + CNAME).
