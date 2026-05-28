@@ -136,6 +136,23 @@ export async function pullFromSupabase(userId: string): Promise<void> {
   }
 }
 
+/**
+ * Ensure the user's profile row exists (insert-only, never clobbers edits).
+ * App-side fallback because a DB trigger on auth.users can't be reliably
+ * created from the SQL editor (postgres doesn't own auth.users).
+ */
+export async function ensureProfile(userId: string, email: string | null, name: string | null): Promise<void> {
+  const supa = getSupabase();
+  if (!supa) return;
+  try {
+    await supa
+      .from("profiles")
+      .upsert({ id: userId, email, display_name: name }, { onConflict: "id", ignoreDuplicates: true });
+  } catch (e) {
+    devError("ensureProfile:", e);
+  }
+}
+
 /** Clear sync user + wipe local app data (on sign-out). */
 export function clearSyncedData(): void {
   setSyncUser(null);

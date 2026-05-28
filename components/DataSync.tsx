@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { pullFromSupabase, clearSyncedData, setSyncUser } from "@/lib/storage";
+import { pullFromSupabase, clearSyncedData, setSyncUser, ensureProfile } from "@/lib/storage";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Drives Supabase <-> localStorage sync based on auth state.
@@ -15,25 +16,35 @@ export function DataSync() {
 
     let lastUserId: string | null = null;
 
+    const onUser = (user: User) => {
+      const name =
+        (user.user_metadata?.full_name as string) ||
+        (user.user_metadata?.name as string) ||
+        user.email?.split("@")[0] ||
+        null;
+      ensureProfile(user.id, user.email ?? null, name);
+      pullFromSupabase(user.id);
+    };
+
     supa.auth.getUser().then(({ data }) => {
       if (data.user) {
         lastUserId = data.user.id;
-        pullFromSupabase(data.user.id);
+        onUser(data.user);
       }
     });
 
     const { data: { subscription } } = supa.auth.onAuthStateChange((event, session) => {
-      const uid = session?.user?.id ?? null;
+      const user = session?.user ?? null;
       if (event === "SIGNED_OUT") {
         lastUserId = null;
         clearSyncedData();
         return;
       }
-      if (uid && uid !== lastUserId) {
-        lastUserId = uid;
-        pullFromSupabase(uid);
-      } else if (uid) {
-        setSyncUser(uid);
+      if (user && user.id !== lastUserId) {
+        lastUserId = user.id;
+        onUser(user);
+      } else if (user) {
+        setSyncUser(user.id);
       }
     });
 
