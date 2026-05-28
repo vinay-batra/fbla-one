@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { CommandPalette } from "./CommandPalette";
+import { FeedbackButton } from "./FeedbackButton";
 import { getSupabase } from "@/lib/supabase";
 
 type NavItem = {
@@ -255,6 +257,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div style={{ flex: 1 }} />
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("fbla:palette-open"));
+                }
+              }}
+              className="btn btn-ghost btn-sm"
+              style={{ gap: 8, display: "flex", alignItems: "center" }}
+              aria-label="Open command palette (Cmd+K)"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <span className="font-mono" style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+                K
+              </span>
+            </button>
             <ThemeToggle />
             <Link href="/competitions" className="btn btn-ghost btn-sm">
               Browse competitions
@@ -288,6 +309,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           .app-burger { display: inline-flex !important; }
         }
       `}</style>
+      <CommandPalette />
+      <FeedbackButton />
     </div>
   );
 }

@@ -28,12 +28,22 @@ export type SavedResource = {
   createdAt: string;
 };
 
+export type Deadline = {
+  id: string;
+  title: string;
+  competitionSlug: string | null;
+  dueAt: string; // "YYYY-MM-DD"
+  note: string | null;
+  createdAt: string;
+};
+
 const KEYS = {
   registered: "fbla_registered_competitions",
   practice: "fbla_practice_logs",
   saved: "fbla_saved_resources",
   displayName: "fbla_display_name",
   chapterName: "fbla_chapter_name",
+  deadlines: "fbla_deadlines",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -312,6 +322,29 @@ export function removeSavedResource(id: string): void {
       .eq("id", id)
       .then(({ error }) => error && devError("removeSavedResource sync:", error));
   }
+}
+
+/* ── Deadlines ───────────────────────────────────────── */
+export function getDeadlines(): Deadline[] {
+  return read<Deadline[]>(KEYS.deadlines, []);
+}
+
+export function addDeadline(d: Omit<Deadline, "id" | "createdAt">): Deadline {
+  const entry: Deadline = { ...d, id: cryptoId(), createdAt: new Date().toISOString() };
+  write(KEYS.deadlines, [entry, ...getDeadlines()]);
+  return entry;
+}
+
+export function removeDeadline(id: string): void {
+  write(KEYS.deadlines, getDeadlines().filter((dl) => dl.id !== id));
+}
+
+export function getUpcomingDeadlines(limit = 10): Deadline[] {
+  const today = new Date().toISOString().slice(0, 10);
+  return getDeadlines()
+    .filter((dl) => dl.dueAt >= today)
+    .sort((a, b) => a.dueAt.localeCompare(b.dueAt))
+    .slice(0, limit);
 }
 
 /* ───── Profile (display name, chapter) ──────────────────── */
