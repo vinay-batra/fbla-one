@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ConditionalAmbientOrbs } from "@/components/ConditionalAmbientOrbs";
 import { DataSync } from "@/components/DataSync";
+import { GlobalShell } from "@/components/GlobalShell";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -76,6 +77,7 @@ export default function RootLayout({
         <ThemeProvider>
           <DataSync />
           <ConditionalAmbientOrbs />
+          <GlobalShell />
           {children}
         </ThemeProvider>
       </body>

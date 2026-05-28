@@ -9,6 +9,7 @@ import {
   getPracticeLogs,
   getSavedResources,
   getDisplayName,
+  getUpcomingDeadlines,
   onStorageChange,
 } from "@/lib/storage";
 
@@ -34,6 +35,8 @@ export default function Dashboard() {
 
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const logsThisWeek = logs.filter((l) => new Date(l.loggedAt).getTime() >= weekAgo).length;
+
+  const upcomingDeadlines = getUpcomingDeadlines(3);
 
   const registeredCompetitions = registered
     .map((slug) => getCompetition(slug))
@@ -74,6 +77,73 @@ export default function Dashboard() {
         <Stat label="Total practice" value={String(logs.length)} sub="all-time" />
         <Stat label="Saved resources" value={String(saved.length)} sub="across all events" />
       </div>
+
+      {/* Upcoming deadlines strip (only shown when deadlines exist) */}
+      {upcomingDeadlines.length > 0 && (
+        <div
+          style={{
+            background: "var(--bg2)",
+            border: "0.5px solid var(--accent-border)",
+            borderRadius: 12,
+            padding: "14px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            <span className="eyebrow" style={{ fontSize: 9, color: "var(--accent)" }}>Upcoming</span>
+          </div>
+          <div style={{ display: "flex", gap: 10, flex: 1, flexWrap: "wrap" }}>
+            {upcomingDeadlines.map((dl) => {
+              const days = Math.round(
+                (new Date(dl.dueAt + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) /
+                  (1000 * 60 * 60 * 24)
+              );
+              const comp = dl.competitionSlug ? getCompetition(dl.competitionSlug) : null;
+              return (
+                <div
+                  key={dl.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "5px 10px",
+                    borderRadius: 8,
+                    background: "var(--card-bg)",
+                    border: "0.5px solid var(--border)",
+                  }}
+                >
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: days === 0 ? "var(--green)" : "var(--accent)",
+                    }}
+                  >
+                    {days === 0 ? "Today" : `${days}d`}
+                  </span>
+                  <span style={{ fontSize: 12, color: "var(--text2)", fontWeight: 500 }}>
+                    {dl.title}
+                    {comp && (
+                      <span style={{ color: "var(--text3)" }}> - {comp.name}</span>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <Link href="/app/chapter" style={{ fontSize: 12, color: "var(--accent)", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap" }}>
+            View all
+          </Link>
+        </div>
+      )}
 
       {/* Active competitions */}
       <Card>

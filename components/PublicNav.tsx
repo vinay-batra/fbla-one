@@ -117,6 +117,23 @@ export function PublicNav() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("fbla:palette-open"));
+                }
+              }}
+              className="btn btn-ghost btn-sm nav-search-btn"
+              style={{ gap: 6, display: "flex", alignItems: "center" }}
+              aria-label="Open command palette (Cmd+K)"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <span className="font-mono" style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.05em" }}>K</span>
+            </button>
             <ThemeToggle />
             {loggedIn === null ? (
               <div aria-hidden style={{ width: 110, height: 36, opacity: 0 }} />
@@ -201,6 +218,7 @@ export function PublicNav() {
         @media (max-width: 768px) {
           .nav-links-desktop { display: none !important; }
           .nav-burger { display: inline-flex !important; }
+          .nav-search-btn { display: none !important; }
         }
         @media (min-width: 769px) {
           .nav-drawer { display: none !important; }

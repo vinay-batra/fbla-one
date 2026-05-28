@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { HeroBadge } from "@/components/HeroBadge";
 import {
-  getChapterName,
-  setChapterName,
   onStorageChange,
   getDeadlines,
   addDeadline,
@@ -15,6 +13,19 @@ import {
   type Deadline,
 } from "@/lib/storage";
 import { getCompetition } from "@/lib/competitions";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  getMyProfile,
+  createChapter,
+  joinChapter,
+  getChapterById,
+  getChapterMembers,
+  type ChapterProfile,
+  type ChapterInfo,
+  type MemberRow,
+} from "@/lib/chapter";
+
+// ── Helpers ────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -29,18 +40,42 @@ function daysUntil(iso: string): number {
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function memberName(m: MemberRow): string {
+  return m.display_name?.trim() || m.email?.split("@")[0] || "Anonymous";
+}
+
+function roleBadgeStyle(role: string): React.CSSProperties {
+  if (role === "advisor") return { background: "var(--accent-dim)", color: "var(--accent)" };
+  if (role === "officer") return { background: "var(--brand-dim)", color: "var(--brand)" };
+  return { background: "var(--bg3)", color: "var(--text3)" };
+}
+
+// ── Component ──────────────────────────────────────────────────
+
 export default function ChapterPage() {
+  // localStorage reactive tick
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
   void tick;
 
-  // Chapter name
-  const chapter = getChapterName();
-  const [chapterDraft, setChapterDraft] = useState(chapter);
-  useEffect(() => setChapterDraft(chapter), [chapter]);
+  // ── Supabase state ──────────────────────────────────────────
+  const [userId, setUserId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<ChapterProfile | null>(null);
+  const [chapter, setChapter] = useState<ChapterInfo | null>(null);
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [supaLoading, setSupaLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Chapter setup forms
+  const [createName, setCreateName] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [createLoading, setCreateLoading] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joinError, setJoinError] = useState("");
+  const [joinLoading, setJoinLoading] = useState(false);
 
   // Deadline form
-  const [showForm, setShowForm] = useState(false);
+  const [showDlForm, setShowDlForm] = useState(false);
   const [dlTitle, setDlTitle] = useState("");
   const [dlDate, setDlDate] = useState("");
   const [dlSlug, setDlSlug] = useState("");
@@ -49,57 +84,337 @@ export default function ChapterPage() {
   const deadlines = getDeadlines().sort((a, b) => a.dueAt.localeCompare(b.dueAt));
   const registered = getRegistered();
 
+  // ── Load Supabase data ──────────────────────────────────────
+  const loadChapterData = useCallback(async (uid: string) => {
+    const prof = await getMyProfile(uid);
+    setProfile(prof);
+    if (prof?.chapter_id) {
+      const ch = await getChapterById(prof.chapter_id);
+      setChapter(ch);
+      if (prof.role === "advisor" && ch) {
+        const m = await getChapterMembers(ch.id);
+        setMembers(m);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) { setSupaLoading(false); return; }
+    const supa = getSupabase();
+    if (!supa) { setSupaLoading(false); return; }
+
+    supa.auth.getUser().then(async ({ data }) => {
+      if (!data.user) { setSupaLoading(false); return; }
+      setUserId(data.user.id);
+      await loadChapterData(data.user.id);
+      setSupaLoading(false);
+    });
+  }, [loadChapterData]);
+
+  // ── Handlers ────────────────────────────────────────────────
+  async function handleCreateChapter(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId || !createName.trim()) return;
+    setCreateLoading(true);
+    setCreateError("");
+    const result = await createChapter(userId, createName.trim());
+    setCreateLoading(false);
+    if (result.error) {
+      setCreateError(result.error);
+    } else if (result.data) {
+      setChapter(result.data);
+      setProfile((p) => p ? { ...p, chapter_id: result.data!.id, role: "advisor" } : p);
+    }
+  }
+
+  async function handleJoinChapter(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId || !joinCode.trim()) return;
+    setJoinLoading(true);
+    setJoinError("");
+    const result = await joinChapter(userId, joinCode.trim());
+    setJoinLoading(false);
+    if (result.error) {
+      setJoinError(result.error);
+    } else if (result.data) {
+      setChapter(result.data);
+      setProfile((p) => p ? { ...p, chapter_id: result.data!.id, role: "member" } : p);
+    }
+  }
+
+  function copyInviteCode() {
+    if (!chapter) return;
+    navigator.clipboard.writeText(chapter.invite_code).then(() => {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    });
+  }
+
   function submitDeadline(e: React.FormEvent) {
     e.preventDefault();
     if (!dlTitle.trim() || !dlDate) return;
-    addDeadline({
-      title: dlTitle.trim(),
-      dueAt: dlDate,
-      competitionSlug: dlSlug || null,
-      note: dlNote.trim() || null,
-    });
-    setDlTitle("");
-    setDlDate("");
-    setDlSlug("");
-    setDlNote("");
-    setShowForm(false);
+    addDeadline({ title: dlTitle.trim(), dueAt: dlDate, competitionSlug: dlSlug || null, note: dlNote.trim() || null });
+    setDlTitle(""); setDlDate(""); setDlSlug(""); setDlNote("");
+    setShowDlForm(false);
   }
 
+  // ── Derived ─────────────────────────────────────────────────
+  const isAdvisor = profile?.role === "advisor";
+  const hasChapter = Boolean(profile?.chapter_id && chapter);
+  const signedIn = Boolean(userId);
+
+  // ── Render ───────────────────────────────────────────────────
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 1240 }}>
-      {/* Header */}
+
+      {/* Page header */}
       <div>
         <p className="eyebrow" style={{ marginBottom: 8 }}>Chapter</p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>{chapter || "Set up your chapter"}</h1>
+        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>
+          {chapter?.name || (hasChapter ? "Your chapter" : "Chapter")}
+        </h1>
         <p style={{ fontSize: 14, color: "var(--text3)", marginTop: 6 }}>
-          Manage your chapter info, track competition deadlines, and see your registered events.
+          {isAdvisor
+            ? "Manage your chapter roster, track deadlines, and see every member's events."
+            : "Track your competition deadlines and see your registered events."}
         </p>
       </div>
 
-      {/* Chapter name */}
-      <Card>
-        <CardHeader eyebrow="Your chapter" title="Chapter info" />
-        <form
-          onSubmit={(e) => { e.preventDefault(); setChapterName(chapterDraft.trim()); }}
-          style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}
-        >
-          <label className="font-mono" style={{ display: "block", fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-            Chapter name
-          </label>
-          <input
-            type="text"
-            value={chapterDraft}
-            onChange={(e) => setChapterDraft(e.target.value)}
-            placeholder="e.g. Council Rock South FBLA"
-            className="input-field"
-          />
-          <button type="submit" className="btn btn-accent btn-sm btn-pill" style={{ alignSelf: "flex-start" }}>
-            Save chapter
-          </button>
-        </form>
-      </Card>
+      {/* ── CHAPTER SETUP (signed in, no chapter yet) ── */}
+      {isSupabaseConfigured && signedIn && !supaLoading && !hasChapter && (
+        <div className="chapter-setup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+          {/* Create */}
+          <Card>
+            <CardHeader eyebrow="Start fresh" title="Create a chapter" tagline="You'll be the advisor. Share the invite code with your members." />
+            <form onSubmit={handleCreateChapter} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                Chapter name
+              </label>
+              <input
+                type="text"
+                value={createName}
+                onChange={(e) => setCreateName(e.target.value)}
+                placeholder="e.g. Council Rock South FBLA"
+                className="input-field"
+                required
+              />
+              {createError && <p style={{ fontSize: 12, color: "var(--red)" }}>{createError}</p>}
+              <button type="submit" className="btn btn-accent btn-sm btn-pill" style={{ alignSelf: "flex-start" }} disabled={createLoading}>
+                {createLoading ? "Creating..." : "Create chapter"}
+              </button>
+            </form>
+          </Card>
 
-      {/* Deadlines */}
+          {/* Join */}
+          <Card>
+            <CardHeader eyebrow="Already have one" title="Join a chapter" tagline="Ask your advisor for the invite code, then enter it below." />
+            <form onSubmit={handleJoinChapter} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                Invite code
+              </label>
+              <input
+                type="text"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="e.g. A4K9P"
+                className="input-field"
+                style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.12em" }}
+                required
+              />
+              {joinError && <p style={{ fontSize: 12, color: "var(--red)" }}>{joinError}</p>}
+              <button type="submit" className="btn btn-brand btn-sm btn-pill" style={{ alignSelf: "flex-start" }} disabled={joinLoading}>
+                {joinLoading ? "Joining..." : "Join chapter"}
+              </button>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Not signed in nudge */}
+      {isSupabaseConfigured && !signedIn && !supaLoading && (
+        <Card>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "4px 0" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600 }}>Sign in to use chapter features</p>
+              <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
+                Create or join a chapter to unlock the advisor dashboard and shared deadlines.{" "}
+                <Link href="/auth" style={{ color: "var(--accent)" }}>Sign in</Link>
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ── CHAPTER INFO (has a chapter) ── */}
+      {hasChapter && chapter && (
+        <Card>
+          <CardHeader
+            eyebrow={isAdvisor ? "Advisor" : "Member"}
+            title={chapter.name}
+            tagline={isAdvisor ? `${members.length} member${members.length !== 1 ? "s" : ""} in your chapter` : "You are a member of this chapter."}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 14px",
+                background: "var(--bg2)",
+                borderRadius: 8,
+                border: "0.5px solid var(--border)",
+              }}
+            >
+              <span style={{ fontSize: 12, color: "var(--text3)" }}>Invite code</span>
+              <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "0.12em", color: "var(--text)" }}>
+                {chapter.invite_code}
+              </span>
+              <button
+                type="button"
+                onClick={copyInviteCode}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: copiedCode ? "var(--green)" : "var(--text3)",
+                  padding: "2px 4px",
+                  borderRadius: 4,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  transition: "color 0.15s",
+                }}
+              >
+                {copiedCode ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <span
+              className="font-mono"
+              style={{
+                fontSize: 10,
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontWeight: 700,
+                ...roleBadgeStyle(profile?.role ?? "member"),
+              }}
+            >
+              {profile?.role ?? "member"}
+            </span>
+          </div>
+        </Card>
+      )}
+
+      {/* ── ADVISOR DASHBOARD ── */}
+      {isAdvisor && hasChapter && (
+        <Card>
+          <CardHeader
+            eyebrow="Advisor view"
+            title="Member roster"
+            tagline="Every member in your chapter and the events they are prepping for."
+          />
+          {members.length === 0 ? (
+            <div className="empty-state" style={{ marginTop: 12 }}>
+              <div className="empty-state-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+              </div>
+              <p className="empty-state-title">No members yet</p>
+              <p className="empty-state-msg">
+                Share the invite code <strong>{chapter?.invite_code}</strong> with your chapter members so they can join.
+              </p>
+            </div>
+          ) : (
+            <div style={{ marginTop: 16, overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    {["Member", "Role", "Events", "Registered for"].map((h) => (
+                      <th
+                        key={h}
+                        className="font-mono"
+                        style={{
+                          textAlign: "left",
+                          padding: "8px 12px",
+                          fontSize: 9,
+                          letterSpacing: "0.16em",
+                          textTransform: "uppercase",
+                          color: "var(--text-muted)",
+                          borderBottom: "0.5px solid var(--border)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map((m, i) => (
+                    <tr
+                      key={m.id}
+                      style={{ background: i % 2 === 0 ? "transparent" : "var(--bg2)" }}
+                    >
+                      <td style={{ padding: "12px 12px", verticalAlign: "top" }}>
+                        <p style={{ fontWeight: 600, color: "var(--text)" }}>{memberName(m)}</p>
+                        {m.email && <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{m.email}</p>}
+                      </td>
+                      <td style={{ padding: "12px 12px", verticalAlign: "top" }}>
+                        <span
+                          className="font-mono"
+                          style={{
+                            fontSize: 9,
+                            padding: "3px 8px",
+                            borderRadius: 999,
+                            fontWeight: 700,
+                            ...roleBadgeStyle(m.role),
+                          }}
+                        >
+                          {m.role}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 12px", verticalAlign: "top" }}>
+                        <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: m.registrations.length > 0 ? "var(--text)" : "var(--text-muted)" }}>
+                          {m.registrations.length}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 12px", verticalAlign: "top", maxWidth: 340 }}>
+                        {m.registrations.length === 0 ? (
+                          <span style={{ fontSize: 11, color: "var(--text3)" }}>None yet</span>
+                        ) : (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {m.registrations.slice(0, 4).map((slug) => {
+                              const comp = getCompetition(slug);
+                              return (
+                                <span key={slug} className="chip" style={{ fontSize: 10, padding: "2px 8px" }}>
+                                  {comp?.name ?? slug}
+                                </span>
+                              );
+                            })}
+                            {m.registrations.length > 4 && (
+                              <span className="chip" style={{ fontSize: 10, padding: "2px 8px", color: "var(--text3)" }}>
+                                +{m.registrations.length - 4} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* ── DEADLINES ── */}
       <Card>
         <CardHeader
           eyebrow="Calendar"
@@ -109,14 +424,14 @@ export default function ChapterPage() {
             <button
               type="button"
               className="btn btn-accent btn-sm btn-pill"
-              onClick={() => setShowForm((p) => !p)}
+              onClick={() => setShowDlForm((p) => !p)}
             >
-              {showForm ? "Cancel" : "Add deadline"}
+              {showDlForm ? "Cancel" : "Add deadline"}
             </button>
           }
         />
 
-        {showForm && (
+        {showDlForm && (
           <form
             onSubmit={submitDeadline}
             style={{
@@ -131,68 +446,33 @@ export default function ChapterPage() {
             }}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                Title *
-              </label>
-              <input
-                type="text"
-                value={dlTitle}
-                onChange={(e) => setDlTitle(e.target.value)}
-                placeholder="e.g. Accounting I sign-up due"
-                className="input-field"
-                required
-              />
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Title *</label>
+              <input type="text" value={dlTitle} onChange={(e) => setDlTitle(e.target.value)} placeholder="e.g. Accounting I sign-up due" className="input-field" required />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                Due date *
-              </label>
-              <input
-                type="date"
-                value={dlDate}
-                onChange={(e) => setDlDate(e.target.value)}
-                className="input-field"
-                required
-              />
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Due date *</label>
+              <input type="date" value={dlDate} onChange={(e) => setDlDate(e.target.value)} className="input-field" required />
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                Competition (optional)
-              </label>
-              <select
-                value={dlSlug}
-                onChange={(e) => setDlSlug(e.target.value)}
-                className="input-field"
-              >
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Competition (optional)</label>
+              <select value={dlSlug} onChange={(e) => setDlSlug(e.target.value)} className="input-field">
                 <option value="">No specific event</option>
                 {registered.map((slug) => {
                   const comp = getCompetition(slug);
-                  return (
-                    <option key={slug} value={slug}>
-                      {comp?.name ?? slug}
-                    </option>
-                  );
+                  return <option key={slug} value={slug}>{comp?.name ?? slug}</option>;
                 })}
               </select>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                Note (optional)
-              </label>
-              <input
-                type="text"
-                value={dlNote}
-                onChange={(e) => setDlNote(e.target.value)}
-                placeholder="Any extra context..."
-                className="input-field"
-              />
+              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Note (optional)</label>
+              <input type="text" value={dlNote} onChange={(e) => setDlNote(e.target.value)} placeholder="Any extra context..." className="input-field" />
             </div>
 
             <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowDlForm(false)}>Cancel</button>
               <button type="submit" className="btn btn-accent btn-sm btn-pill">Add deadline</button>
             </div>
           </form>
@@ -230,7 +510,6 @@ export default function ChapterPage() {
                     opacity: isPast ? 0.55 : 1,
                   }}
                 >
-                  {/* Date block */}
                   <div style={{ flexShrink: 0, textAlign: "center", minWidth: 52 }}>
                     <p className="font-mono" style={{ fontSize: 18, fontWeight: 700, lineHeight: 1, color: isPast ? "var(--text3)" : "var(--text)" }}>
                       {dl.dueAt.split("-")[2]}
@@ -240,12 +519,9 @@ export default function ChapterPage() {
                     </p>
                   </div>
 
-                  {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: isPast ? "var(--text3)" : "var(--text)" }}>
-                        {dl.title}
-                      </p>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: isPast ? "var(--text3)" : "var(--text)" }}>{dl.title}</p>
                       {comp && <span className="chip chip-brand" style={{ fontSize: 10 }}>{comp.name}</span>}
                       <span
                         className="font-mono"
@@ -253,11 +529,7 @@ export default function ChapterPage() {
                           fontSize: 10,
                           padding: "2px 7px",
                           borderRadius: 999,
-                          background: isToday
-                            ? "rgba(var(--green-rgb), 0.12)"
-                            : isPast
-                            ? "rgba(var(--text-muted-rgb, 90, 107, 138), 0.1)"
-                            : "var(--accent-dim)",
+                          background: isToday ? "rgba(var(--green-rgb), 0.12)" : isPast ? "rgba(90, 107, 138, 0.1)" : "var(--accent-dim)",
                           color: isToday ? "var(--green)" : isPast ? "var(--text-muted)" : "var(--accent)",
                           fontWeight: 700,
                         }}
@@ -265,28 +537,18 @@ export default function ChapterPage() {
                         {isToday ? "Today" : isPast ? `${Math.abs(days)}d ago` : `in ${days}d`}
                       </span>
                     </div>
-                    {dl.note && (
-                      <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>{dl.note}</p>
-                    )}
+                    {dl.note && <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>{dl.note}</p>}
                   </div>
 
-                  {/* Delete */}
                   <button
                     type="button"
                     onClick={() => removeDeadline(dl.id)}
                     aria-label="Remove deadline"
                     style={{
-                      flexShrink: 0,
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      border: "0.5px solid var(--border)",
-                      background: "transparent",
-                      color: "var(--text3)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
+                      flexShrink: 0, width: 28, height: 28, borderRadius: 6,
+                      border: "0.5px solid var(--border)", background: "transparent",
+                      color: "var(--text3)", display: "flex", alignItems: "center",
+                      justifyContent: "center", cursor: "pointer",
                     }}
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -300,37 +562,26 @@ export default function ChapterPage() {
         )}
       </Card>
 
-      {/* My events */}
+      {/* ── MY EVENTS ── */}
       <Card>
         <CardHeader
           eyebrow="Registered"
           title="My events"
           tagline="Events you have added to your competition queue."
-          right={
-            <Link href="/competitions" className="btn btn-ghost btn-sm">
-              Browse all
-            </Link>
-          }
+          right={<Link href="/competitions" className="btn btn-ghost btn-sm">Browse all</Link>}
         />
         {registered.length === 0 ? (
           <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 8 }}>
             No events yet.{" "}
-            <Link href="/competitions" style={{ color: "var(--accent)" }}>
-              Browse competitions
-            </Link>{" "}
-            to add some.
+            <Link href="/competitions" style={{ color: "var(--accent)" }}>Browse competitions</Link>
+            {" "}to add some.
           </p>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
             {registered.map((slug) => {
               const comp = getCompetition(slug);
               return (
-                <Link
-                  key={slug}
-                  href={`/competitions/${slug}`}
-                  className="chip chip-brand"
-                  style={{ textDecoration: "none", fontSize: 12, padding: "5px 12px", borderRadius: 999 }}
-                >
+                <Link key={slug} href={`/competitions/${slug}`} className="chip chip-brand" style={{ textDecoration: "none", fontSize: 12, padding: "5px 12px", borderRadius: 999 }}>
                   {comp?.name ?? slug}
                 </Link>
               );
@@ -339,23 +590,35 @@ export default function ChapterPage() {
         )}
       </Card>
 
-      {/* Advisor features coming soon */}
-      <Card variant="accent">
-        <HeroBadge>Coming soon - free for every chapter</HeroBadge>
-        <h2 style={{ fontSize: 20, marginTop: 12, marginBottom: 12, letterSpacing: "-0.02em" }}>
-          Full advisor dashboard on the way.
-        </h2>
-        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-          {["Advisor view - see all member sign-ups across every event", "Member roster with officer and member roles", "Export rosters for regional registration"].map((line) => (
-            <li key={line} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text2)", lineHeight: 1.55 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
-                <path d="M5 12l5 5L20 7" />
-              </svg>
-              {line}
-            </li>
-          ))}
-        </ul>
-      </Card>
+      {/* ── COMING SOON (only for non-advisors) ── */}
+      {!isAdvisor && (
+        <Card variant="accent">
+          <HeroBadge>Coming soon - free for every chapter</HeroBadge>
+          <h2 style={{ fontSize: 20, marginTop: 12, marginBottom: 12, letterSpacing: "-0.02em" }}>
+            Full advisor dashboard on the way.
+          </h2>
+          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              "Advisor view - see all member sign-ups across every event",
+              "Member roster with officer and member roles",
+              "Export rosters for regional registration",
+            ].map((line) => (
+              <li key={line} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text2)", lineHeight: 1.55 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+                {line}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      <style>{`
+        @media (max-width: 720px) {
+          .chapter-setup-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

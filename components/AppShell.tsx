@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
-import { CommandPalette } from "./CommandPalette";
-import { FeedbackButton } from "./FeedbackButton";
 import { getSupabase } from "@/lib/supabase";
 
 type NavItem = {
@@ -309,8 +307,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           .app-burger { display: inline-flex !important; }
         }
       `}</style>
-      <CommandPalette />
-      <FeedbackButton />
     </div>
   );
 }
