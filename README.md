@@ -1,26 +1,41 @@
 # FBLA One
 
-All-in-one platform for FBLA chapters: competition guides, study resources, prep tracker, and chapter management.
+AI-powered all-in-one platform for FBLA chapters: competition guides, AI practice tests, prep tracker, deadline calendar, and advisor dashboard.
 
-**Live at [fbla.one](https://fbla.one)** · Pilot: Council Rock High School South · Deadline: Aug 25, 2026 (FBLA officer meeting)
+**Live at [fbla.one](https://fbla.one)** · Pilot: Council Rock High School South · Officer meeting: Aug 25, 2026
 
 | | |
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0003 run) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0005 run) |
 | Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
+| AI | Anthropic claude-sonnet-4-5 via `@anthropic-ai/sdk` (`ANTHROPIC_API_KEY` in Vercel) |
 
-See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules, [`CHANGELOG.md`](./CHANGELOG.md) for version history.
+See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHANGELOG.md) for version history.
+
+---
+
+## What it does
+
+- **55 competition guides** -- every FBLA event with test format, topic list, curated study resources, and "What to expect on test day"
+- **AI Practice Test Engine** -- Claude generates 10/25/50-question tests calibrated to each event's topic outline, streams them live, and explains every wrong answer. 45 objective-test events supported.
+- **Score tracker** -- log practice sessions, see score trend charts per competition on the dashboard
+- **Deadline calendar** -- add sign-up dates and test days, get in-app alerts when deadlines are 3 days out
+- **Saved resources** -- bookmark any study resource from any competition page, manage at `/app/resources`
+- **Chapter advisor dashboard** -- create a chapter, generate an invite code, see member roster + their registered events + recent practice activity, export CSVs for regional registration
+- **Demo mode** -- `/api/preview` lets anyone explore the full app without signing up (1-hour cookie)
+- **Command palette** -- Cmd+K searches all 55 events and navigates the app
 
 ---
 
 ## Stack
 
 - **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19
-- **Styling**: CSS variables only (no Tailwind), Inter + Space Mono + Space Grotesk fonts via `@import`
+- **Styling**: CSS variables only (no Tailwind), Inter + Space Mono + Space Grotesk via `@import`
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`)
-- **Hosting**: Vercel (frontend), Supabase Postgres (DB)
+- **AI**: `@anthropic-ai/sdk` -- streaming practice test generation via `/api/practice-test`
+- **Hosting**: Vercel (frontend + edge functions), Supabase Postgres (DB)
 - **Domain**: fbla.one
 
 ---
@@ -29,51 +44,66 @@ See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules, [`CHANGELOG.md`](./CHAN
 
 ```bash
 npm install
-cp .env.example .env.local       # fill in Supabase keys
+cp .env.example .env.local       # fill in Supabase keys + ANTHROPIC_API_KEY
 npm run dev                      # http://localhost:3000
 npm run build                    # production build + type check
 npm run lint                     # ESLint
 ```
 
-Without `.env.local`, the site runs in **preview mode** - every page works, the
-app dashboard uses `localStorage` for state, and the auth page shows a "preview
-mode" banner. Wire up Supabase to enable real auth and DB persistence.
+Without `.env.local`, the site runs in **preview mode** - every page works, the app uses `localStorage` for state, and AI tests are disabled (no API key). Wire up both Supabase and Anthropic to enable all features.
 
 ---
 
 ## Supabase (already configured)
 
-Project `osxoygndwazbygiqyjhu` is connected and all migrations are run. The
-`.env.local` on the dev machine and the Vercel env vars hold:
+Project `osxoygndwazbygiqyjhu` is connected. Env vars set locally and on Vercel:
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
 
-**If you ever rebuild the DB from scratch**, run the migrations in order in the
-SQL Editor: `0001_init.sql`, `0002_profile_trigger_avatar.sql`,
-`0003_grants_and_trigger_fix.sql`. The 0003 grants are essential - without them
-every signed-in insert fails with "permission denied for table."
+**Migrations to run in order** (SQL Editor):
 
-Google OAuth is live (Authentication -> Providers -> Google). Redirect URLs in
-**Authentication -> URL Configuration**: `https://fbla.one/auth/callback` +
-`http://localhost:3000/auth/callback`. Site URL: `https://fbla.one`.
+| Migration | Purpose |
+|---|---|
+| `0001_init.sql` | profiles, chapters, registrations, practice_logs, saved_resources, deadlines |
+| `0002_profile_trigger_avatar.sql` | avatar_url column, storage bucket, profile trigger |
+| `0003_grants_and_trigger_fix.sql` | **Critical** - grants SELECT/INSERT/UPDATE/DELETE to `authenticated` role. Without this every signed-in write fails. |
+| `0004_chapter_advisor_rls.sql` | Advisors can read member profiles; any auth user can look up chapters by invite code |
+| `0005` (inline below) | Advisors can read chapter member practice logs |
+
+**Migration 0005** - run in Supabase SQL Editor:
+```sql
+do $$ begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public' and tablename='practice_logs'
+    and policyname='Advisors read chapter member practice logs'
+  ) then
+    create policy "Advisors read chapter member practice logs" on public.practice_logs
+      for select to authenticated using (
+        user_id in (
+          select p.id from public.profiles p
+          join public.chapters c on c.id = p.chapter_id
+          where c.advisor_user_id = auth.uid()
+        )
+      );
+  end if;
+end $$;
+notify pgrst, 'reload schema';
+```
+
+Google OAuth is live. Auth settings: email confirmation **disabled** (instant signup).
+Redirect URLs in Authentication -> URL Configuration: `https://fbla.one/auth/callback` + `http://localhost:3000/auth/callback`.
 
 ---
 
 ## Deploying (already live)
 
-The Vercel project is connected to the GitHub repo - **every push to `main`
-auto-deploys**. No manual deploy step.
+Every push to `main` auto-deploys via Vercel. No manual step.
 
-To reproduce from scratch: import the repo at [vercel.com/new](https://vercel.com/new),
-framework auto-detects as Next.js, add the three env vars above, deploy.
-
-### Domain (already connected)
-
-1. In Vercel, **Project Settings → Domains** → add `fbla.one` and `www.fbla.one`.
-2. Vercel will show DNS records to add (usually an A record + CNAME).
-3. Add those records at whichever registrar you bought `fbla.one` from (e.g., Namecheap, Porkbun).
-4. Wait for DNS propagation (usually <30 min). Vercel auto-provisions an SSL cert.
-
-Every push to `main` triggers a new production deploy.
+Env vars required on Vercel:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ANTHROPIC_API_KEY`
 
 ---
 
@@ -82,62 +112,72 @@ Every push to `main` triggers a new production deploy.
 ```
 fbla-one/
   app/
-    layout.tsx                   <- root: ThemeProvider + AmbientOrbs + FOUC script
-    globals.css                  <- full token system, button + input + card library
+    layout.tsx                   <- root: ThemeProvider + GlobalShell + AmbientOrbs + FOUC
+    globals.css                  <- full token system, button/input/card library (~600 lines)
+    api/
+      practice-test/route.ts     <- streaming AI practice test generation (POST)
+      preview/route.ts           <- sets fbla_preview cookie for demo mode (GET)
     (marketing)/
-      layout.tsx                 <- PublicNav + Footer wrapper for marketing pages
-      page.tsx                   <- /
-      about/page.tsx
-      faq/page.tsx
+      layout.tsx                 <- PublicNav + Footer
+      page.tsx                   <- / landing page
+      about/page.tsx             <- /about
+      faq/page.tsx               <- /faq
       privacy/page.tsx
       terms/page.tsx
       competitions/
-        page.tsx                 <- list + filters
-        [slug]/page.tsx          <- per-event detail (SSG for all 55 events)
-    auth/page.tsx                <- sign in / sign up / magic link (Supabase + OAuth)
+        page.tsx                 <- /competitions (filterable grid)
+        [slug]/page.tsx          <- /competitions/[slug] (SSG, 55 pages)
+    auth/page.tsx                <- sign in / sign up / magic link
     app/
-      layout.tsx                 <- AppShell wrapper
-      page.tsx                   <- dashboard
-      competitions/page.tsx      <- my registered events
-      tracker/page.tsx           <- practice log
-      chapter/page.tsx
+      layout.tsx                 <- AppShell wrapper + auth gate (preview cookie bypass)
+      page.tsx                   <- /app dashboard
+      coach/page.tsx             <- /app/coach AI practice test UI
+      competitions/page.tsx      <- /app/competitions
+      tracker/page.tsx           <- /app/tracker
+      chapter/page.tsx           <- /app/chapter (advisor dashboard)
+      resources/page.tsx         <- /app/resources
       settings/page.tsx
   components/
-    PublicNav.tsx                <- scroll-aware sticky nav
-    Footer.tsx                   <- 3-col footer
-    AppShell.tsx                 <- sidebar + topbar for /app routes
-    ThemeProvider.tsx            <- light/dark via [data-theme]
+    PublicNav.tsx                <- scroll-aware sticky nav + Cmd+K trigger
+    Footer.tsx
+    AppShell.tsx                 <- sidebar + topbar + preview banner + deadline alert
+    GlobalShell.tsx              <- mounts CommandPalette + FeedbackButton + OnboardingModal
+    CommandPalette.tsx           <- Cmd+K palette (competition search + nav)
+    FeedbackButton.tsx           <- fixed FAB -> mailto feedback
+    OnboardingModal.tsx          <- first-visit welcome modal
+    DeadlineAlert.tsx            <- in-app alert for deadlines within 3 days
+    StudyResourcesList.tsx       <- client component with bookmark save buttons
+    ThemeProvider.tsx
     ThemeToggle.tsx
-    Logo.tsx                     <- "FBLA One" wordmark
-    ScrollReveal.tsx             <- IntersectionObserver fade-up
-    AmbientOrbs.tsx              <- dark-mode-only background gradients
+    Logo.tsx                     <- inline SVG shield+torch mark + wordmark
+    ScrollReveal.tsx
+    AmbientOrbs.tsx
     ConditionalAmbientOrbs.tsx
-    SectionHeader.tsx            <- eyebrow + title + tagline
-    HeroBadge.tsx                <- pulsing gold-dot pill
-    Card.tsx                     <- shared card primitive
-    IconBtn.tsx
-    RegisterButton.tsx           <- client-side competition register/unregister
+    SectionHeader.tsx
+    HeroBadge.tsx
+    Card.tsx
+    RegisterButton.tsx
   lib/
-    competitions.ts              <- 55-event FBLA competition registry
-    storage.ts                   <- localStorage-first persistence layer
-    supabase.ts                  <- browser client (graceful degradation)
+    competitions.ts              <- 55-event FBLA registry (all complete)
+    storage.ts                   <- localStorage-first state + Supabase sync
+    chapter.ts                   <- chapter Supabase ops (create, join, roster, activity)
+    supabase.ts                  <- browser client
     supabase-server.ts           <- server component client
-  proxy.ts                       <- Next.js 16 middleware (Supabase session refresh)
-  supabase/migrations/
-    0001_init.sql                <- chapters, registrations, practice_logs, etc.
-  public/
-    logo.png                     <- brand mark (white BG; replace w/ transparent)
+  proxy.ts                       <- Next.js 16 middleware
+  supabase/migrations/           <- 0001-0004 (0005 inline in README)
 ```
 
 ---
 
 ## Rules
 
-See `CLAUDE.md` for the full list. The non-negotiable ones:
+See `CLAUDE.md` for the full list. Non-negotiable:
 
 - CSS variables only - never hardcode hex colors.
-- Theme via `data-theme="dark"|"light"` on `<html>`.
-- No emojis in UI, no em dashes in source.
-- localStorage key is `fbla_theme` (not `corvo_theme`, not `lark_theme`).
-- Space Mono for every number, eyebrow, and chip.
-- Always commit + push after a set of changes (no remote yet - push goes live once GitHub is connected).
+- Theme via `data-theme="dark"|"light"` on `<html>`. localStorage key: `fbla_theme`.
+- No emojis in UI. No em dashes in source files.
+- Space Mono for numbers, eyebrows, chips.
+- `proxy.ts` not `middleware.ts` (Next.js 16).
+- `await params` in every dynamic route (Next.js 16).
+- New `public.*` tables need explicit GRANTs (see migration 0003).
+- Always commit + push after changes.

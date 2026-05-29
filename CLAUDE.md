@@ -14,18 +14,28 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v0.4 (May 28, 2026) - competition content, deadline calendar, command palette, feedback button, SVG logo. Latest commit: `e9b5c2d`.
+**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.0 (May 29, 2026) - advisor pitch features, demo mode, about/FAQ rewrite. Latest commit: `b42b89e`.
 
 **Status: fully deployed and working.**
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
 - Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
-- Supabase: project `osxoygndwazbygiqyjhu`, migrations 0001 + 0002 + 0003 all run
+- Supabase: project `osxoygndwazbygiqyjhu`, migrations 0001-0004 run, 0005 run (practice_logs advisor RLS)
+- Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-sonnet-4-5).
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
 **What's built and verified working:**
-- Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page.
-- 55-event competition registry (`lib/competitions.ts`). **45 complete, 10 partial, 0 coming-soon.** All events have longDescription + topics + studyResources.
+- Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page. About + FAQ fully rewritten for advisor audience.
+- 55-event competition registry (`lib/competitions.ts`). **55 complete, 0 partial, 0 coming-soon.** All events have longDescription + topics + studyResources.
+- **AI Practice Test Engine** (`/app/coach` + `/api/practice-test`): Claude claude-sonnet-4-5 streams NDJSON questions calibrated to each event's topic outline. 4-phase UI: idle, generating (live progress), taking (keyboard shortcuts), reviewing (explanations + score logging). 45 eligible objective-test events.
+- **Demo mode**: `/api/preview` sets `fbla_preview=1` cookie, bypasses auth gate in AppLayout. Preview banner in AppShell. Landing page "Try AI Practice Tests" + "Preview the platform" buttons both route through this.
+- **Saved resources**: `StudyResourcesList` client component on competition pages with bookmark save/unsave. `/app/resources` page with competition filter and remove.
+- **Score trends chart**: pure SVG bar chart on dashboard showing last 8 scored logs per competition. Color-coded green/amber/red.
+- **Onboarding modal**: first-visit welcome with 3 guided steps. localStorage flag `fbla_onboarded`.
+- **Deadline alerts**: in-app strip for deadlines within 3 days. Per-alert dismiss in `fbla_dismissed_deadline_alerts`.
+- **Command palette** (`components/CommandPalette.tsx`): Cmd+K / Ctrl+K. Searches all 55 competitions + navigates to any app page. Includes "AI Practice Tests" nav item.
+- **Feedback button** (`components/FeedbackButton.tsx`): fixed FAB, opens compose panel, fires `mailto:hello@fbla.one`.
+- **SVG logo** (`components/Logo.tsx`): inline SVG shield+torch using `var(--brand)` + `var(--accent)` - auto-adapts to light/dark.
 - `/competitions` (filterable grid) + `/competitions/[slug]` (SSG detail, 55 pages).
 - `/auth` - Google OAuth + email/password + magic link. **GitHub OAuth removed.** PKCE flow via `/auth/callback`.
 - `/app/*` - **auth-gated** (redirects to `/auth` when signed out). Dashboard, my competitions, tracker, chapter, settings (with avatar upload + delete account).
@@ -44,12 +54,11 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Build clean (75 routes), lint clean. No em dashes in source.
 
 ### Next up
-1. Branded auth emails: create Resend account, verify `fbla.one`, point Supabase Auth -> SMTP at Resend. `lib/email.ts` is scaffolded (fetch-based, no-ops without `RESEND_API_KEY`).
-2. Optional: disable Supabase email confirmation for frictionless signup (Auth -> Providers -> Email -> Confirm email toggle).
-3. Wire `Deadline` CRUD to Supabase `public.deadlines` table (already exists in DB, needs chapter_id - requires chapter advisor flow first).
-4. Chapter advisor dashboard: member roster, advisor role assignment, chapter-wide deadline sync.
-5. Dashboard deadline widget: surface upcoming deadlines from `getUpcomingDeadlines()` on the `/app` dashboard.
-6. Command palette on marketing pages: add Cmd+K trigger to `PublicNav.tsx` (palette already works globally but no trigger on marketing side).
+1. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
+2. Wire personal `Deadline` CRUD to Supabase (table `public.deadlines` exists but requires `chapter_id` - currently localStorage only).
+3. Push notification reminders for deadlines (requires service worker + VAPID keys - larger infra investment).
+4. Chapter leaderboard / stats over time for advisors.
+5. Export competition sign-ups in FBLA's exact regional registration format (if FBLA has a standardized CSV format).
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
