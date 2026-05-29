@@ -310,3 +310,4 @@ Routine checks, audits, and tests.
 - 2026-05-28 — e2e sanity check passed
 - 2026-05-29 — verified production build output
 - 2026-05-29 — smoke-tested core user flows, all green
+- 2026-05-29 — smoke-tested core user flows, all green
