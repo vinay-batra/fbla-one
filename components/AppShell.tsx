@@ -90,7 +90,7 @@ const NAV: NavItem[] = [
   },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, isPreviewMode = false }: { children: ReactNode; isPreviewMode?: boolean }) {
   const pathname = usePathname() || "/app";
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -308,6 +308,32 @@ export function AppShell({ children }: { children: ReactNode }) {
             minWidth: 0,
           }}
         >
+          {isPreviewMode && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: 12, flexWrap: "wrap",
+              padding: "10px 16px", marginBottom: 20,
+              background: "var(--accent-dim)", border: "0.5px solid var(--accent-border)",
+              borderRadius: 10,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
+                </svg>
+                <span style={{ fontSize: 13, color: "var(--text2)" }}>
+                  <strong style={{ color: "var(--text)" }}>Preview mode</strong> -- your data stays local and is not saved to an account.
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Link href="/auth" className="btn btn-accent btn-sm btn-pill">
+                  Sign up free
+                </Link>
+                <Link href="/" className="btn btn-ghost btn-sm">
+                  Exit preview
+                </Link>
+              </div>
+            </div>
+          )}
           <DeadlineAlert />
           {children}
         </main>

@@ -7,7 +7,8 @@ import { Card } from "@/components/Card";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "FBLA One is built by an FBLA student for FBLA students. Here's the story.",
+  description:
+    "FBLA One is built by a Competition Chair for his own chapter -- and now every chapter nationally. Here's the story.",
 };
 
 export default function About() {
@@ -16,12 +17,12 @@ export default function About() {
       <section style={{ padding: "100px 0 60px" }}>
         <div className="container" style={{ maxWidth: 820, marginInline: "auto" }}>
           <ScrollReveal>
-            <HeroBadge>The story</HeroBadge>
+            <HeroBadge>Built for chapters. By a chapter.</HeroBadge>
           </ScrollReveal>
           <ScrollReveal delay={0.05}>
             <h1 style={{ marginTop: 22, textAlign: "center" }}>
-              Built for FBLA students,{" "}
-              <span style={{ color: "var(--accent)" }}>by an FBLA student.</span>
+              Built by a Competition Chair,{" "}
+              <span style={{ color: "var(--accent)" }}>for his chapter.</span>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
@@ -32,10 +33,12 @@ export default function About() {
                 color: "var(--text2)",
                 lineHeight: 1.7,
                 textAlign: "center",
+                maxWidth: 660,
+                marginInline: "auto",
               }}
             >
-              FBLA One started as a Google Drive folder. It got out of hand. Now
-              it's a real platform.
+              Now available to every FBLA chapter nationally. Free for every
+              student, every advisor, forever.
             </p>
           </ScrollReveal>
         </div>
@@ -46,23 +49,23 @@ export default function About() {
           <ScrollReveal>
             <Card>
               <h2 style={{ fontSize: 22, marginBottom: 14, letterSpacing: "-0.015em" }}>
-                The origin
+                The problem every chapter has
               </h2>
               <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7 }}>
-                I'm Vinay Batra, a sophomore at Council Rock High School South and
-                the Competition Chair of our FBLA chapter. Every year our chapter has
-                the same problem: members sign up for events but no one really knows
-                what each event is about, what the test covers, or where to find good
-                study resources. The information lives in scattered PDFs, last
-                year's Drive folder, and the memories of seniors who are about to
-                graduate.
+                I'm Vinay Batra, a sophomore at Council Rock High School South.
+                I'm the Competition Chair of our FBLA chapter.
               </p>
               <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
-                The original plan for FBLA officer meeting on August 25, 2026 was
-                modest: build a shared Drive folder with a doc per competition. But a
-                Drive folder doesn't track who's preparing, doesn't remind anyone of
-                deadlines, and doesn't scale to other chapters. So I'm building this
-                instead.
+                Every year, our chapter runs the same broken process: members
+                sign up for competitions in a Google Form, the list gets copied
+                into a spreadsheet, study resources get dumped into a Drive
+                folder nobody can find, and come regionals week, half the team
+                doesn't know what their test covers or what topics to study.
+              </p>
+              <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
+                I asked advisors at other chapters. Same problem. 230,000 FBLA
+                members nationally, and most chapters run on a spreadsheet and
+                a shared folder.
               </p>
             </Card>
           </ScrollReveal>
@@ -71,18 +74,28 @@ export default function About() {
             <div style={{ marginTop: 24 }}>
               <Card>
                 <h2 style={{ fontSize: 22, marginBottom: 14, letterSpacing: "-0.015em" }}>
-                  The plan
+                  What FBLA One actually is
                 </h2>
                 <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7 }}>
-                  Pilot at Council Rock South this year. Use it ourselves. Find what
-                  breaks. Get advisor buy-in. Then open it up to other chapters
-                  nationally. There are 230,000+ FBLA members across the country -
-                  every chapter has the same problem we did.
+                  FBLA One gives advisors and members a real platform instead of
+                  a patchwork of Drive folders and spreadsheets.
                 </p>
                 <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
-                  FBLA One is free for every student and every chapter, forever.
-                  No paywall, no per-seat creep, no dark patterns, no selling
-                  student data. Just a tool that makes competing in FBLA easier.
+                  For members: a full prep page for every competition (test
+                  format, topics, curated resources), AI-powered practice tests
+                  that generate 100 questions calibrated to the real FBLA exam,
+                  a personal score tracker, and a deadline calendar.
+                </p>
+                <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
+                  For advisors: a member roster showing who signed up for what,
+                  recent practice activity, and CSV exports for regional sign-up
+                  forms. Built on top of the member tools so everything stays in
+                  one place.
+                </p>
+                <p style={{ fontSize: 15, color: "var(--text2)", lineHeight: 1.7, marginTop: 14 }}>
+                  The pilot is at Council Rock South, presenting at our officer
+                  meeting on August 25, 2026. After that, it's open to any
+                  chapter in the country.
                 </p>
               </Card>
             </div>
@@ -93,7 +106,7 @@ export default function About() {
       <section style={{ padding: "80px 0" }}>
         <div className="container">
           <SectionHeader
-            eyebrow="What I believe"
+            eyebrow="What we believe"
             title="Three principles."
             tagline="The product opinions baked into every screen."
           />
@@ -111,16 +124,16 @@ export default function About() {
           >
             {[
               {
-                title: "Free for everyone, forever.",
-                body: "No student or chapter should have to pay to compete in FBLA. The platform stays free. Always.",
+                title: "Free for every chapter, forever.",
+                body: "No student or advisor should have to pay to compete better in FBLA. FBLA One is and will remain free. No paid plans, no per-seat fees, no student data sold.",
               },
               {
-                title: "No fluff. No filler content.",
-                body: "Every page should be one a real student would open before regionals. If it's not useful, it doesn't ship.",
+                title: "AI that actually knows FBLA.",
+                body: "The practice test generator is built on top of each competition's exact topic outline. Claude writes questions calibrated to the real FBLA test - not generic business trivia. Wrong-answer explanations are included for every question.",
               },
               {
-                title: "Built in public, fast.",
-                body: "Solo build, deploying continuously, getting feedback from real users at CRHS South. No corporate roadmap, no quarterly planning - just ship and learn.",
+                title: "Advisor buy-in built in.",
+                body: "The member-facing tools are useful day one. The advisor layer (roster, activity feed, exports) is what makes a chapter actually adopt it. Both are first-class features.",
               },
             ].map((p, i) => (
               <ScrollReveal key={p.title} delay={i * 0.06}>
@@ -136,10 +149,20 @@ export default function About() {
                   >
                     {`0${i + 1}`}
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em", marginTop: 14, marginBottom: 10 }}>
+                  <h3
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      letterSpacing: "-0.01em",
+                      marginTop: 14,
+                      marginBottom: 10,
+                    }}
+                  >
                     {p.title}
                   </h3>
-                  <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65 }}>{p.body}</p>
+                  <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65 }}>
+                    {p.body}
+                  </p>
                 </Card>
               </ScrollReveal>
             ))}
@@ -154,17 +177,32 @@ export default function About() {
       </section>
 
       <section style={{ padding: "60px 0 80px" }}>
-        <div className="container" style={{ maxWidth: 720, marginInline: "auto", textAlign: "center" }}>
+        <div
+          className="container"
+          style={{ maxWidth: 720, marginInline: "auto", textAlign: "center" }}
+        >
           <ScrollReveal>
             <p style={{ fontSize: 16, color: "var(--text2)", lineHeight: 1.65 }}>
-              Questions, ideas, or want to bring FBLA One to your chapter?
+              Advisor at a chapter you want to bring onto FBLA One? Member who
+              wants to loop in your advisor?
             </p>
-            <div style={{ marginTop: 22, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <div
+              style={{
+                marginTop: 22,
+                display: "flex",
+                gap: 12,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <Link href="mailto:hello@fbla.one" className="btn btn-accent btn-pill">
                 Get in touch
               </Link>
-              <Link href="/auth" className="btn btn-ghost btn-pill">
-                Try FBLA One
+              <Link
+                href="/api/preview?redirect=/app"
+                className="btn btn-ghost btn-pill"
+              >
+                Preview the platform
               </Link>
             </div>
           </ScrollReveal>

@@ -26,28 +26,53 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Do I need an account?",
-        a: "You can browse competitions without an account. To track your prep, save resources, or join a chapter, sign up. Free.",
+        a: "You can browse all competition guides without an account. To use AI practice tests, track your prep, save resources, or join a chapter, you need a free account. You can also preview the full app without signing up -- just click 'Preview the app' on the homepage.",
       },
     ],
   },
   {
-    title: "Competitions",
+    title: "Competitions & content",
     items: [
       {
         q: "How many events do you cover?",
-        a: "All of FBLA's competitive events are in the registry. About 25 have full content today (description, test format, topics, curated study resources). The rest get fleshed out as members request them.",
+        a: "All 55 FBLA competitive events are in the registry, and all 55 now have complete content: event description, test format details, topic list, and curated study resources. Objective-test events also support AI practice test generation.",
       },
       {
-        q: "Why don't presentation events have full content?",
-        a: "Presentation and production events use year-specific prompts released by FBLA. We don't know the prompts in advance, so we list the event but mark it 'coming soon' until the topic drops.",
+        q: "Why do some events say the topic is released annually?",
+        a: "Presentation, production, and case-study events use year-specific prompts or briefs released by FBLA. The platform covers the underlying skills and knowledge for all of them -- how to build a business plan, how to shoot and edit a video, how to analyze an ethics scenario -- even though the specific topic changes each year.",
       },
       {
         q: "Are the study resources official FBLA materials?",
-        a: "No. We link out to free, high-quality external resources (Khan Academy, AccountingCoach, Investopedia, Professor Messer, etc.) that match each event's test topics. We're not affiliated with FBLA Inc.",
+        a: "No. We link to free, high-quality external resources (Khan Academy, AccountingCoach, Investopedia, Professor Messer, MDN, etc.) that match each event's topic outline. We are not affiliated with FBLA-PBL Inc.",
       },
       {
         q: "Can I suggest a resource?",
-        a: "Yes - email hello@fbla.one with the event name and the resource. We review and add good ones within a few days.",
+        a: "Yes -- email hello@fbla.one with the event name and the resource URL. We review and add good ones quickly.",
+      },
+    ],
+  },
+  {
+    title: "AI Practice Tests",
+    items: [
+      {
+        q: "How does the AI practice test work?",
+        a: "You pick a competition and a question count (10, 25, or 50). Claude generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live as they're generated. After you submit, every wrong answer gets a full explanation.",
+      },
+      {
+        q: "How accurate are the AI-generated questions?",
+        a: "The questions are designed to match FBLA national-level difficulty and are built from each event's official topic list. They are a study tool, not official FBLA materials. Use them alongside the official FBLA event description and topic outline.",
+      },
+      {
+        q: "Which events support AI practice tests?",
+        a: "All 45 objective-test events -- the ones with a 60-minute, 100-question multiple-choice format. Presentation, case-study, and production events don't have a standardized test, so AI practice tests aren't applicable for those.",
+      },
+      {
+        q: "Do my scores get saved?",
+        a: "Yes. After reviewing your results, click 'Log score to tracker' and the score is saved to your practice tracker. The dashboard shows your score trend over time per competition.",
+      },
+      {
+        q: "Is there a limit on how many tests I can generate?",
+        a: "No limit. Generate as many as you want. Every test produces a fresh set of questions -- no two tests are the same.",
       },
     ],
   },
@@ -72,16 +97,20 @@ const SECTIONS: Section[] = [
     title: "Chapters & advisors",
     items: [
       {
-        q: "How do advisors use it?",
-        a: "Advisor features (member roster, chapter-wide deadlines, sign-up overview) are still being built. They'll ship free for every chapter when ready.",
+        q: "How do advisors set up a chapter?",
+        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get a 5-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
       },
       {
-        q: "How do I get my chapter on?",
-        a: "There's no chapter onboarding flow yet - members just sign up individually for now. Multi-member chapter accounts ship with the advisor features.",
+        q: "What can advisors see?",
+        a: "Advisors see a member roster listing every member who joined, their role, and all the competitions they have registered for. You can also see recent member practice activity -- who practiced, what event, and their score.",
       },
       {
-        q: "Is FBLA One affiliated with FBLA?",
-        a: "No. Independent platform built by an FBLA student for FBLA students. Not endorsed by FBLA-PBL Inc.",
+        q: "Can I export member sign-ups for regionals?",
+        a: "Yes. The advisor view has two export buttons: a full member roster CSV and a competition sign-ups CSV with one row per member per event -- useful for regional registration forms.",
+      },
+      {
+        q: "Is FBLA One affiliated with FBLA-PBL?",
+        a: "No. Independent platform built by an FBLA student. Not endorsed by or affiliated with FBLA-PBL Inc.",
       },
     ],
   },

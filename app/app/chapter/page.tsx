@@ -20,10 +20,13 @@ import {
   joinChapter,
   getChapterById,
   getChapterMembers,
+  getChapterActivity,
   type ChapterProfile,
   type ChapterInfo,
   type MemberRow,
+  type ActivityItem,
 } from "@/lib/chapter";
+import { FORMAT_LABEL } from "@/lib/competitions";
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -42,6 +45,48 @@ function daysUntil(iso: string): number {
 
 function memberName(m: MemberRow): string {
   return m.display_name?.trim() || m.email?.split("@")[0] || "Anonymous";
+}
+
+function relativeTime(iso: string): string {
+  const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (sec < 60) return "just now";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr / 24)}d ago`;
+}
+
+function exportSignupsCSV(members: MemberRow[], chapterName: string) {
+  const headers = ["Member Name", "Email", "Competition", "Category", "Format"];
+  const rows: string[][] = [];
+  for (const m of members) {
+    for (const slug of m.registrations) {
+      const comp = getCompetition(slug);
+      rows.push([
+        memberName(m),
+        m.email ?? "",
+        comp?.name ?? slug,
+        comp?.category ?? "",
+        comp ? FORMAT_LABEL[comp.format] : "",
+      ]);
+    }
+  }
+  if (rows.length === 0) {
+    for (const m of members) rows.push([memberName(m), m.email ?? "", "", "", ""]);
+  }
+  const csv = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${chapterName.replace(/\s+/g, "-").toLowerCase()}-signups-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function exportRosterCSV(members: MemberRow[], chapterName: string) {
@@ -88,6 +133,7 @@ export default function ChapterPage() {
   const [profile, setProfile] = useState<ChapterProfile | null>(null);
   const [chapter, setChapter] = useState<ChapterInfo | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -117,8 +163,12 @@ export default function ChapterPage() {
       const ch = await getChapterById(prof.chapter_id);
       setChapter(ch);
       if (prof.role === "advisor" && ch) {
-        const m = await getChapterMembers(ch.id);
+        const [m, act] = await Promise.all([
+          getChapterMembers(ch.id),
+          getChapterActivity(ch.id),
+        ]);
         setMembers(m);
+        setActivity(act);
       }
     }
   }, []);
@@ -330,6 +380,26 @@ export default function ChapterPage() {
             >
               {profile?.role ?? "member"}
             </span>
+            {isAdvisor && (
+              <button
+                type="button"
+                onClick={() => {
+                  const subj = encodeURIComponent(`Join ${chapter?.name ?? "our chapter"} on FBLA One`);
+                  const body = encodeURIComponent(
+                    `Hi!\n\nJoin our FBLA chapter on FBLA One to track your competition prep, access study guides for all 55 events, and generate AI practice tests.\n\nInvite code: ${chapter?.invite_code}\n\nGo to https://fbla.one/app, click "Chapter" in the sidebar, and enter the code under "Join a chapter."\n\nSee you there!`
+                  );
+                  window.open(`mailto:?subject=${subj}&body=${body}`, "_blank");
+                }}
+                className="btn btn-ghost btn-sm"
+                style={{ gap: 6, display: "flex", alignItems: "center" }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <path d="M22 6l-10 7L2 6" />
+                </svg>
+                Email invite
+              </button>
+            )}
           </div>
         </Card>
       )}
@@ -343,19 +413,36 @@ export default function ChapterPage() {
             tagline="Every member in your chapter and the events they are prepping for."
             right={
               members.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => exportRosterCSV(members, chapter?.name ?? "chapter")}
-                  className="btn btn-ghost btn-sm"
-                  style={{ gap: 6, display: "flex", alignItems: "center" }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <path d="M7 10l5 5 5-5" />
-                    <path d="M12 15V3" />
-                  </svg>
-                  Export CSV
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => exportSignupsCSV(members, chapter?.name ?? "chapter")}
+                    className="btn btn-ghost btn-sm"
+                    style={{ gap: 6, display: "flex", alignItems: "center" }}
+                    title="One row per member per event - for regional sign-up forms"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <path d="M7 10l5 5 5-5" />
+                      <path d="M12 15V3" />
+                    </svg>
+                    Sign-ups CSV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => exportRosterCSV(members, chapter?.name ?? "chapter")}
+                    className="btn btn-ghost btn-sm"
+                    style={{ gap: 6, display: "flex", alignItems: "center" }}
+                    title="Full member roster"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <path d="M7 10l5 5 5-5" />
+                      <path d="M12 15V3" />
+                    </svg>
+                    Roster CSV
+                  </button>
+                </div>
               ) : undefined
             }
           />
@@ -453,6 +540,64 @@ export default function ChapterPage() {
               </table>
             </div>
           )}
+        </Card>
+      )}
+
+      {/* ── CHAPTER ACTIVITY FEED ── */}
+      {isAdvisor && hasChapter && activity.length > 0 && (
+        <Card>
+          <CardHeader
+            eyebrow="Advisor view"
+            title="Recent practice activity"
+            tagline="Latest practice sessions logged by your chapter members."
+          />
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 14 }}>
+            {activity.map((item) => {
+              const comp = getCompetition(item.competitionSlug);
+              const pct = item.score != null && item.outOf != null
+                ? Math.round((item.score / item.outOf) * 100)
+                : null;
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+                        {item.memberName ?? item.memberEmail?.split("@")[0] ?? "Member"}
+                      </span>
+                      <span style={{ fontSize: 12, color: "var(--text3)" }}>
+                        practiced {comp?.name ?? item.competitionSlug}
+                      </span>
+                    </div>
+                  </div>
+                  {pct != null && (
+                    <span
+                      className="font-mono"
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--accent)" : "var(--red)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {pct}%
+                    </span>
+                  )}
+                  <span className="font-mono" style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
+                    {relativeTime(item.loggedAt)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </Card>
       )}
 

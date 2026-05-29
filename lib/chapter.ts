@@ -156,6 +156,17 @@ export async function getChapterById(id: string): Promise<ChapterInfo | null> {
   }
 }
 
+export type ActivityItem = {
+  id: string;
+  memberId: string;
+  memberName: string | null;
+  memberEmail: string | null;
+  competitionSlug: string;
+  score: number | null;
+  outOf: number | null;
+  loggedAt: string;
+};
+
 // ── Advisor dashboard ─────────────────────────────────────────
 
 /**
@@ -202,6 +213,56 @@ export async function getChapterMembers(chapterId: string): Promise<MemberRow[]>
     }));
   } catch (e) {
     devErr("getChapterMembers:", e);
+    return [];
+  }
+}
+
+/**
+ * Fetch recent practice logs for all members of a chapter.
+ * Requires the "Advisors read chapter member practice logs" RLS policy
+ * (migration 0005) to be in place.
+ */
+export async function getChapterActivity(chapterId: string, limit = 25): Promise<ActivityItem[]> {
+  const supa = getSupabase();
+  if (!supa) return [];
+  try {
+    const { data: profiles } = await supa
+      .from("profiles")
+      .select("id, display_name, email")
+      .eq("chapter_id", chapterId);
+
+    if (!profiles?.length) return [];
+
+    const memberMap = new Map(
+      (profiles as { id: string; display_name: string | null; email: string | null }[]).map((p) => [
+        p.id,
+        { display_name: p.display_name, email: p.email },
+      ])
+    );
+    const memberIds = profiles.map((p) => p.id as string);
+
+    const { data: logs, error } = await supa
+      .from("practice_logs")
+      .select("id, user_id, competition_slug, score, out_of, logged_at")
+      .in("user_id", memberIds)
+      .order("logged_at", { ascending: false })
+      .limit(limit);
+
+    if (error) { devErr("getChapterActivity logs:", error); return []; }
+    if (!logs?.length) return [];
+
+    return (logs as Record<string, unknown>[]).map((l) => ({
+      id: String(l.id),
+      memberId: String(l.user_id),
+      memberName: memberMap.get(String(l.user_id))?.display_name ?? null,
+      memberEmail: memberMap.get(String(l.user_id))?.email ?? null,
+      competitionSlug: String(l.competition_slug),
+      score: l.score == null ? null : Number(l.score),
+      outOf: l.out_of == null ? null : Number(l.out_of),
+      loggedAt: String(l.logged_at),
+    }));
+  } catch (e) {
+    devErr("getChapterActivity:", e);
     return [];
   }
 }

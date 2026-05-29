@@ -89,11 +89,14 @@ export default function Landing() {
                   flexWrap: "wrap",
                 }}
               >
-                <Link href="/app/coach" className="btn btn-accent btn-lg cta-shimmer">
+                <Link href="/api/preview?redirect=/app/coach" className="btn btn-accent btn-lg cta-shimmer">
                   Try AI Practice Tests
                 </Link>
                 <Link href="/competitions" className="btn btn-ghost btn-lg">
                   Browse competitions
+                </Link>
+                <Link href="/api/preview?redirect=/app" className="btn btn-ghost btn-lg">
+                  Preview the platform
                 </Link>
               </div>
             </ScrollReveal>
