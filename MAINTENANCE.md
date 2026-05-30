@@ -324,3 +324,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — reviewed env and config
 - 2026-05-30 — checked mobile layouts
 - 2026-05-30 — verified API responses
+- 2026-05-30 — audited dependencies, no advisories
