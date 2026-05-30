@@ -338,3 +338,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — routine maintenance
 - 2026-05-30 — routine maintenance
 - 2026-05-30 — reviewed dependency updates
+- 2026-05-30 — ran regression pass, no regressions
