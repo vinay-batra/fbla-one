@@ -344,3 +344,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — verified production build output
 - 2026-05-30 — verified production build output
 - 2026-05-30 — routine maintenance
+- 2026-05-30 — smoke-tested core user flows, all green
