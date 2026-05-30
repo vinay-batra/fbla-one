@@ -322,3 +322,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — reviewed error logging
 - 2026-05-30 — general housekeeping
 - 2026-05-30 — reviewed env and config
+- 2026-05-30 — checked mobile layouts
