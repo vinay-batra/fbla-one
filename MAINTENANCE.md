@@ -330,3 +330,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — ran regression pass, no regressions
 - 2026-05-30 — smoke-tested core user flows, all green
 - 2026-05-30 — general housekeeping
+- 2026-05-30 — checked auth and session handling
