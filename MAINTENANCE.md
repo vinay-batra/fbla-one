@@ -325,3 +325,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — checked mobile layouts
 - 2026-05-30 — verified API responses
 - 2026-05-30 — audited dependencies, no advisories
+- 2026-05-30 — general housekeeping
