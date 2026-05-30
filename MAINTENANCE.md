@@ -314,3 +314,4 @@ Routine checks, audits, and tests.
 - 2026-05-29 — ran regression pass, no regressions
 - 2026-05-30 — routine maintenance
 - 2026-05-30 — ran regression pass, no regressions
+- 2026-05-30 — checked mobile layouts
