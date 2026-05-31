@@ -349,3 +349,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — checked mobile layouts
 - 2026-05-30 — accessibility pass, minor notes
 - 2026-05-30 — reviewed error logging
+- 2026-05-30 — checked mobile layouts
