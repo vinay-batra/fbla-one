@@ -359,3 +359,4 @@ Routine checks, audits, and tests.
 - 2026-05-31 — accessibility pass, minor notes
 - 2026-05-31 — checked mobile layouts
 - 2026-05-31 — checked auth and session handling
+- 2026-05-31 — routine maintenance
