@@ -355,3 +355,4 @@ Routine checks, audits, and tests.
 - 2026-05-30 — audited dependencies, no advisories
 - 2026-05-31 — verified production build output
 - 2026-05-31 — general housekeeping
+- 2026-05-31 — reviewed dependency updates
