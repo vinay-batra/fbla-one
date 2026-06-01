@@ -365,3 +365,4 @@ Routine checks, audits, and tests.
 - 2026-05-31 — general housekeeping
 - 2026-05-31 — reviewed dependency updates
 - 2026-05-31 — verified API responses
+- 2026-05-31 — smoke-tested core user flows, all green
