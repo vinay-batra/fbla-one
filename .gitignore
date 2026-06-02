@@ -44,3 +44,6 @@ next-env.d.ts
 
 # one-off local verification scripts (kept locally, not committed)
 _*.mjs
+
+# supabase CLI local temp
+supabase/.temp
