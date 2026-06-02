@@ -16,12 +16,12 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 **LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.1 (June 2, 2026) - advisor leaderboard + chapter stats, chapter-shared deadlines, security audit fixes.
 
-**ACTION REQUIRED:** apply `supabase/migrations/0006_fix_rls_recursion.sql` in the Supabase SQL editor. 0006 fixes an infinite-recursion bug in the chapter/advisor RLS (a chapters <-> profiles policy loop introduced by 0004) that currently breaks chapter creation and the advisor dashboard in production. A live integration test (the `_rls_test.mjs` pattern) found it. After applying, re-run that test to confirm green.
+**ACTION REQUIRED:** apply `supabase/migrations/0006_fix_rls_recursion.sql` THEN `0007_invite_validated_join.sql` (in that order) in the Supabase SQL editor. 0006 fixes an infinite-recursion bug in the chapter/advisor RLS (a chapters <-> profiles loop from 0004) that breaks chapter creation + the advisor dashboard. 0007 closes the chapter-join holes (world-readable invite codes; self-join any chapter without an invite). A live integration test (`_rls_test.mjs`) found both. After applying, run `node _rls_test.mjs` - all PASS expected.
 
 **Status: frontend deployed; advisor features (existing + new leaderboard) blocked until migration 0006 is applied.**
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
 - Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
-- Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0006 in repo. 0001-0005 applied live; **0006 (RLS recursion fix) MUST be applied** - until then chapter creation + advisor dashboard recurse and fail.
+- Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0007 in repo. 0001-0005 applied live; **0006 (RLS recursion fix) then 0007 (invite-validated join) MUST be applied** - until 0006, chapter creation + advisor dashboard recurse and fail.
 - Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-sonnet-4-5).
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -59,7 +59,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ### Next up
 1. **Apply migration 0006** (RLS recursion fix) in the Supabase SQL editor - blocks ALL advisor features. Then re-verify with the `_rls_test.mjs` integration-test pattern.
-2. **Harden chapter join** (audit #3/#4): invite codes are world-readable and any user can self-join any chapter without an invite (a live test confirmed it). Needs an invite-validated SECURITY DEFINER join RPC + locked-down chapters SELECT (migration 0007). Spawned as a follow-up task.
+2. **Apply migration 0007** (invite-validated join): closes audit #3/#4 - world-readable invite codes + self-join-any-chapter. Authored: SECURITY DEFINER `create_chapter` / `join_chapter_by_code` + a chapter_id guard trigger + chapters read lockdown; `lib/chapter.ts` calls the RPCs with a legacy fallback (safe to deploy before 0007). Apply after 0006.
 3. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
 4. Bundle: `CommandPalette` imports the full 55-event registry into every marketing/auth/404 page. Split the heavy per-event content from a light index so it tree-shakes (a same-module `COMPETITION_INDEX` does NOT help).
 5. Broader a11y: focus-trap/Escape on the onboarding modal, feedback FAB, and nav drawers; light-theme contrast (`--accent` / `--text-muted` as small text fail AA - `--accent-text` already exists for this).

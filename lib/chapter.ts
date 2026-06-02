@@ -45,6 +45,19 @@ function randomInviteCode(): string {
   return Math.random().toString(36).slice(2, 7).toUpperCase();
 }
 
+/** True when an RPC failed because the function is not in the DB yet (pre-migration 0007). */
+function isMissingFunction(err: { code?: string; message?: string } | null): boolean {
+  if (!err) return false;
+  const code = err.code ?? "";
+  const msg = (err.message ?? "").toLowerCase();
+  return (
+    code === "PGRST202" || code === "404" || code === "42883" ||
+    msg.includes("could not find the function") ||
+    msg.includes("does not exist") ||
+    msg.includes("schema cache")
+  );
+}
+
 // ── Profile ───────────────────────────────────────────────────
 
 /** Fetch the signed-in user's profile row. */
@@ -76,6 +89,18 @@ export async function createChapter(
   if (!supa) return { data: null, error: "Supabase not configured" };
 
   try {
+    // Preferred path (migration 0007): create + assign advisor server-side, where
+    // the chapter_id change is permitted by the guard trigger.
+    const { data: rpcData, error: rpcErr } = await supa.rpc("create_chapter", { p_name: name.trim() });
+    if (!rpcErr && rpcData) {
+      return { data: rpcData as ChapterInfo, error: null };
+    }
+    if (rpcErr && !isMissingFunction(rpcErr)) {
+      devErr("createChapter rpc:", rpcErr);
+      return { data: null, error: rpcErr.message ?? "Failed to create chapter" };
+    }
+
+    // Fallback for before 0007 is applied: direct insert + profile update.
     const inviteCode = randomInviteCode();
     const { data: chapter, error: chErr } = await supa
       .from("chapters")
@@ -110,11 +135,30 @@ export async function joinChapter(
   const supa = getSupabase();
   if (!supa) return { data: null, error: "Supabase not configured" };
 
+  const code = inviteCode.trim().toUpperCase();
   try {
+    // Preferred path (migration 0007): validate the invite server-side. The client
+    // no longer needs read access to other chapters.
+    const { data: chapterId, error: rpcErr } = await supa.rpc("join_chapter_by_code", { p_code: code });
+    if (!rpcErr && chapterId) {
+      const ch = await getChapterById(chapterId as string);
+      return ch
+        ? { data: ch, error: null }
+        : { data: null, error: "Joined, but could not load the chapter." };
+    }
+    if (rpcErr && !isMissingFunction(rpcErr)) {
+      if ((rpcErr.message ?? "").toLowerCase().includes("invalid invite code")) {
+        return { data: null, error: "Invalid invite code. Double-check with your advisor." };
+      }
+      devErr("joinChapter rpc:", rpcErr);
+      return { data: null, error: rpcErr.message ?? "Could not join chapter" };
+    }
+
+    // Fallback for before 0007 is applied: look up the chapter + direct profile update.
     const { data: chapter, error: lookupErr } = await supa
       .from("chapters")
       .select("*")
-      .eq("invite_code", inviteCode.trim().toUpperCase())
+      .eq("invite_code", code)
       .single();
 
     if (lookupErr || !chapter) {

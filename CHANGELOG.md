@@ -17,6 +17,7 @@ All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 ### CRITICAL SQL - apply in the Supabase SQL editor
 - **migration 0005** (recovered to the repo): advisor read of member practice logs. Was applied live earlier but never committed, so the repo could not reproduce production.
 - **migration 0006** (REQUIRED): fixes infinite recursion in the chapter/advisor RLS policies (a chapters <-> profiles loop introduced by 0004) that was breaking chapter creation and the entire advisor dashboard in production. Moves cross-table lookups into SECURITY DEFINER helpers; also adds a WITH CHECK + privilege-escalation guard on profile updates. Found by a live integration test.
+- **migration 0007** (apply after 0006): closes the chapter-join holes - world-readable invite codes + self-join-any-chapter without an invite. Adds SECURITY DEFINER `create_chapter` / `join_chapter_by_code`, a guard so `chapter_id` only changes via those functions, and locks down chapters reads. `lib/chapter.ts` calls the RPCs with a legacy fallback, so it is safe to deploy before 0007 is applied.
 
 ### Security + correctness fixes (multi-agent audit, 43 findings)
 - Sign-out now clears display name / chapter name / deadlines (was a cross-account leak on shared school computers).
@@ -27,7 +28,6 @@ All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 - Accessibility: auth inputs labelled, charts have aria-labels. Mobile: `/app/competitions` rows + deadline form reflow. Removed em-dash violations + a dead variable.
 
 ### Deferred
-- Chapter join is not invite-validated and invite codes are world-readable (follow-up migration 0007).
 - CommandPalette ships the full 55-event registry into every page bundle (needs a data-split refactor).
 
 ---
