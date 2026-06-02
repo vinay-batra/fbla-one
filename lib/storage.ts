@@ -44,6 +44,7 @@ const KEYS = {
   displayName: "fbla_display_name",
   chapterName: "fbla_chapter_name",
   deadlines: "fbla_deadlines",
+  chapterDeadlines: "fbla_chapter_deadlines",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -86,8 +87,24 @@ export function onStorageChange(cb: () => void): () => void {
 
 let syncUserId: string | null = null;
 
+/** Chapter context: when set to a chapter, deadlines become chapter-shared. */
+let chapterCtx: { chapterId: string | null; role: string | null } = { chapterId: null, role: null };
+
 export function setSyncUser(id: string | null): void {
   syncUserId = id;
+}
+
+export function setChapterContext(chapterId: string | null, role: string | null): void {
+  chapterCtx = { chapterId, role };
+}
+
+export function isInChapter(): boolean {
+  return Boolean(chapterCtx.chapterId);
+}
+
+/** Solo / preview users manage their own local deadlines; in a chapter only the advisor can. */
+export function canManageDeadlines(): boolean {
+  return !chapterCtx.chapterId || chapterCtx.role === "advisor";
 }
 
 function devError(label: string, e: unknown): void {
@@ -99,6 +116,23 @@ export async function pullFromSupabase(userId: string): Promise<void> {
   const supa = getSupabase();
   if (!supa) return;
   setSyncUser(userId);
+
+  // Chapter context + shared deadlines (set early so writes this session route correctly).
+  try {
+    const { data: prof } = await supa
+      .from("profiles")
+      .select("chapter_id, role")
+      .eq("id", userId)
+      .single();
+    if (prof?.chapter_id) {
+      setChapterContext(prof.chapter_id as string, (prof.role as string) ?? null);
+      await syncChapterDeadlines();
+    } else {
+      setChapterContext(null, null);
+    }
+  } catch (e) {
+    devError("pullFromSupabase chapter context:", e);
+  }
 
   try {
     const [{ data: regs }, { data: logs }, { data: saved }] = await Promise.all([
@@ -166,9 +200,16 @@ export async function ensureProfile(userId: string, email: string | null, name: 
 /** Clear sync user + wipe local app data (on sign-out). */
 export function clearSyncedData(): void {
   setSyncUser(null);
+  setChapterContext(null, null);
   write(KEYS.registered, []);
   write(KEYS.practice, []);
   write(KEYS.saved, []);
+  write(KEYS.deadlines, []);
+  write(KEYS.chapterDeadlines, []);
+  // Personal profile fields are device-local; clear them so the next user on a
+  // shared computer never sees the previous user's name / chapter / deadlines.
+  write(KEYS.displayName, "");
+  write(KEYS.chapterName, "");
 }
 
 function dbToLog(r: Record<string, unknown>): PracticeLog {
@@ -325,17 +366,90 @@ export function removeSavedResource(id: string): void {
 }
 
 /* ── Deadlines ───────────────────────────────────────── */
+/**
+ * Deadlines are chapter-shared when the user is in a chapter (read from a local
+ * mirror of public.deadlines that syncChapterDeadlines keeps fresh; only the
+ * advisor can write). Solo / preview users fall back to personal localStorage.
+ */
+function dbToDeadline(r: Record<string, unknown>): Deadline {
+  return {
+    id: String(r.id),
+    title: String(r.title),
+    competitionSlug: (r.competition_slug as string) ?? null,
+    dueAt: String(r.due_at).slice(0, 10),
+    note: (r.description as string) ?? null,
+    createdAt: String(r.created_at),
+  };
+}
+
+/** Pull the chapter's shared deadlines into the local mirror. */
+export async function syncChapterDeadlines(): Promise<void> {
+  const supa = getSupabase();
+  if (!supa || !chapterCtx.chapterId) return;
+  try {
+    const { data, error } = await supa
+      .from("deadlines")
+      .select("*")
+      .eq("chapter_id", chapterCtx.chapterId)
+      .order("due_at", { ascending: true });
+    if (error) { devError("syncChapterDeadlines:", error); return; }
+    write(KEYS.chapterDeadlines, (data ?? []).map((r) => dbToDeadline(r as Record<string, unknown>)));
+  } catch (e) {
+    devError("syncChapterDeadlines:", e);
+  }
+}
+
 export function getDeadlines(): Deadline[] {
-  return read<Deadline[]>(KEYS.deadlines, []);
+  const key = chapterCtx.chapterId ? KEYS.chapterDeadlines : KEYS.deadlines;
+  return read<Deadline[]>(key, []);
 }
 
 export function addDeadline(d: Omit<Deadline, "id" | "createdAt">): Deadline {
   const entry: Deadline = { ...d, id: cryptoId(), createdAt: new Date().toISOString() };
+
+  // In a chapter: shared deadline, advisor-only, persisted to Supabase.
+  if (chapterCtx.chapterId) {
+    if (chapterCtx.role !== "advisor") return entry; // members cannot add (RLS blocks anyway)
+    write(KEYS.chapterDeadlines, [entry, ...getDeadlines()]);
+    const supa = getSupabase();
+    if (supa && syncUserId) {
+      supa
+        .from("deadlines")
+        .insert({
+          chapter_id: chapterCtx.chapterId,
+          title: entry.title,
+          description: entry.note,
+          due_at: entry.dueAt,
+          competition_slug: entry.competitionSlug,
+          created_by: syncUserId,
+        })
+        .select()
+        .single()
+        .then(({ data, error }) => {
+          if (error) { devError("addDeadline sync:", error); return; }
+          if (data) {
+            const server = dbToDeadline(data as Record<string, unknown>);
+            write(KEYS.chapterDeadlines, getDeadlines().map((dl) => (dl.id === entry.id ? server : dl)));
+          }
+        });
+    }
+    return entry;
+  }
+
+  // Solo / preview: personal local deadline.
   write(KEYS.deadlines, [entry, ...getDeadlines()]);
   return entry;
 }
 
 export function removeDeadline(id: string): void {
+  if (chapterCtx.chapterId) {
+    if (chapterCtx.role !== "advisor") return; // members cannot remove
+    write(KEYS.chapterDeadlines, getDeadlines().filter((dl) => dl.id !== id));
+    const supa = getSupabase();
+    supa?.from("deadlines").delete().eq("id", id)
+      .then(({ error }) => error && devError("removeDeadline sync:", error));
+    return;
+  }
   write(KEYS.deadlines, getDeadlines().filter((dl) => dl.id !== id));
 }
 

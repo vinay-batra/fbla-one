@@ -10,9 +10,14 @@ import {
   addDeadline,
   removeDeadline,
   getRegistered,
+  setChapterContext,
+  syncChapterDeadlines,
+  canManageDeadlines,
+  isInChapter,
   type Deadline,
 } from "@/lib/storage";
-import { getCompetition } from "@/lib/competitions";
+import { getCompetition, COMPETITIONS } from "@/lib/competitions";
+import { Sparkbars } from "@/components/Sparkbars";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import {
   getMyProfile,
@@ -21,10 +26,12 @@ import {
   getChapterById,
   getChapterMembers,
   getChapterActivity,
+  getChapterStats,
   type ChapterProfile,
   type ChapterInfo,
   type MemberRow,
   type ActivityItem,
+  type ChapterStats,
 } from "@/lib/chapter";
 import { FORMAT_LABEL } from "@/lib/competitions";
 
@@ -120,6 +127,37 @@ function roleBadgeStyle(role: string): React.CSSProperties {
   return { background: "var(--bg3)", color: "var(--text3)" };
 }
 
+function scoreColor(pct: number): string {
+  return pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--accent)" : "var(--red)";
+}
+
+const LB_TH: React.CSSProperties = {
+  textAlign: "left",
+  padding: "8px 12px",
+  fontSize: 9,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: "var(--text-muted)",
+  borderBottom: "0.5px solid var(--border)",
+  fontWeight: 700,
+};
+
+const LB_TD: React.CSSProperties = { padding: "10px 12px", verticalAlign: "top" };
+
+function MiniStat({ label, value, sub, small }: { label: string; value: string; sub?: string; small?: boolean }) {
+  return (
+    <div style={{ padding: "14px 14px", borderRadius: 10, border: "0.5px solid var(--border)", background: "var(--bg2)" }}>
+      <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.16em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+        {label}
+      </p>
+      <p className="font-mono" style={{ fontSize: small ? 14 : 22, fontWeight: 700, color: "var(--text)", marginTop: 8, lineHeight: 1.15, wordBreak: "break-word" }}>
+        {value}
+      </p>
+      {sub && <p style={{ fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{sub}</p>}
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────
 
 export default function ChapterPage() {
@@ -134,6 +172,7 @@ export default function ChapterPage() {
   const [chapter, setChapter] = useState<ChapterInfo | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [stats, setStats] = useState<ChapterStats | null>(null);
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -160,15 +199,20 @@ export default function ChapterPage() {
     const prof = await getMyProfile(uid);
     setProfile(prof);
     if (prof?.chapter_id) {
+      // Route deadlines through the chapter-shared mirror for every member.
+      setChapterContext(prof.chapter_id, prof.role);
+      syncChapterDeadlines();
       const ch = await getChapterById(prof.chapter_id);
       setChapter(ch);
       if (prof.role === "advisor" && ch) {
-        const [m, act] = await Promise.all([
+        const [m, act, st] = await Promise.all([
           getChapterMembers(ch.id),
           getChapterActivity(ch.id),
+          getChapterStats(ch.id),
         ]);
         setMembers(m);
         setActivity(act);
+        setStats(st);
       }
     }
   }, []);
@@ -237,6 +281,16 @@ export default function ChapterPage() {
   const isAdvisor = profile?.role === "advisor";
   const hasChapter = Boolean(profile?.chapter_id && chapter);
   const signedIn = Boolean(userId);
+  const inChapter = isInChapter();
+  const canManage = canManageDeadlines();
+  const compOptions: { slug: string; name: string }[] = inChapter
+    ? COMPETITIONS.map((c) => ({ slug: c.slug, name: c.name }))
+    : registered.map((slug) => ({ slug, name: getCompetition(slug)?.name ?? slug }));
+  const deadlineTagline = inChapter
+    ? canManage
+      ? "Shared across your chapter - every member sees these."
+      : "Set by your advisor - shared across your chapter."
+    : "Track sign-up dates, test days, and submission windows.";
 
   // ── Render ───────────────────────────────────────────────────
   return (
@@ -404,6 +458,125 @@ export default function ChapterPage() {
         </Card>
       )}
 
+      {/* ── CHAPTER STATS ── */}
+      {isAdvisor && hasChapter && stats && (
+        <Card>
+          <CardHeader
+            eyebrow="Advisor view"
+            title="Chapter stats"
+            tagline="Practice activity across your whole chapter."
+          />
+          <div
+            className="chapter-stat-grid"
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 16 }}
+          >
+            <MiniStat label="Practice tests" value={String(stats.totalTests)} sub="all-time" />
+            <MiniStat label="Active this week" value={`${stats.activeThisWeek}/${stats.members.length}`} sub="members" />
+            <MiniStat label="Chapter average" value={stats.chapterAvgPct != null ? `${stats.chapterAvgPct}%` : "-"} sub="across scored tests" />
+            <MiniStat
+              small
+              label="Top event"
+              value={stats.topEvents[0] ? (getCompetition(stats.topEvents[0].slug)?.name ?? stats.topEvents[0].slug) : "-"}
+              sub={stats.topEvents[0] ? `${stats.topEvents[0].tests} test${stats.topEvents[0].tests !== 1 ? "s" : ""}` : "no data yet"}
+            />
+          </div>
+
+          {stats.totalTests > 0 && (
+            <div style={{ marginTop: 20, display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <p className="eyebrow" style={{ marginBottom: 10 }}>Practice tests per week</p>
+                <Sparkbars
+                  values={stats.weekly.map((w) => w.tests)}
+                  variant="volume"
+                  width={260}
+                  height={48}
+                  color="var(--brand)"
+                  ariaLabel={`Practice tests per week for the last 8 weeks: ${stats.weekly.map((w) => w.tests).join(", ")}`}
+                />
+              </div>
+              <p style={{ fontSize: 11, color: "var(--text3)", maxWidth: 220, lineHeight: 1.5 }}>
+                Last 8 weeks. Taller bars mean more practice tests logged by your chapter that week.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* ── LEADERBOARD ── */}
+      {isAdvisor && hasChapter && stats && (
+        <Card>
+          <CardHeader
+            eyebrow="Advisor view"
+            title="Leaderboard"
+            tagline="Ranked by practice tests logged, then average score."
+          />
+          {stats.members.every((m) => m.tests === 0) ? (
+            <div className="empty-state" style={{ marginTop: 12 }}>
+              <div className="empty-state-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <rect x="7" y="12" width="3" height="6" />
+                  <rect x="12" y="8" width="3" height="10" />
+                  <rect x="17" y="5" width="3" height="13" />
+                </svg>
+              </div>
+              <p className="empty-state-title">No practice logged yet</p>
+              <p className="empty-state-msg">Once members start taking AI practice tests, they will rank here automatically.</p>
+            </div>
+          ) : (
+            <div style={{ marginTop: 16, overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    {["#", "Member", "Tests", "Avg", "Best", "Last active"].map((h) => (
+                      <th key={h} className="font-mono" style={LB_TH}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.members.map((m, i) => {
+                    const rank = i + 1;
+                    return (
+                      <tr key={m.id} style={{ background: i % 2 === 0 ? "transparent" : "var(--bg2)" }}>
+                        <td style={LB_TD}>
+                          <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: rank === 1 ? "var(--accent)" : rank <= 3 ? "var(--text)" : "var(--text3)" }}>
+                            {rank}
+                          </span>
+                        </td>
+                        <td style={LB_TD}>
+                          <span style={{ fontWeight: 600, color: "var(--text)" }}>{m.name}</span>
+                          {m.role !== "member" && (
+                            <span className="font-mono" style={{ marginLeft: 6, fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                              {m.role}
+                            </span>
+                          )}
+                        </td>
+                        <td style={LB_TD}>
+                          <span className="font-mono" style={{ fontWeight: 700, color: m.tests > 0 ? "var(--text)" : "var(--text-muted)" }}>{m.tests}</span>
+                        </td>
+                        <td style={LB_TD}>
+                          {m.avgPct != null
+                            ? <span className="font-mono" style={{ fontWeight: 700, color: scoreColor(m.avgPct) }}>{m.avgPct}%</span>
+                            : <span style={{ color: "var(--text-muted)" }}>-</span>}
+                        </td>
+                        <td style={LB_TD}>
+                          {m.bestPct != null
+                            ? <span className="font-mono">{m.bestPct}%</span>
+                            : <span style={{ color: "var(--text-muted)" }}>-</span>}
+                        </td>
+                        <td style={LB_TD}>
+                          <span style={{ fontSize: 11, color: "var(--text3)" }}>{m.lastActiveAt ? relativeTime(m.lastActiveAt) : "never"}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* ── ADVISOR DASHBOARD ── */}
       {isAdvisor && hasChapter && (
         <Card>
@@ -554,7 +727,7 @@ export default function ChapterPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 14 }}>
             {activity.map((item) => {
               const comp = getCompetition(item.competitionSlug);
-              const pct = item.score != null && item.outOf != null
+              const pct = item.score != null && item.outOf != null && item.outOf > 0
                 ? Math.round((item.score / item.outOf) * 100)
                 : null;
               return (
@@ -606,21 +779,24 @@ export default function ChapterPage() {
         <CardHeader
           eyebrow="Calendar"
           title="Deadlines"
-          tagline="Track sign-up dates, test days, and submission windows."
+          tagline={deadlineTagline}
           right={
-            <button
-              type="button"
-              className="btn btn-accent btn-sm btn-pill"
-              onClick={() => setShowDlForm((p) => !p)}
-            >
-              {showDlForm ? "Cancel" : "Add deadline"}
-            </button>
+            canManage ? (
+              <button
+                type="button"
+                className="btn btn-accent btn-sm btn-pill"
+                onClick={() => setShowDlForm((p) => !p)}
+              >
+                {showDlForm ? "Cancel" : "Add deadline"}
+              </button>
+            ) : undefined
           }
         />
 
-        {showDlForm && (
+        {showDlForm && canManage && (
           <form
             onSubmit={submitDeadline}
+            className="dl-form-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
@@ -646,10 +822,9 @@ export default function ChapterPage() {
               <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Competition (optional)</label>
               <select value={dlSlug} onChange={(e) => setDlSlug(e.target.value)} className="input-field">
                 <option value="">No specific event</option>
-                {registered.map((slug) => {
-                  const comp = getCompetition(slug);
-                  return <option key={slug} value={slug}>{comp?.name ?? slug}</option>;
-                })}
+                {compOptions.map((c) => (
+                  <option key={c.slug} value={c.slug}>{c.name}</option>
+                ))}
               </select>
             </div>
 
@@ -674,7 +849,7 @@ export default function ChapterPage() {
               </svg>
             </div>
             <p className="empty-state-title">No deadlines yet</p>
-            <p className="empty-state-msg">Add your first deadline to start tracking sign-up dates and test days.</p>
+            <p className="empty-state-msg">{canManage ? "Add your first deadline to start tracking sign-up dates and test days." : "Your advisor has not added any chapter deadlines yet."}</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
@@ -727,21 +902,23 @@ export default function ChapterPage() {
                     {dl.note && <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>{dl.note}</p>}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => removeDeadline(dl.id)}
-                    aria-label="Remove deadline"
-                    style={{
-                      flexShrink: 0, width: 28, height: 28, borderRadius: 6,
-                      border: "0.5px solid var(--border)", background: "transparent",
-                      color: "var(--text3)", display: "flex", alignItems: "center",
-                      justifyContent: "center", cursor: "pointer",
-                    }}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={() => removeDeadline(dl.id)}
+                      aria-label="Remove deadline"
+                      style={{
+                        flexShrink: 0, width: 28, height: 28, borderRadius: 6,
+                        border: "0.5px solid var(--border)", background: "transparent",
+                        color: "var(--text3)", display: "flex", alignItems: "center",
+                        justifyContent: "center", cursor: "pointer",
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -804,6 +981,8 @@ export default function ChapterPage() {
       <style>{`
         @media (max-width: 720px) {
           .chapter-setup-grid { grid-template-columns: 1fr !important; }
+          .chapter-stat-grid { grid-template-columns: 1fr 1fr !important; }
+          .dl-form-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

@@ -24,6 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: `${c.name} · FBLA One`,
       description: c.description,
+      images: ["/og-image.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${c.name} · FBLA One`,
+      description: c.description,
+      images: ["/og-image.png"],
     },
   };
 }

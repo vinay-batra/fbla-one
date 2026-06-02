@@ -10,9 +10,11 @@ import { NextResponse } from "next/server";
  */
 export function GET(req: Request): Response {
   const url = new URL(req.url);
-  const redirectTo = url.searchParams.get("redirect") ?? "/app";
+  const raw = url.searchParams.get("redirect") ?? "/app";
+  // Only allow same-origin app paths to prevent an open redirect via ?redirect=.
+  const redirectTo = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
 
-  const response = NextResponse.redirect(new URL(redirectTo, req.url));
+  const response = NextResponse.redirect(new URL(redirectTo, url.origin));
 
   response.cookies.set("fbla_preview", "1", {
     path: "/",

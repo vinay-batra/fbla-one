@@ -33,7 +33,7 @@ export default function Tracker() {
     addPracticeLog({
       competitionSlug: slug,
       score: score ? Number(score) : null,
-      outOf: outOf ? Number(outOf) : null,
+      outOf: outOf && Number(outOf) > 0 ? Number(outOf) : null,
       durationMin: duration ? Number(duration) : null,
       notes,
     });

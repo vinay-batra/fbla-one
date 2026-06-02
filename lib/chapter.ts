@@ -266,3 +266,169 @@ export async function getChapterActivity(chapterId: string, limit = 25): Promise
     return [];
   }
 }
+
+// ── Chapter stats + leaderboard ───────────────────────────────
+
+export type MemberStat = {
+  id: string;
+  name: string;
+  email: string | null;
+  role: string;
+  tests: number; // total practice logs
+  scoredTests: number; // logs with both score + outOf
+  avgPct: number | null;
+  bestPct: number | null;
+  lastActiveAt: string | null;
+  last7: number; // logs in the last 7 days
+};
+
+export type WeeklyPoint = { weekStart: string; tests: number; avgPct: number | null };
+
+export type ChapterStats = {
+  members: MemberStat[]; // leaderboard, already sorted
+  totalTests: number;
+  activeThisWeek: number; // members with >= 1 log in the last 7 days
+  chapterAvgPct: number | null;
+  weekly: WeeklyPoint[]; // last 8 weeks, oldest -> newest
+  topEvents: { slug: string; tests: number }[]; // top 5 by test count
+};
+
+function pctOf(score: unknown, outOf: unknown): number | null {
+  if (score == null || outOf == null) return null;
+  const o = Number(outOf);
+  if (!o) return null;
+  return Math.round((Number(score) / o) * 100);
+}
+
+/**
+ * Aggregate every chapter member's practice logs into a leaderboard + trend.
+ * Relies on the "Advisors read chapter member practice logs" RLS policy
+ * (migration 0005), so only an advisor will get other members' rows back.
+ */
+export async function getChapterStats(chapterId: string): Promise<ChapterStats | null> {
+  const supa = getSupabase();
+  if (!supa) return null;
+  try {
+    const { data: profiles, error: pErr } = await supa
+      .from("profiles")
+      .select("id, display_name, email, role")
+      .eq("chapter_id", chapterId);
+
+    if (pErr || !profiles?.length) {
+      if (pErr) devErr("getChapterStats profiles:", pErr);
+      return null;
+    }
+
+    const memberIds = profiles.map((p) => p.id as string);
+
+    const { data: logs, error: lErr } = await supa
+      .from("practice_logs")
+      .select("user_id, competition_slug, score, out_of, logged_at")
+      .in("user_id", memberIds)
+      .order("logged_at", { ascending: false })
+      .limit(2000);
+
+    if (lErr) devErr("getChapterStats logs:", lErr);
+    const allLogs = (logs ?? []) as Record<string, unknown>[];
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const weekMs = 7 * dayMs;
+    const now = Date.now();
+    const sevenAgo = now - weekMs;
+
+    // Per-member aggregation.
+    const statById = new Map<string, MemberStat>();
+    const pctSum = new Map<string, number>();
+    for (const p of profiles) {
+      statById.set(p.id as string, {
+        id: p.id as string,
+        name: (p.display_name as string)?.trim() || (p.email as string)?.split("@")[0] || "Member",
+        email: (p.email as string) ?? null,
+        role: (p.role as string) ?? "member",
+        tests: 0,
+        scoredTests: 0,
+        avgPct: null,
+        bestPct: null,
+        lastActiveAt: null,
+        last7: 0,
+      });
+    }
+
+    for (const l of allLogs) {
+      const s = statById.get(String(l.user_id));
+      if (!s) continue;
+      s.tests += 1;
+      const loggedAt = String(l.logged_at);
+      if (new Date(loggedAt).getTime() >= sevenAgo) s.last7 += 1;
+      if (!s.lastActiveAt || loggedAt > s.lastActiveAt) s.lastActiveAt = loggedAt;
+      const pct = pctOf(l.score, l.out_of);
+      if (pct != null) {
+        s.scoredTests += 1;
+        pctSum.set(s.id, (pctSum.get(s.id) ?? 0) + pct);
+        if (s.bestPct == null || pct > s.bestPct) s.bestPct = pct;
+      }
+    }
+    for (const s of statById.values()) {
+      if (s.scoredTests > 0) s.avgPct = Math.round((pctSum.get(s.id) ?? 0) / s.scoredTests);
+    }
+
+    // Leaderboard: effort first (test count), then accuracy, then name.
+    const members = Array.from(statById.values()).sort((a, b) => {
+      if (b.tests !== a.tests) return b.tests - a.tests;
+      const av = a.avgPct ?? -1;
+      const bv = b.avgPct ?? -1;
+      if (bv !== av) return bv - av;
+      return a.name.localeCompare(b.name);
+    });
+
+    // Chapter headline numbers.
+    const scoredPcts = allLogs.map((l) => pctOf(l.score, l.out_of)).filter((p): p is number => p != null);
+    const chapterAvgPct = scoredPcts.length
+      ? Math.round(scoredPcts.reduce((a, b) => a + b, 0) / scoredPcts.length)
+      : null;
+    const activeThisWeek = members.filter((m) => m.last7 > 0).length;
+
+    // Weekly trend: 8 rolling 7-day buckets ending today, oldest -> newest.
+    const todayMid = new Date();
+    todayMid.setHours(0, 0, 0, 0);
+    const endExclusive = todayMid.getTime() + dayMs; // include all of today
+    const weekly: WeeklyPoint[] = [];
+    for (let i = 7; i >= 0; i--) {
+      const bucketEnd = endExclusive - i * weekMs;
+      const bucketStart = bucketEnd - weekMs;
+      const inBucket = allLogs.filter((l) => {
+        const t = new Date(String(l.logged_at)).getTime();
+        return t >= bucketStart && t < bucketEnd;
+      });
+      const pcts = inBucket.map((l) => pctOf(l.score, l.out_of)).filter((p): p is number => p != null);
+      weekly.push({
+        weekStart: new Date(bucketStart).toISOString().slice(0, 10),
+        tests: inBucket.length,
+        avgPct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : null,
+      });
+    }
+
+    // Top events by practice volume.
+    const eventCount = new Map<string, number>();
+    for (const l of allLogs) {
+      const slug = String(l.competition_slug);
+      eventCount.set(slug, (eventCount.get(slug) ?? 0) + 1);
+    }
+    const topEvents = Array.from(eventCount.entries())
+      .map(([slug, tests]) => ({ slug, tests }))
+      .sort((a, b) => b.tests - a.tests)
+      .slice(0, 5);
+
+    return {
+      members,
+      totalTests: allLogs.length,
+      activeThisWeek,
+      chapterAvgPct,
+      weekly,
+      topEvents,
+    };
+  } catch (e) {
+    devErr("getChapterStats:", e);
+    return null;
+  }
+}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
+import { Sparkbars } from "@/components/Sparkbars";
 import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
 import {
   getRegistered,
@@ -17,32 +18,12 @@ import type { Competition } from "@/lib/competitions";
 
 // ── Score trend chart ──────────────────────────────────────────
 
-function MiniBarChart({ pcts }: { pcts: number[] }) {
-  const W = 120;
-  const H = 40;
-  const n = pcts.length;
-  const barW = Math.max(4, Math.floor((W - (n - 1) * 3) / n));
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible" }}>
-      {pcts.map((p, i) => {
-        const h = Math.max(3, Math.round((p / 100) * (H - 4)));
-        const x = i * (barW + 3);
-        const y = H - h;
-        const color = p >= 80 ? "var(--green)" : p >= 60 ? "var(--accent)" : "var(--red)";
-        return (
-          <rect key={i} x={x} y={y} width={barW} height={h} rx={2} fill={color} opacity={i === n - 1 ? 1 : 0.55} />
-        );
-      })}
-    </svg>
-  );
-}
-
 function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; registeredCompetitions: Competition[] }) {
   // Per-competition: last 8 scored logs, only comps with 2+ scored logs
   const entries = registeredCompetitions
     .map((comp) => {
       const compLogs = logs
-        .filter((l) => l.competitionSlug === comp.slug && l.score != null && l.outOf != null)
+        .filter((l) => l.competitionSlug === comp.slug && l.score != null && l.outOf != null && l.outOf > 0)
         .slice(0, 8);
       if (compLogs.length < 2) return null;
       const pcts = compLogs.map((l) => Math.round((l.score! / l.outOf!) * 100)).reverse();
@@ -93,7 +74,7 @@ function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; re
             >
               <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)", lineHeight: 1.3 }}>{comp.name}</p>
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
-                <MiniBarChart pcts={pcts} />
+                <Sparkbars values={pcts} variant="score" ariaLabel={`Last ${pcts.length} practice scores for ${comp.name}`} />
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <p className="font-mono" style={{ fontSize: 20, fontWeight: 700, lineHeight: 1, color: latest >= 80 ? "var(--green)" : latest >= 60 ? "var(--accent)" : "var(--red)" }}>
                     {latest}<span style={{ fontSize: 12 }}>%</span>
@@ -307,7 +288,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Score trends (only shown once there are 3+ scored logs) */}
-      {logs.filter((l) => l.score != null && l.outOf != null).length >= 3 && (
+      {logs.filter((l) => l.score != null && l.outOf != null && l.outOf > 0).length >= 3 && (
         <ScoreTrends logs={logs} registeredCompetitions={registeredCompetitions} />
       )}
 

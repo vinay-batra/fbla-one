@@ -57,14 +57,15 @@ export default function MyCompetitions() {
               const avgScore = compLogs.length
                 ? Math.round(
                     (compLogs
-                      .filter((l) => l.score != null && l.outOf != null)
+                      .filter((l) => l.score != null && l.outOf != null && l.outOf > 0)
                       .reduce((sum, l) => sum + (l.score! / l.outOf!) * 100, 0)) /
-                      Math.max(1, compLogs.filter((l) => l.score != null && l.outOf != null).length)
+                      Math.max(1, compLogs.filter((l) => l.score != null && l.outOf != null && l.outOf > 0).length)
                   )
                 : null;
               return (
                 <div
                   key={c.slug}
+                  className="mycomp-row"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr auto auto auto auto",
@@ -163,6 +164,11 @@ export default function MyCompetitions() {
           </div>
         )}
       </Card>
+      <style>{`
+        @media (max-width: 680px) {
+          .mycomp-row { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

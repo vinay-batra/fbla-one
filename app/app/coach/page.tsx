@@ -169,7 +169,7 @@ function CoachInner() {
       score: correct,
       outOf: questions.length,
       durationMin: null,
-      notes: `AI practice test — ${correct}/${questions.length}`,
+      notes: `AI practice test - ${correct}/${questions.length}`,
     });
     setLogged(true);
   }
@@ -309,7 +309,7 @@ function CoachInner() {
             <p style={{ fontSize: 11, color: "var(--text3)" }}>
               {questionCount === 10 && "Quick 10-minute warm-up"}
               {questionCount === 25 && "Solid half-length practice run"}
-              {questionCount === 50 && "Full-length simulation — closest to the real thing"}
+              {questionCount === 50 && "Full-length simulation - closest to the real thing"}
             </p>
           </div>
 

@@ -11,16 +11,6 @@ import {
 } from "@/lib/storage";
 import { getCompetition } from "@/lib/competitions";
 
-const KIND_COLORS: Record<string, string> = {
-  "FBLA Guide": "var(--brand)",
-  "Course": "var(--green)",
-  "Video": "var(--red)",
-  "Practice": "var(--accent)",
-  "Reference": "var(--text3)",
-  "Article": "var(--text3)",
-  "Book": "var(--text3)",
-};
-
 function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");

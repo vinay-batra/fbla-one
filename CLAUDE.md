@@ -14,12 +14,14 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.0 (May 29, 2026) - advisor pitch features, demo mode, about/FAQ rewrite. Latest commit: `b42b89e`.
+**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.1 (June 2, 2026) - advisor leaderboard + chapter stats, chapter-shared deadlines, security audit fixes.
 
-**Status: fully deployed and working.**
+**ACTION REQUIRED:** apply `supabase/migrations/0006_fix_rls_recursion.sql` in the Supabase SQL editor. 0006 fixes an infinite-recursion bug in the chapter/advisor RLS (a chapters <-> profiles policy loop introduced by 0004) that currently breaks chapter creation and the advisor dashboard in production. A live integration test (the `_rls_test.mjs` pattern) found it. After applying, re-run that test to confirm green.
+
+**Status: frontend deployed; advisor features (existing + new leaderboard) blocked until migration 0006 is applied.**
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
 - Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
-- Supabase: project `osxoygndwazbygiqyjhu`, migrations 0001-0004 run, 0005 run (practice_logs advisor RLS)
+- Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0006 in repo. 0001-0005 applied live; **0006 (RLS recursion fix) MUST be applied** - until then chapter creation + advisor dashboard recurse and fail.
 - Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-sonnet-4-5).
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -30,7 +32,9 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - **AI Practice Test Engine** (`/app/coach` + `/api/practice-test`): Claude claude-sonnet-4-5 streams NDJSON questions calibrated to each event's topic outline. 4-phase UI: idle, generating (live progress), taking (keyboard shortcuts), reviewing (explanations + score logging). 45 eligible objective-test events.
 - **Demo mode**: `/api/preview` sets `fbla_preview=1` cookie, bypasses auth gate in AppLayout. Preview banner in AppShell. Landing page "Try AI Practice Tests" + "Preview the platform" buttons both route through this.
 - **Saved resources**: `StudyResourcesList` client component on competition pages with bookmark save/unsave. `/app/resources` page with competition filter and remove.
-- **Score trends chart**: pure SVG bar chart on dashboard showing last 8 scored logs per competition. Color-coded green/amber/red.
+- **Score trends chart**: pure SVG bar chart on dashboard showing last 8 scored logs per competition. Color-coded green/amber/red. Uses shared `components/Sparkbars.tsx`.
+- **Advisor leaderboard + chapter stats** (`/app/chapter`, advisor view): `getChapterStats()` ranks members by practice volume then avg score, plus chapter totals, active-this-week, chapter average, top event, and an 8-week trend. RLS-scoped to the advisor's chapter (needs migration 0006).
+- **Chapter-shared deadlines**: in a chapter the deadline calendar is shared (advisor writes to `public.deadlines`, members read-only); solo/preview users keep personal localStorage deadlines. `lib/storage.ts` mirrors chapter deadlines via `setChapterContext()` + `syncChapterDeadlines()`; `canManageDeadlines()` gates the UI.
 - **Onboarding modal**: first-visit welcome with 3 guided steps. localStorage flag `fbla_onboarded`.
 - **Deadline alerts**: in-app strip for deadlines within 3 days. Per-alert dismiss in `fbla_dismissed_deadline_alerts`.
 - **Command palette** (`components/CommandPalette.tsx`): Cmd+K / Ctrl+K. Searches all 55 competitions + navigates to any app page. Includes "AI Practice Tests" nav item.
@@ -54,11 +58,13 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Build clean (75 routes), lint clean. No em dashes in source.
 
 ### Next up
-1. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
-2. Wire personal `Deadline` CRUD to Supabase (table `public.deadlines` exists but requires `chapter_id` - currently localStorage only).
-3. Push notification reminders for deadlines (requires service worker + VAPID keys - larger infra investment).
-4. Chapter leaderboard / stats over time for advisors.
-5. Export competition sign-ups in FBLA's exact regional registration format (if FBLA has a standardized CSV format).
+1. **Apply migration 0006** (RLS recursion fix) in the Supabase SQL editor - blocks ALL advisor features. Then re-verify with the `_rls_test.mjs` integration-test pattern.
+2. **Harden chapter join** (audit #3/#4): invite codes are world-readable and any user can self-join any chapter without an invite (a live test confirmed it). Needs an invite-validated SECURITY DEFINER join RPC + locked-down chapters SELECT (migration 0007). Spawned as a follow-up task.
+3. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
+4. Bundle: `CommandPalette` imports the full 55-event registry into every marketing/auth/404 page. Split the heavy per-event content from a light index so it tree-shakes (a same-module `COMPETITION_INDEX` does NOT help).
+5. Broader a11y: focus-trap/Escape on the onboarding modal, feedback FAB, and nav drawers; light-theme contrast (`--accent` / `--text-muted` as small text fail AA - `--accent-text` already exists for this).
+6. Push notification reminders for deadlines (service worker + VAPID).
+7. Export competition sign-ups in FBLA's exact regional registration format.
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.

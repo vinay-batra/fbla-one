@@ -255,6 +255,7 @@ export default function Auth() {
               placeholder="you@school.edu"
               className="input-field"
               autoComplete="email"
+              aria-label="Email address"
             />
             {mode !== "magic" && (
               <input
@@ -266,6 +267,7 @@ export default function Auth() {
                 className="input-field"
                 minLength={8}
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                aria-label="Password"
               />
             )}
 

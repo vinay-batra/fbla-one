@@ -2,6 +2,36 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.1 - June 2, 2026 - Advisor leaderboard + stats, chapter-shared deadlines, security audit
+
+### Advisor leaderboard + chapter stats (new)
+- Chapter stats card: total practice tests, active members this week, chapter average score, top event, and an 8-week practice-volume trend.
+- Leaderboard: members ranked by practice tests logged, then average score, with avg / best / last-active. Advisor view only, RLS-scoped.
+- `getChapterStats()` in `lib/chapter.ts`; shared `Sparkbars` chart component (`components/Sparkbars.tsx`, replaces the dashboard's inline chart and adds aria-labels).
+
+### Chapter-shared deadlines (new)
+- In a chapter, the deadline calendar is shared: the advisor sets a deadline once and every member sees it (and gets the 3-day alert). Backed by the existing `public.deadlines` table.
+- Advisors add/remove; members read-only. Solo / preview users keep personal localStorage deadlines.
+- `lib/storage.ts` mirrors chapter deadlines locally (`syncChapterDeadlines`, `setChapterContext`) so existing synchronous readers work unchanged.
+
+### CRITICAL SQL - apply in the Supabase SQL editor
+- **migration 0005** (recovered to the repo): advisor read of member practice logs. Was applied live earlier but never committed, so the repo could not reproduce production.
+- **migration 0006** (REQUIRED): fixes infinite recursion in the chapter/advisor RLS policies (a chapters <-> profiles loop introduced by 0004) that was breaking chapter creation and the entire advisor dashboard in production. Moves cross-table lookups into SECURITY DEFINER helpers; also adds a WITH CHECK + privilege-escalation guard on profile updates. Found by a live integration test.
+
+### Security + correctness fixes (multi-agent audit, 43 findings)
+- Sign-out now clears display name / chapter name / deadlines (was a cross-account leak on shared school computers).
+- `/api/practice-test` now requires an authenticated session or preview cookie + a best-effort rate limit (was open to anyone, could drain the Anthropic budget).
+- Fixed open redirects in `/api/preview` and `/auth/callback`.
+- Guarded divide-by-zero: an `outOf` of 0 no longer renders `Infinity%` (dashboard, tracker, chapter activity, My Events).
+- 55 competition pages now emit OpenGraph + Twitter images (Next 16 shallow-merge had dropped them).
+- Accessibility: auth inputs labelled, charts have aria-labels. Mobile: `/app/competitions` rows + deadline form reflow. Removed em-dash violations + a dead variable.
+
+### Deferred
+- Chapter join is not invite-validated and invite codes are world-readable (follow-up migration 0007).
+- CommandPalette ships the full 55-event registry into every page bundle (needs a data-split refactor).
+
+---
+
 ## v1.0 - May 29, 2026 - Advisor pitch features, demo mode, about/FAQ rewrite
 
 ### Demo mode
