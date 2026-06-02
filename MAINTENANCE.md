@@ -370,3 +370,4 @@ Routine checks, audits, and tests.
 - 2026-06-02 — reviewed env and config
 - 2026-06-02 — e2e sanity check passed
 - 2026-06-02 — checked mobile layouts
+- 2026-06-02 — general housekeeping
