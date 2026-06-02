@@ -367,3 +367,4 @@ Routine checks, audits, and tests.
 - 2026-05-31 — verified API responses
 - 2026-05-31 — smoke-tested core user flows, all green
 - 2026-05-31 — smoke-tested core user flows, all green
+- 2026-06-02 — reviewed env and config
