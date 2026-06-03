@@ -2,6 +2,12 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.1.1 - June 3, 2026 - Content completeness, bundle perf, accessibility
+
+- **Content:** filled in longDescription for the 23 events that were marked "complete" but had none, so all 55 event detail pages now have a real description (audit #7-low).
+- **Performance:** CommandPalette (mounted on every page) now ships a standalone light index (slug/name/category) in `lib/competitionIndex.ts` instead of the full registry, dropping the heavy per-event content from every marketing/auth/404 bundle (audit #7-high). A dev-only guard warns on drift.
+- **Accessibility:** OnboardingModal + FeedbackButton get `role="dialog"`, focus management, and Escape-to-close (the modal also has a Tab focus-trap); PublicNav + AppShell drawers get `aria-expanded` + Escape + focus management; the focus-visible ring, `--text-muted`, and accent-colored small text now meet WCAG AA in light theme (audit #6/#8/#10/#11/#12).
+
 ## v1.1 - June 2, 2026 - Advisor leaderboard + stats, chapter-shared deadlines, security audit
 
 ### Advisor leaderboard + chapter stats (new)

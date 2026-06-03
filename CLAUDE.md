@@ -58,12 +58,11 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Build clean (75 routes), lint clean. No em dashes in source.
 
 ### Next up
-1. DONE - migrations 0006 + 0007 applied to prod and verified 18/18 via `_rls_test.mjs` (chapter/advisor RLS recursion fixed; invite-validated join + chapters lockdown live).
+1. DONE: migrations 0006 + 0007 applied to prod and verified 18/18 via `_rls_test.mjs` (chapter/advisor RLS recursion fixed; invite-validated join + chapters lockdown live).
+2. DONE: all 55 events have a longDescription; CommandPalette ships `lib/competitionIndex.ts` (light index) instead of the full registry; a11y focus-traps/Escape/dialog-roles on modals + nav drawers; light-theme WCAG AA contrast (audit #6/#7/#8/#10/#11/#12).
 3. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
-4. Bundle: `CommandPalette` imports the full 55-event registry into every marketing/auth/404 page. Split the heavy per-event content from a light index so it tree-shakes (a same-module `COMPETITION_INDEX` does NOT help).
-5. Broader a11y: focus-trap/Escape on the onboarding modal, feedback FAB, and nav drawers; light-theme contrast (`--accent` / `--text-muted` as small text fail AA - `--accent-text` already exists for this).
-6. Push notification reminders for deadlines (service worker + VAPID).
-7. Export competition sign-ups in FBLA's exact regional registration format.
+4. Push notification reminders for deadlines (service worker + VAPID).
+5. Export competition sign-ups in FBLA's exact regional registration format.
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
