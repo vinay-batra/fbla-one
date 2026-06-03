@@ -8,9 +8,9 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0005 run) |
-| Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
-| AI | Anthropic claude-sonnet-4-5 via `@anthropic-ai/sdk` (`ANTHROPIC_API_KEY` in Vercel) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0009; apply 0009 in the SQL editor) |
+| Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
+| AI | Anthropic claude-sonnet-4-5 (practice tests) + claude-haiku-4-5 (public chat), via `ANTHROPIC_API_KEY` |
 
 See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHANGELOG.md) for version history.
 

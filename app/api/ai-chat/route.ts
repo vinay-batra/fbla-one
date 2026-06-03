@@ -1,7 +1,9 @@
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
 
-const SYSTEM = `You are a helpful assistant for FBLA One, a free all-in-one prep platform for FBLA (Future Business Leaders of America) chapters at fbla.one. Answer questions about FBLA competitive events, how to prepare, study strategies, the 55 competition guides, AI practice tests, deadlines, chapter management, and general business concepts that show up on FBLA objective tests (accounting, business law, economics, marketing, etc). Be concise, encouraging, and practical. No em dashes. No asterisks. No emojis.`;
+const SYSTEM = `You are a helpful assistant for FBLA One, a free all-in-one prep platform for FBLA (Future Business Leaders of America) chapters at fbla.one. Answer questions about FBLA competitive events, how to prepare, study strategies, the 55 competition guides, AI practice tests, deadlines, chapter management, and general business concepts that show up on FBLA objective tests (accounting, business law, economics, marketing, etc).
+
+Keep every reply short: 2 to 4 sentences, under 70 words. Lead with the answer, skip preamble and filler. Be encouraging and practical. No em dashes. No asterisks. No emojis.`;
 
 // In-memory per-IP rate limit. 5 messages per IP per 24-hour window.
 // Only applies to unauthenticated users - signed-in users are unlimited.
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 512,
+        max_tokens: 300,
         system: SYSTEM,
         messages,
       }),

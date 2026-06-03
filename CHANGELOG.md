@@ -2,6 +2,38 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.3 - June 3, 2026 - Public AI chat, auth + sign-in flow, new logo, full audit
+
+### Sign-in actually works now (the headline fix)
+- `proxy.ts` was force-setting `httpOnly: true` on Supabase cookies; the `@supabase/ssr` browser client reads the auth cookie from `document.cookie`, so the session was invisible to the client and "signing in did nothing" (bounced back to `/auth`). Set `httpOnly: false` (same bug + fix as Corvo). Auth redirects use a full `window.location` reload so the server sees the fresh cookie. Email confirmation is disabled, so signup goes straight to the dashboard. Verified live with Playwright (login -> `/app`, session persists across reload).
+- The product now gates cleanly: public marketing pages funnel to `/auth`; `/app/*` is the study area and redirects to `/auth` when signed out.
+
+### Public AI assistant (new)
+- Floating "Ask FBLA One" chat bubble on **every** page (including `/app`). Backed by `/api/ai-chat` (Claude Haiku), 5 free messages/IP/day for anonymous visitors, unlimited when signed in. Lark-style panel: eyebrow + `X / 5 today` counter + suggestion chips + paper-plane send.
+- Polish: replies are kept short (2-4 sentences), the view no longer auto-scrolls when a reply arrives (only when you send), and the "thinking" state is three animated gold dots instead of a static `...`.
+- Hardened: the `messages` payload is validated + capped (no role injection / giant payloads), upstream errors are surfaced, and the rate-limit IP comes from Vercel's trusted header.
+
+### Auth page redesign
+- Rebuilt Corvo/Lark-style in FBLA colors: Log in / Sign up tabs, Google OAuth, email + password, magic link, forgot-password, and Cloudflare Turnstile (inline, enabled when `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set). Same-origin guard on the `?next=` redirect.
+
+### Landing + navigation
+- Hero redesigned with a product-preview card (a live-feel practice question) and a layered grid/orb background; headline is now "Practice smarter. Score higher." with a clean solid-gold accent in light mode (the gradient was muddy there).
+- Hero + final CTAs are now "Get started" + "Go to dashboard".
+- Removed the repetitive "Three things" feature bento and "Every category" sections; new flow is hero -> how it works -> most-picked competitions -> CTA.
+- **About page removed.** Nav is now Features / Competitions / Changelog / FAQ ("Features" -> home). New **Changelog** page: six equal-size chapter cards in a horizontal timeline.
+
+### Brand: new logo everywhere
+- New blue arrow/book mark applied across nav, footer, favicons, apple-touch, PWA icons, and a redesigned OG card. All sizes regenerate from one master via `scripts/regenerate-logo-assets.py`.
+- The two floating buttons: AI chat shows the FBLA One logo (white disc on a gold gradient, both themes); the feedback flag is a cleaner stroked waving-flag. Both render on all pages and pair in the corner.
+
+### Audit pass (UI / UX / mobile / security / AI / links)
+- Mobile: app sidebar drawer gets a tap-to-close backdrop, tighter content padding, and the feedback FAB hugs the chat bubble.
+- AI: practice-test prompt forbids em dashes/emojis in output and scales `max_tokens` with question count (was truncating 50-question tests); coach parser validates the answer key + all options (was silently mis-scoring); removed checkmark/X emoji glyphs in answer review.
+- Security: `migration 0009` binds `feedback.user_id` to the caller; HSTS header; same-origin guard on account deletion.
+- Content: Footer `v0.2` -> `v1.3`, fixed a truncated TED URL (3 events), corrected a FAQ reference to a removed button, deleted an orphan component.
+
+---
+
 ## v1.2 - June 3, 2026 - Real logo, feedback system, nav cleanup
 
 - **Logo:** replaced the simplified inline SVG mark with the actual brand asset (`public/logo-mark.png` - navy+gold shield+arrow+torch). Was visually wrong vs. the real brand.

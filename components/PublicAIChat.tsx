@@ -86,12 +86,15 @@ function PublicAIChatInner() {
     setUsed(getUsedToday());
   }, []);
 
+  // Scroll to the latest + focus the input only when the panel OPENS. We
+  // deliberately do NOT scroll when messages change, so an incoming AI reply
+  // doesn't yank the view down - the user reads from where they are.
   useEffect(() => {
     if (open) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      bottomRef.current?.scrollIntoView();
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [open, messages]);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -135,6 +138,9 @@ function PublicAIChatInner() {
     const newMessages: Message[] = [...messages, { role: "user", content: q }];
     setMessages(newMessages);
     setLoading(true);
+    // Bring the user's own question into view on send. The assistant's reply
+    // afterward will not auto-scroll.
+    requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }));
 
     try {
       const res = await fetch("/api/ai-chat", {
@@ -360,8 +366,10 @@ function PublicAIChatInner() {
             )}
             {loading && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "9px 16px", borderRadius: "14px 14px 14px 4px", background: "var(--bg3)", border: "1px solid var(--border)", fontSize: 18, color: "var(--text3)", letterSpacing: 2 }}>
-                  ...
+                <div style={{ padding: "13px 16px", borderRadius: "14px 14px 14px 4px", background: "var(--bg3)", border: "1px solid var(--border)" }}>
+                  <span className="fbla-typing" role="status" aria-label="Thinking">
+                    <span /><span /><span />
+                  </span>
                 </div>
               </div>
             )}

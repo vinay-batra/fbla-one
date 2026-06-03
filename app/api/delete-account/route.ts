@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -7,7 +7,15 @@ import { createClient } from "@supabase/supabase-js";
  * Deletes the authenticated user's account (auth.users cascade → profiles).
  * Requires service role key - never call this from the client directly.
  */
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  // Same-origin guard: this is an irreversible, state-changing action, so reject
+  // cross-site callers (a malicious page that tricked a logged-in user into a
+  // fetch). The Supabase cookie is SameSite=lax, but belt-and-suspenders here.
+  const secFetchSite = req.headers.get("sec-fetch-site");
+  if (secFetchSite && secFetchSite !== "same-origin") {
+    return NextResponse.json({ error: "Cross-site request rejected." }, { status: 403 });
+  }
+
   const supabase = await getSupabaseServer();
   if (!supabase) {
     return NextResponse.json({ error: "Auth not configured." }, { status: 503 });
