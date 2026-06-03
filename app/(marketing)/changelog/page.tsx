@@ -351,6 +351,7 @@ export default function ChangelogPage() {
         .cl-card {
           width: 100%;
           height: 540px;
+          overflow: hidden;
           display: flex;
           flex-direction: column;
           background: var(--card-bg);

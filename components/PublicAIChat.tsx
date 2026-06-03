@@ -107,8 +107,15 @@ function PublicAIChatInner() {
         setOpen(false);
       }
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setOpen(false); buttonRef.current?.focus(); }
+    };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   // Hide on the authenticated app shell (it has its own chrome).
@@ -133,7 +140,6 @@ function PublicAIChatInner() {
     const newMessages: Message[] = [...messages, { role: "user", content: q }];
     setMessages(newMessages);
     setLoading(true);
-    setUsed(bumpUsedToday());
 
     try {
       const res = await fetch("/api/ai-chat", {
@@ -142,7 +148,10 @@ function PublicAIChatInner() {
         body: JSON.stringify({ messages: newMessages }),
       });
       const data = await res.json();
-      setMessages([...newMessages, { role: "assistant", content: data.content }]);
+      // Only count a message once it actually went through, so a network
+      // failure or a 429 doesn't burn the user's daily allowance.
+      if (res.ok && res.status !== 429) setUsed(bumpUsedToday());
+      setMessages([...newMessages, { role: "assistant", content: data.content ?? "Something went wrong. Please try again." }]);
     } catch {
       setMessages([...newMessages, { role: "assistant", content: "Something went wrong. Please try again." }]);
     } finally {
@@ -232,6 +241,9 @@ function PublicAIChatInner() {
       {open && (
         <div
           ref={panelRef}
+          role="dialog"
+          aria-modal="false"
+          aria-label="Ask FBLA One AI assistant"
           style={{
             position: "fixed",
             bottom: 100,

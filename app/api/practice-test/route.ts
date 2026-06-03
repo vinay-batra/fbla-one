@@ -17,7 +17,8 @@ Question quality rules:
 - Use precise professional vocabulary appropriate to the subject
 - Mix question types: definition (20%), scenario/application (50%), compare/contrast (20%), calculation when applicable (10%)
 - Never repeat the same concept twice across the test
-- Difficulty should match actual FBLA national competition level - challenging but fair`;
+- Difficulty should match actual FBLA national competition level - challenging but fair
+- Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field. The question and explanation strings are shown verbatim to students.`;
 
 function buildUserPrompt(slug: string, count: number): string {
   const c = getCompetition(slug);
@@ -117,7 +118,10 @@ export async function POST(req: Request): Promise<Response> {
       try {
         const anthropicStream = client.messages.stream({
           model: "claude-sonnet-4-5",
-          max_tokens: 8000,
+          // Scale with question count: each question (text + 4 options + a
+          // 4-part explanation) runs ~250 tokens. A flat 8000 truncated
+          // 50-question tests mid-stream and silently under-delivered.
+          max_tokens: Math.min(16000, count * 320 + 800),
           system: SYSTEM_PROMPT,
           messages: [{ role: "user", content: buildUserPrompt(slug, count) }],
         });

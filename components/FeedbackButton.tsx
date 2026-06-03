@@ -97,7 +97,7 @@ export function FeedbackButton() {
         onClick={() => setOpen(true)}
         aria-label="Report a bug or send feedback"
         title="Report a bug"
-        className="fbla-feedback-btn"
+        className={onApp ? "fbla-feedback-btn fbla-feedback-btn--solo" : "fbla-feedback-btn"}
         style={{
           position: "fixed",
           bottom: 24,

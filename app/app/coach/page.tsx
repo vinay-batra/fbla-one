@@ -134,7 +134,14 @@ function CoachInner() {
             const raw = JSON.parse(trimmed) as Record<string, unknown>;
             if (raw.error) throw new Error(String(raw.error));
             const q = raw as unknown as Question;
-            if (q.question && q.options && q.correct) {
+            // Validate fully: question text, all four options present, and a
+            // correct key that is exactly one of A-D. Skipping this let a
+            // lowercase or malformed "correct" silently mis-score the test.
+            const opts = q.options as Record<string, string> | undefined;
+            const KEYS = ["A", "B", "C", "D"];
+            const optionsOk = !!opts && KEYS.every((k) => typeof opts[k] === "string" && opts[k].trim());
+            const correctOk = KEYS.includes(q.correct as string);
+            if (q.question && optionsOk && correctOk) {
               parsed.push({ ...q, id: parsed.length + 1 });
               setGeneratedSoFar(parsed.length);
               setQuestions([...parsed]);
@@ -687,7 +694,7 @@ function CoachInner() {
                       }}
                     >
                       <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}>
-                        {opt}{isRight ? " ✓" : isUser && !isRight ? " ✗" : ""}
+                        {opt}
                       </span>
                       <span style={{ fontSize: 12, color, lineHeight: 1.5 }}>{q.options[opt]}</span>
                     </div>

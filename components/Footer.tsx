@@ -115,7 +115,7 @@ export function Footer() {
         >
           <span>© {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.</span>
           <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
-            v0.2 · fbla.one
+            v1.3 · fbla.one
           </span>
         </div>
 

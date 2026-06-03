@@ -745,4 +745,9 @@ p { color: var(--text2); line-height: 1.62; }
     height: 40px !important;
     bottom: 28px !important;
   }
+  /* When paired with the chat bubble (public pages), tuck the flag right up
+     against it. The --solo variant (on /app, no bubble) keeps its corner spot. */
+  .fbla-feedback-btn:not(.fbla-feedback-btn--solo) {
+    right: 84px !important;
+  }
 }

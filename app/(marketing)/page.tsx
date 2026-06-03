@@ -54,7 +54,7 @@ export default function Landing() {
             <ScrollReveal delay={0.06}>
               <h1 className="hero-headline" style={{ marginTop: 22 }}>
                 Practice smarter.{" "}
-                <span className="hero-accent">Score higher at regionals.</span>
+                <span className="hero-accent">Score higher.</span>
               </h1>
             </ScrollReveal>
             <ScrollReveal delay={0.12}>
@@ -211,6 +211,13 @@ export default function Landing() {
             background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
+          }
+          /* Light mode: the gold->navy gradient turns muddy, so use the clean
+             solid gold every other accent word on the site uses. */
+          [data-theme="light"] .hero-accent {
+            background: none;
+            -webkit-text-fill-color: var(--accent);
+            color: var(--accent);
           }
           .hero-preview {
             margin: 60px auto 0;

@@ -12,11 +12,31 @@ const WINDOW_MS = 24 * 60 * 60 * 1000;
 const _store = new Map<string, number[]>();
 
 function getIp(req: NextRequest): string {
+  // Prefer Vercel's own header (set at the edge, not client-controllable) over
+  // the spoofable x-real-ip / x-forwarded-for a caller can inject.
   return (
-    req.headers.get("x-real-ip") ||
+    (req.headers.get("x-vercel-forwarded-for") || "").split(",")[0].trim() ||
     (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
     "unknown"
   );
+}
+
+// Keep the conversation we forward to Anthropic small and well-formed: a public
+// endpoint must not let a caller POST a giant array or inject arbitrary roles.
+type ChatMsg = { role: "user" | "assistant"; content: string };
+function sanitizeMessages(raw: unknown): ChatMsg[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+  const out: ChatMsg[] = [];
+  for (const m of raw.slice(-12)) {
+    if (!m || typeof m !== "object") continue;
+    const role = (m as { role?: unknown }).role;
+    const content = (m as { content?: unknown }).content;
+    if ((role === "user" || role === "assistant") && typeof content === "string" && content.trim()) {
+      out.push({ role, content: content.slice(0, 4000) });
+    }
+  }
+  return out.length ? out : null;
 }
 
 function isRateLimited(ip: string): boolean {
@@ -63,7 +83,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { messages } = await req.json();
+    const body = await req.json().catch(() => null);
+    const messages = sanitizeMessages(body?.messages);
+    if (!messages) {
+      return Response.json({ content: "Please send a valid message." }, { status: 400 });
+    }
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return Response.json({ content: "AI chat is not configured on this deployment." });
 
@@ -82,6 +106,12 @@ export async function POST(req: NextRequest) {
       }),
     });
 
+    if (!r.ok) {
+      return Response.json(
+        { content: "The assistant is busy right now. Please try again in a moment." },
+        { status: 503 }
+      );
+    }
     const data = await r.json();
     return Response.json({ content: data.content?.[0]?.text ?? "Something went wrong." });
   } catch {

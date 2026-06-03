@@ -1213,7 +1213,7 @@ export const COMPETITIONS: Competition[] = [
     studyResources: [
       { title: "FBLA Guide", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
       { title: "Toastmasters - Public Speaking Tips", kind: "Reference", url: "https://www.toastmasters.org/resources/public-speaking-tips" },
-      { title: "TED - How to Give a Great Talk", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentati" },
+      { title: "TED - How to Give a Great Talk", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentation" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -1239,7 +1239,7 @@ export const COMPETITIONS: Competition[] = [
     studyResources: [
       { title: "FBLA Guide", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
       { title: "Toastmasters - Public Speaking Tips", kind: "Reference", url: "https://www.toastmasters.org/resources/public-speaking-tips" },
-      { title: "TED Talks - Great Presentation Examples", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentati" },
+      { title: "TED Talks - Great Presentation Examples", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentation" },
     ],
     rubricUrl: FBLA_EVENT_PAGE,
     contentStatus: "complete",
@@ -1382,7 +1382,7 @@ export const COMPETITIONS: Competition[] = [
     studyResources: [
       { title: "FBLA Guide", kind: "FBLA Guide", url: FBLA_EVENT_PAGE },
       { title: "Toastmasters - Public Speaking Tips", kind: "Reference", url: "https://www.toastmasters.org/resources/public-speaking-tips" },
-      { title: "TED Talks - Presentation Techniques", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentati" },
+      { title: "TED Talks - Presentation Techniques", kind: "Video", url: "https://www.ted.com/playlists/574/how_to_make_a_great_presentation" },
       { title: "Coursera - Dynamic Public Speaking", kind: "Course", url: "https://www.coursera.org/learn/public-speaking" },
     ],
     popular: true,

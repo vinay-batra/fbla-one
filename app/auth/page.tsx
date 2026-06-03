@@ -73,7 +73,10 @@ type Mode = "login" | "signup" | "magic" | "reset";
 // ---------------------------------------------------------------------------
 function AuthForm() {
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") ?? "/app";
+  // Same-origin only: a crafted ?next=//evil.com would otherwise redirect
+  // off-site after the user signs in.
+  const rawNext = searchParams.get("next") ?? "/app";
+  const nextPath = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
 
   const [sessionChecked, setSessionChecked] = useState(false);
   const [mode, setMode] = useState<Mode>(

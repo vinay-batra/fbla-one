@@ -26,7 +26,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Do I need an account?",
-        a: "You can browse all competition guides without an account. To use AI practice tests, track your prep, save resources, or join a chapter, you need a free account. You can also preview the full app without signing up -- just click 'Preview the app' on the homepage.",
+        a: "You can browse all competition guides without an account. To use AI practice tests, track your prep, save resources, or join a chapter, you need a free account. Creating one takes under a minute and it is always free.",
       },
     ],
   },

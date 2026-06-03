@@ -246,6 +246,11 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
         </div>
       </aside>
 
+      {/* Mobile drawer backdrop: tap outside to close (mobile only via CSS) */}
+      {drawerOpen && (
+        <div className="app-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+      )}
+
       {/* Main */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         {/* Topbar */}
@@ -300,6 +305,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
         </header>
 
         <main
+          className="app-main-content"
           style={{
             flex: 1,
             padding: "28px 28px 60px",
@@ -339,6 +345,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
       </div>
 
       <style>{`
+        .app-backdrop { display: none; }
         @media (max-width: 900px) {
           .app-sidebar {
             position: fixed;
@@ -350,6 +357,18 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           }
           .app-sidebar.open { transform: translateX(0); }
           .app-burger { display: inline-flex !important; }
+          .app-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 90;
+            background: rgba(0, 0, 0, 0.5);
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+          }
+        }
+        @media (max-width: 768px) {
+          .app-main-content { padding-left: 16px !important; padding-right: 16px !important; }
         }
       `}</style>
     </div>
