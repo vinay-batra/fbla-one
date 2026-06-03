@@ -378,3 +378,4 @@ Routine checks, audits, and tests.
 - 2026-06-02 — checked auth and session handling
 - 2026-06-02 — routine maintenance
 - 2026-06-02 — ran regression pass, no regressions
+- 2026-06-02 — reviewed dependency updates
