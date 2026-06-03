@@ -1499,19 +1499,3 @@ export const COMPETITION_STATS = {
   withContent: COMPETITIONS.filter((c) => c.contentStatus === "complete").length,
   categories: CATEGORIES.length,
 };
-
-// Dev-only guard: lib/competitionIndex.ts is a generated light copy of the registry
-// (slug/name/category) that CommandPalette ships instead of this heavy module. Warn
-// if the two drift. The dynamic import keeps the light index out of this module's
-// production bundle (this whole block is dead-code-eliminated when NODE_ENV=production).
-if (process.env.NODE_ENV !== "production") {
-  import("./competitionIndex")
-    .then(({ COMPETITION_INDEX }) => {
-      const a = COMPETITIONS.map((c) => c.slug).sort().join(",");
-      const b = COMPETITION_INDEX.map((c) => c.slug).sort().join(",");
-      if (a !== b) {
-        console.warn("[competitions] lib/competitionIndex.ts is out of sync with COMPETITIONS - regenerate it.");
-      }
-    })
-    .catch(() => {});
-}

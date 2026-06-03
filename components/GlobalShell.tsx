@@ -2,11 +2,9 @@
 
 /**
  * Global overlay components mounted at the root layout level.
- * This makes CommandPalette (Cmd+K) and FeedbackButton available
- * on every page - marketing, auth, and app.
+ * Makes the feedback button + onboarding modal available on every page.
  */
 
-import { CommandPalette } from "./CommandPalette";
 import { FeedbackButton } from "./FeedbackButton";
 import { OnboardingModal } from "./OnboardingModal";
 
@@ -14,7 +12,6 @@ export function GlobalShell() {
   return (
     <>
       <OnboardingModal />
-      <CommandPalette />
       <FeedbackButton />
     </>
   );
