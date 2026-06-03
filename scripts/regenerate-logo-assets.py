@@ -35,10 +35,13 @@ square(512, 0.04).save("public/logo-mark.png")
 square(512, 0.04).save("public/logo.png")
 
 # Favicons (white bg so the blue mark reads on any browser chrome)
-square(32, 0.08, WHITE).convert("RGB").save("public/favicon-16x16.png")
-square(32, 0.08, WHITE).convert("RGB").save("public/favicon-32x32.png")
-square(64, 0.08, WHITE).convert("RGB").save(
-    "public/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
+square(32, 0.06, WHITE).convert("RGB").save("public/favicon-16x16.png")
+square(32, 0.06, WHITE).convert("RGB").save("public/favicon-32x32.png")
+# IMPORTANT: the favicon that browsers actually serve at /favicon.ico is the
+# Next.js App Router file convention app/favicon.ico - it shadows public/. Write
+# THERE (a public/favicon.ico would be ignored and just cause confusion).
+square(64, 0.06, WHITE).convert("RGB").save(
+    "app/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
 )
 
 # iOS + PWA maskable (opaque + safe-zone padding)
