@@ -1,12 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 
 const TYPES = ["Bug", "Feedback", "Feature request"] as const;
 type FeedbackType = (typeof TYPES)[number];
 
 export function FeedbackButton() {
+  const pathname = usePathname();
+  // The public AI chat bubble (60px) owns the bottom-right corner on public
+  // pages, so feedback sits to its left at right 96. On /app the chat is hidden,
+  // so feedback takes the corner slot.
+  const onApp = pathname?.startsWith("/app");
+  const fabRight = onApp ? 24 : 96;
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<FeedbackType>("Bug");
   const [message, setMessage] = useState("");
@@ -83,44 +90,49 @@ export function FeedbackButton() {
 
   return (
     <>
-      {/* Floating feedback / bug-report button */}
+      {/* Floating report-a-bug / feedback button - flag glyph, sits left of the AI bubble */}
       <button
         ref={fabRef}
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Send feedback or report a bug"
-        title="Send feedback"
+        aria-label="Report a bug or send feedback"
+        title="Report a bug"
+        className="fbla-feedback-btn"
         style={{
           position: "fixed",
           bottom: 24,
-          right: 24,
-          zIndex: 50,
-          width: 52,
-          height: 52,
-          borderRadius: 999,
+          right: fabRight,
+          zIndex: 1000,
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
           background: "var(--card-bg)",
-          border: "0.5px solid var(--border2)",
-          color: "var(--accent)",
+          border: "0.5px solid var(--border)",
+          color: "var(--text2)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          boxShadow: "var(--shadow-md)",
-          transition: "transform 0.15s ease, border-color 0.15s ease, background 0.15s ease",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)",
+          transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s, color 0.2s, transform 0.2s",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "var(--accent-border)";
-          e.currentTarget.style.background = "var(--accent-dim)";
-          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.borderColor = "rgba(var(--accent-rgb),0.55)";
+          e.currentTarget.style.background = "rgba(var(--accent-rgb),0.08)";
+          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.22), 0 0 0 4px rgba(var(--accent-rgb),0.12)";
+          e.currentTarget.style.color = "var(--accent)";
+          e.currentTarget.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--border2)";
+          e.currentTarget.style.borderColor = "var(--border)";
           e.currentTarget.style.background = "var(--card-bg)";
+          e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)";
+          e.currentTarget.style.color = "var(--text2)";
           e.currentTarget.style.transform = "translateY(0)";
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 3h16a1 1 0 0 1 .73 1.68l-4.73 5.32 4.73 5.32A1 1 0 0 1 20 17H5v4a1 1 0 0 1-2 0V4a1 1 0 0 1 1-1z" />
         </svg>
       </button>
 

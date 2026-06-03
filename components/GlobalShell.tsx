@@ -7,12 +7,14 @@
 
 import { FeedbackButton } from "./FeedbackButton";
 import { OnboardingModal } from "./OnboardingModal";
+import PublicAIChat from "./PublicAIChatLoader";
 
 export function GlobalShell() {
   return (
     <>
       <OnboardingModal />
       <FeedbackButton />
+      <PublicAIChat />
     </>
   );
 }

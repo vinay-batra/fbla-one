@@ -42,25 +42,20 @@ export default function Landing() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
       {/* --- HERO ------------------------------------------------ */}
-      <section
-        style={{
-          position: "relative",
-          padding: "100px 0 120px",
-          background: `
-            radial-gradient(60% 70% at 15% 25%, rgba(var(--brand-rgb), 0.28) 0%, rgba(var(--brand-rgb), 0.10) 35%, transparent 65%),
-            radial-gradient(55% 65% at 85% 78%, rgba(var(--accent-rgb), 0.18) 0%, rgba(var(--accent-rgb), 0.06) 38%, transparent 68%)
-          `,
-        }}
-      >
-        <div className="container" style={{ position: "relative" }}>
-          <div style={{ maxWidth: 920, marginInline: "auto", textAlign: "center" }}>
+      <section className="hero-section">
+        {/* Layered ambient background: brand + accent orbs, dotted grid, top fade */}
+        <div className="hero-bg" aria-hidden="true" />
+        <div className="hero-grid" aria-hidden="true" />
+
+        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ maxWidth: 940, marginInline: "auto", textAlign: "center" }}>
             <ScrollReveal>
               <HeroBadge>AI-Powered FBLA Prep</HeroBadge>
             </ScrollReveal>
             <ScrollReveal delay={0.06}>
-              <h1 style={{ marginTop: 22 }}>
+              <h1 className="hero-headline" style={{ marginTop: 22 }}>
                 Practice smarter.{" "}
-                <span style={{ color: "var(--accent)" }}>Score higher at regionals.</span>
+                <span className="hero-accent">Score higher at regionals.</span>
               </h1>
             </ScrollReveal>
             <ScrollReveal delay={0.12}>
@@ -68,15 +63,15 @@ export default function Landing() {
                 style={{
                   fontSize: 18,
                   marginTop: 22,
-                  maxWidth: 660,
+                  maxWidth: 640,
                   marginInline: "auto",
                   color: "var(--text2)",
-                  lineHeight: 1.6,
+                  lineHeight: 1.65,
                 }}
               >
-                Generate unlimited AI practice tests for every FBLA objective event. 100 questions,
-                instant explanations, score tracking. Plus study guides, deadline calendar, and
-                advisor dashboard -- all free.
+                Unlimited AI practice tests for every FBLA objective event. 100 questions,
+                instant explanations, score tracking. Plus study guides, a deadline calendar,
+                and an advisor dashboard. All free.
               </p>
             </ScrollReveal>
             <ScrollReveal delay={0.18}>
@@ -95,9 +90,6 @@ export default function Landing() {
                 <Link href="/competitions" className="btn btn-ghost btn-lg">
                   Browse competitions
                 </Link>
-                <Link href="/api/preview?redirect=/app" className="btn btn-ghost btn-lg">
-                  Preview the platform
-                </Link>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={0.24}>
@@ -115,12 +107,57 @@ export default function Landing() {
             </ScrollReveal>
           </div>
 
-          {/* Hero stats strip */}
+          {/* Product preview: a live-feel AI practice question in a framed window */}
           <ScrollReveal delay={0.3}>
+            <div className="hero-preview">
+              <div className="hero-preview-bar">
+                <span className="hero-dot" style={{ background: "var(--red)" }} />
+                <span className="hero-dot" style={{ background: "var(--accent)" }} />
+                <span className="hero-dot" style={{ background: "var(--green)" }} />
+                <span className="font-mono hero-preview-url">fbla.one/app/coach</span>
+              </div>
+              <div className="hero-preview-body">
+                <div className="hero-preview-meta">
+                  <span className="eyebrow" style={{ color: "var(--accent)" }}>AI Practice Test</span>
+                  <span className="font-mono hero-preview-count">Question 7 / 100 · Accounting I</span>
+                </div>
+                <p className="hero-preview-q">
+                  A company purchases supplies on account. Which accounts are affected, and how?
+                </p>
+                <div className="hero-preview-opts">
+                  <div className="hero-opt">
+                    <span className="hero-opt-key">A</span>
+                    Debit Supplies, credit Cash
+                  </div>
+                  <div className="hero-opt hero-opt--correct">
+                    <span className="hero-opt-key hero-opt-key--correct">B</span>
+                    Debit Supplies, credit Accounts Payable
+                    <svg className="hero-opt-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </div>
+                  <div className="hero-opt">
+                    <span className="hero-opt-key">C</span>
+                    Debit Accounts Payable, credit Supplies
+                  </div>
+                  <div className="hero-opt">
+                    <span className="hero-opt-key">D</span>
+                    Debit Cash, credit Supplies
+                  </div>
+                </div>
+                <div className="hero-preview-explain">
+                  <span className="font-mono hero-explain-tag">WHY</span>
+                  Buying on account means you owe later, so Accounts Payable (a liability) is
+                  credited while Supplies (an asset) is debited.
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Hero stats strip */}
+          <ScrollReveal delay={0.36}>
             <div
               className="hero-stats"
               style={{
-                marginTop: 64,
+                marginTop: 48,
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
                 gap: 1,
@@ -128,7 +165,7 @@ export default function Landing() {
                 borderRadius: 16,
                 overflow: "hidden",
                 border: "0.5px solid var(--border)",
-                maxWidth: 920,
+                maxWidth: 940,
                 marginInline: "auto",
               }}
             >
@@ -141,8 +178,155 @@ export default function Landing() {
         </div>
 
         <style>{`
+          .hero-section {
+            position: relative;
+            padding: 96px 0 110px;
+            overflow: hidden;
+          }
+          .hero-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+              radial-gradient(58% 60% at 14% 18%, rgba(var(--brand-rgb), 0.30) 0%, rgba(var(--brand-rgb), 0.10) 36%, transparent 66%),
+              radial-gradient(52% 58% at 88% 30%, rgba(var(--accent-rgb), 0.22) 0%, rgba(var(--accent-rgb), 0.06) 40%, transparent 70%);
+          }
+          .hero-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+              linear-gradient(rgba(var(--brand-rgb), 0.05) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(var(--brand-rgb), 0.05) 1px, transparent 1px);
+            background-size: 46px 46px;
+            -webkit-mask-image: radial-gradient(72% 62% at 50% 30%, #000 0%, transparent 78%);
+            mask-image: radial-gradient(72% 62% at 50% 30%, #000 0%, transparent 78%);
+          }
+          .hero-headline {
+            font-size: clamp(40px, 6vw, 68px);
+            line-height: 1.04;
+          }
+          .hero-accent {
+            background: linear-gradient(118deg, var(--accent) 0%, var(--brand) 118%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+          }
+          .hero-preview {
+            margin: 60px auto 0;
+            max-width: 720px;
+            background: var(--card-bg);
+            border: 0.5px solid var(--border2);
+            border-radius: 18px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            text-align: left;
+            animation: heroFloat 7s ease-in-out infinite;
+          }
+          @keyframes heroFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+          }
+          .hero-preview-bar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 12px 16px;
+            border-bottom: 0.5px solid var(--border);
+            background: var(--bg2);
+          }
+          .hero-dot { width: 10px; height: 10px; border-radius: 50%; opacity: 0.85; }
+          .hero-preview-url {
+            margin-left: 12px;
+            font-size: 11px;
+            color: var(--text3);
+            letter-spacing: 0.02em;
+          }
+          .hero-preview-body { padding: 24px 26px 26px; }
+          .hero-preview-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+          }
+          .hero-preview-count { font-size: 11px; color: var(--text3); }
+          .hero-preview-q {
+            font-family: var(--font-display);
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.45;
+            margin: 0 0 18px;
+            letter-spacing: -0.01em;
+          }
+          .hero-preview-opts { display: flex; flex-direction: column; gap: 9px; }
+          .hero-opt {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 0.5px solid var(--border);
+            border-radius: 11px;
+            background: var(--bg2);
+            color: var(--text2);
+            font-size: 14px;
+          }
+          .hero-opt--correct {
+            border-color: rgba(var(--green-rgb), 0.45);
+            background: rgba(var(--green-rgb), 0.08);
+            color: var(--text);
+            font-weight: 500;
+          }
+          .hero-opt-key {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            border-radius: 7px;
+            background: var(--bg3);
+            border: 0.5px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text3);
+          }
+          .hero-opt-key--correct {
+            background: rgba(var(--green-rgb), 0.16);
+            border-color: rgba(var(--green-rgb), 0.4);
+            color: var(--green);
+          }
+          .hero-opt-check { margin-left: auto; flex-shrink: 0; }
+          .hero-preview-explain {
+            margin-top: 16px;
+            padding: 13px 15px;
+            border-radius: 11px;
+            border: 0.5px solid var(--accent-border);
+            background: var(--accent-dim);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text2);
+          }
+          .hero-explain-tag {
+            display: inline-block;
+            margin-right: 9px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            color: var(--accent);
+          }
           @media (max-width: 768px) {
             .hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+            .hero-preview { animation: none; }
+            .hero-preview-body { padding: 20px; }
+            .hero-preview-q { font-size: 17px; }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .hero-preview { animation: none; }
           }
         `}</style>
       </section>

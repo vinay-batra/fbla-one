@@ -730,3 +730,19 @@ p { color: var(--text2); line-height: 1.62; }
   pointer-events: none;
   z-index: 0;
 }
+
+/* Floating bottom-right buttons: AI chat (primary, 60px) + feedback flag (44px).
+   On mobile they shrink slightly and the feedback flag tucks closer to the bubble. */
+@media (max-width: 768px) {
+  .fbla-ai-chat-btn {
+    width: 56px !important;
+    height: 56px !important;
+    bottom: 20px !important;
+    right: 20px !important;
+  }
+  .fbla-feedback-btn {
+    width: 40px !important;
+    height: 40px !important;
+    bottom: 28px !important;
+  }
+}
