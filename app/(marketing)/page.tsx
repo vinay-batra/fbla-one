@@ -6,7 +6,6 @@ import { HeroBadge } from "@/components/HeroBadge";
 import { Card } from "@/components/Card";
 import {
   COMPETITION_STATS,
-  CATEGORIES,
   getPopularCompetitions,
   FORMAT_LABEL,
 } from "@/lib/competitions";
@@ -331,58 +330,70 @@ export default function Landing() {
         `}</style>
       </section>
 
-      {/* --- FEATURES BENTO ------------------------------------- */}
-      <section style={{ padding: "60px 0" }}>
+      {/* --- HOW IT WORKS -------------------------------------- */}
+      <section style={{ padding: "56px 0 80px" }}>
         <div className="container">
-          <SectionHeader
-            eyebrow="What's inside"
-            title="Three things, done right."
-            tagline="No fluff. The features your chapter actually opens every week."
-          />
+          <SectionHeader eyebrow="How it works" title="Three steps to a winning chapter." />
 
           <div
-            className="bento-grid"
+            className="hiw-grid"
             style={{
               marginTop: 56,
               display: "grid",
-              gridTemplateColumns: "1.4fr 1fr 1fr",
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: 20,
             }}
           >
-            <ScrollReveal>
-              <FeatureCard
-                badge="01"
-                title="AI Practice Tests"
-                body="Claude generates realistic 100-question practice tests calibrated to each event's exact topics and difficulty. Wrong-answer explanations for every question. Generate a new test instantly -- no two are ever the same."
-                large
-              />
-            </ScrollReveal>
-            <ScrollReveal delay={0.05}>
-              <FeatureCard
-                badge="02"
-                title="Study guides"
-                body={`A full prep page for all ${COMPETITION_STATS.total} FBLA events: format breakdown, topic list, curated study resources, and a direct link to the official event page.`}
-              />
-            </ScrollReveal>
-            <ScrollReveal delay={0.1}>
-              <FeatureCard
-                badge="03"
-                title="Chapter tools"
-                body="Advisor dashboard, deadline calendar with countdowns, member roster. Stop coordinating your chapter through a group chat and a spreadsheet."
-              />
-            </ScrollReveal>
+            {[
+              {
+                step: "01",
+                title: "Register for your events",
+                body: `Browse all ${COMPETITION_STATS.total} FBLA competitions. Filter by category or format. Add the events you plan to compete in to your personal queue.`,
+              },
+              {
+                step: "02",
+                title: "Train with AI",
+                body: "Generate a 10, 25, or 50-question practice test for any objective event. Claude writes questions calibrated to the exact FBLA topic outline. Review every wrong answer with a full explanation.",
+              },
+              {
+                step: "03",
+                title: "Track and win",
+                body: "Your scores log automatically after every test. Your advisor sees who is prepping and for what. Nothing falls through the cracks before regionals.",
+              },
+            ].map((s, i) => (
+              <ScrollReveal key={s.step} delay={i * 0.06}>
+                <Card style={{ height: "100%" }}>
+                  <div
+                    className="font-mono"
+                    style={{
+                      fontSize: 32,
+                      fontWeight: 700,
+                      color: "var(--accent)",
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {s.step}
+                  </div>
+                  <h3 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.01em", marginTop: 12, marginBottom: 8 }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65 }}>{s.body}</p>
+                </Card>
+              </ScrollReveal>
+            ))}
           </div>
         </div>
 
         <style>{`
           @media (max-width: 900px) {
-            .bento-grid { grid-template-columns: 1fr !important; }
+            .hiw-grid { grid-template-columns: 1fr !important; }
           }
         `}</style>
       </section>
 
       {/* --- COMPETITIONS PREVIEW ------------------------------- */}
-      <section style={{ padding: "100px 0 40px" }}>
+      <section style={{ padding: "80px 0 40px" }}>
         <div className="container">
           <SectionHeader
             eyebrow="Most picked"
@@ -455,110 +466,6 @@ export default function Landing() {
             .comp-grid { grid-template-columns: 1fr !important; }
           }
         `}</style>
-      </section>
-
-      {/* --- HOW IT WORKS -------------------------------------- */}
-      <section style={{ padding: "100px 0" }}>
-        <div className="container">
-          <SectionHeader eyebrow="How it works" title="Three steps to a winning chapter." />
-
-          <div
-            className="hiw-grid"
-            style={{
-              marginTop: 56,
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 20,
-            }}
-          >
-            {[
-              {
-                step: "01",
-                title: "Register for your events",
-                body: `Browse all ${COMPETITION_STATS.total} FBLA competitions. Filter by category or format. Add the events you plan to compete in to your personal queue.`,
-              },
-              {
-                step: "02",
-                title: "Train with AI",
-                body: "Generate a 10, 25, or 50-question practice test for any objective event. Claude writes questions calibrated to the exact FBLA topic outline. Review every wrong answer with a full explanation.",
-              },
-              {
-                step: "03",
-                title: "Track and win",
-                body: "Your scores log automatically after every test. Your advisor sees who is prepping and for what. Nothing falls through the cracks before regionals.",
-              },
-            ].map((s, i) => (
-              <ScrollReveal key={s.step} delay={i * 0.06}>
-                <Card style={{ height: "100%" }}>
-                  <div
-                    className="font-mono"
-                    style={{
-                      fontSize: 32,
-                      fontWeight: 700,
-                      color: "var(--accent)",
-                      letterSpacing: "-0.02em",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {s.step}
-                  </div>
-                  <h3 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.01em", marginTop: 12, marginBottom: 8 }}>
-                    {s.title}
-                  </h3>
-                  <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65 }}>{s.body}</p>
-                </Card>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-
-        <style>{`
-          @media (max-width: 900px) {
-            .hiw-grid { grid-template-columns: 1fr !important; }
-          }
-        `}</style>
-      </section>
-
-      {/* --- CATEGORIES ---------------------------------------- */}
-      <section style={{ padding: "80px 0" }}>
-        <div className="container">
-          <SectionHeader
-            eyebrow="Every category"
-            title="From accounting to cyber security."
-            tagline="FBLA's seven competitive categories. Click in to see every event."
-          />
-
-          <div
-            className="cat-grid"
-            style={{
-              marginTop: 48,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 12,
-            }}
-          >
-            {CATEGORIES.map((cat, i) => (
-              <ScrollReveal key={cat} delay={i * 0.03}>
-                <Link
-                  href={`/competitions?category=${encodeURIComponent(cat)}`}
-                  className="category-tile"
-                  style={{ textDecoration: "none" }}
-                >
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: "var(--text)",
-                      letterSpacing: "-0.005em",
-                    }}
-                  >
-                    {cat}
-                  </div>
-                </Link>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* --- FINAL CTA ----------------------------------------- */}
@@ -649,44 +556,3 @@ function StatBlock({ value, label }: { value: string; label: string }) {
   );
 }
 
-function FeatureCard({
-  badge,
-  title,
-  body,
-  large,
-}: {
-  badge: string;
-  title: string;
-  body: string;
-  large?: boolean;
-}) {
-  return (
-    <Card variant="hover" style={{ height: "100%" }}>
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <div
-          className="font-mono"
-          style={{
-            fontSize: 10,
-            letterSpacing: "0.22em",
-            color: "var(--accent)",
-            fontWeight: 700,
-          }}
-        >
-          {badge}
-        </div>
-        <h3
-          style={{
-            fontSize: large ? 26 : 21,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            marginTop: 14,
-            marginBottom: 12,
-          }}
-        >
-          {title}
-        </h3>
-        <p style={{ fontSize: 14.5, color: "var(--text2)", lineHeight: 1.65, flex: 1 }}>{body}</p>
-      </div>
-    </Card>
-  );
-}
