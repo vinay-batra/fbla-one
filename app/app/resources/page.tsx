@@ -202,7 +202,7 @@ export default function ResourcesPage() {
 
           <p style={{ fontSize: 12, color: "var(--text3)" }}>
             Find more resources on any{" "}
-            <Link href="/competitions" style={{ color: "var(--accent)" }}>competition page</Link>.
+            <Link href="/competitions" style={{ color: "var(--accent-text)" }}>competition page</Link>.
           </p>
         </>
       )}

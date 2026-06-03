@@ -122,7 +122,7 @@ function exportRosterCSV(members: MemberRow[], chapterName: string) {
 }
 
 function roleBadgeStyle(role: string): React.CSSProperties {
-  if (role === "advisor") return { background: "var(--accent-dim)", color: "var(--accent)" };
+  if (role === "advisor") return { background: "var(--accent-dim)", color: "var(--accent-text)" };
   if (role === "officer") return { background: "var(--brand-dim)", color: "var(--brand)" };
   return { background: "var(--bg3)", color: "var(--text3)" };
 }
@@ -373,7 +373,7 @@ export default function ChapterPage() {
               <p style={{ fontSize: 14, fontWeight: 600 }}>Sign in to use chapter features</p>
               <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>
                 Create or join a chapter to unlock the advisor dashboard and shared deadlines.{" "}
-                <Link href="/auth" style={{ color: "var(--accent)" }}>Sign in</Link>
+                <Link href="/auth" style={{ color: "var(--accent-text)" }}>Sign in</Link>
               </p>
             </div>
           </div>
@@ -937,7 +937,7 @@ export default function ChapterPage() {
         {registered.length === 0 ? (
           <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 8 }}>
             No events yet.{" "}
-            <Link href="/competitions" style={{ color: "var(--accent)" }}>Browse competitions</Link>
+            <Link href="/competitions" style={{ color: "var(--accent-text)" }}>Browse competitions</Link>
             {" "}to add some.
           </p>
         ) : (

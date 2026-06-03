@@ -1,10 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+
+  const close = () => {
+    setOpen(false);
+    fabRef.current?.focus();
+  };
+
+  // Focus the textarea on open; Escape closes and returns focus to the FAB.
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => textareaRef.current?.focus(), 30);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); setOpen(false); fabRef.current?.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => { clearTimeout(t); document.removeEventListener("keydown", onKey); };
+  }, [open]);
 
   const submit = () => {
     if (!message.trim()) return;
@@ -30,6 +48,8 @@ export function FeedbackButton() {
     >
       {open && (
         <div
+          role="dialog"
+          aria-label="Send feedback"
           style={{
             width: 300,
             background: "var(--card-bg)",
@@ -44,7 +64,8 @@ export function FeedbackButton() {
             <p style={{ fontSize: 14, fontWeight: 700 }}>Send feedback</p>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={close}
+              aria-label="Close feedback"
               style={{ background: "none", border: "none", color: "var(--text3)", cursor: "pointer", padding: 4 }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -56,11 +77,13 @@ export function FeedbackButton() {
             Found a bug or have a suggestion? We read everything.
           </p>
           <textarea
+            ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Tell us what's on your mind..."
             rows={4}
             className="input-field"
+            aria-label="Feedback message"
             style={{ width: "100%", resize: "none", marginBottom: 10 }}
           />
           <button
@@ -75,6 +98,7 @@ export function FeedbackButton() {
       )}
 
       <button
+        ref={fabRef}
         type="button"
         onClick={() => setOpen((p) => !p)}
         aria-label="Send feedback"

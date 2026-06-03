@@ -175,7 +175,7 @@ export default function Dashboard() {
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
-            <span className="eyebrow" style={{ fontSize: 9, color: "var(--accent)" }}>Upcoming</span>
+            <span className="eyebrow" style={{ fontSize: 9, color: "var(--accent-text)" }}>Upcoming</span>
           </div>
           <div style={{ display: "flex", gap: 10, flex: 1, flexWrap: "wrap" }}>
             {upcomingDeadlines.map((dl) => {
@@ -217,7 +217,7 @@ export default function Dashboard() {
               );
             })}
           </div>
-          <Link href="/app/chapter" style={{ fontSize: 12, color: "var(--accent)", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap" }}>
+          <Link href="/app/chapter" style={{ fontSize: 12, color: "var(--accent-text)", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap" }}>
             View all
           </Link>
         </div>
@@ -299,7 +299,7 @@ export default function Dashboard() {
           {logs.length === 0 ? (
             <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>
               No practice logs yet. Head to the{" "}
-              <Link href="/app/tracker" style={{ color: "var(--accent)" }}>
+              <Link href="/app/tracker" style={{ color: "var(--accent-text)" }}>
                 tracker
               </Link>{" "}
               to add one.
@@ -333,7 +333,7 @@ export default function Dashboard() {
                         className="font-mono"
                         style={{
                           fontSize: 12,
-                          color: "var(--accent)",
+                          color: "var(--accent-text)",
                           fontWeight: 700,
                         }}
                       >

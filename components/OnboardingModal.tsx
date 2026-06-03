@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const KEY = "fbla_onboarded";
@@ -49,6 +49,7 @@ const STEPS = [
 
 export function OnboardingModal() {
   const [show, setShow] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -61,10 +62,42 @@ export function OnboardingModal() {
     }
   }, []);
 
-  function dismiss() {
+  const dismiss = useCallback(() => {
     try { localStorage.setItem(KEY, "1"); } catch {}
     setShow(false);
-  }
+  }, []);
+
+  // Focus management + Escape + Tab trap while the dialog is open.
+  useEffect(() => {
+    if (!show) return;
+    const node = dialogRef.current;
+    const prevFocus = document.activeElement as HTMLElement | null;
+    const focusables = () =>
+      node
+        ? Array.from(
+            node.querySelectorAll<HTMLElement>(
+              'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+            )
+          ).filter((el) => !el.hasAttribute("disabled"))
+        : [];
+    focusables()[0]?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); dismiss(); return; }
+      if (e.key === "Tab") {
+        const items = focusables();
+        if (items.length === 0) return;
+        const firstEl = items[0];
+        const lastEl = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === firstEl) { e.preventDefault(); lastEl.focus(); }
+        else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); firstEl.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      prevFocus?.focus?.();
+    };
+  }, [show, dismiss]);
 
   if (!show) return null;
 
@@ -85,6 +118,10 @@ export function OnboardingModal() {
       onClick={dismiss}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-title"
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "min(560px, 100%)",
@@ -100,7 +137,7 @@ export function OnboardingModal() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
           <div>
             <p className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>Welcome to FBLA One</p>
-            <h2 style={{ fontSize: 24, letterSpacing: "-0.02em" }}>Three things to do first.</h2>
+            <h2 id="onboarding-title" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>Three things to do first.</h2>
           </div>
           <button
             type="button"

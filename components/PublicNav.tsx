@@ -80,6 +80,17 @@ export function PublicNav() {
   // Close mobile drawer on route change
   useEffect(() => setDrawerOpen(false), [pathname]);
 
+  // Close the drawer on Escape and return focus to the toggle.
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setDrawerOpen(false); burgerRef.current?.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
   return (
     <>
       <nav
@@ -145,9 +156,12 @@ export function PublicNav() {
               </Link>
             )}
             <button
+              ref={burgerRef}
               type="button"
               onClick={() => setDrawerOpen((p) => !p)}
               aria-label="Toggle menu"
+              aria-expanded={drawerOpen}
+              aria-controls="mobile-nav-drawer"
               className="nav-burger mi-btn"
               style={{
                 width: 36,
@@ -181,6 +195,7 @@ export function PublicNav() {
         {/* Mobile drawer */}
         {drawerOpen && (
           <div
+            id="mobile-nav-drawer"
             className="nav-drawer"
             style={{
               display: "block",

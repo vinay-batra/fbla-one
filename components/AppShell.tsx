@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
@@ -110,6 +110,19 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
 
   useEffect(() => setDrawerOpen(false), [pathname]);
 
+  // Mobile sidebar drawer: focus the first item on open, Escape closes + restores focus.
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!drawerOpen) return;
+    sidebarRef.current?.querySelector<HTMLElement>('a[href], button')?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setDrawerOpen(false); burgerRef.current?.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [drawerOpen]);
+
   const signOut = async () => {
     const supa = getSupabase();
     if (supa) await supa.auth.signOut();
@@ -126,6 +139,8 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
     >
       {/* Sidebar */}
       <aside
+        ref={sidebarRef}
+        id="app-sidebar"
         className={`app-sidebar ${drawerOpen ? "open" : ""}`}
         style={{
           width: 248,
@@ -251,9 +266,12 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           }}
         >
           <button
+            ref={burgerRef}
             type="button"
             onClick={() => setDrawerOpen((p) => !p)}
             aria-label="Toggle sidebar"
+            aria-expanded={drawerOpen}
+            aria-controls="app-sidebar"
             className="mi-btn app-burger"
             style={{
               width: 36,

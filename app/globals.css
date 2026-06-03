@@ -28,7 +28,7 @@ body {
   --text1:       #0b1a33;
   --text2:       #2b3a55;
   --text3:       #5a6b8a;
-  --text-muted:  #7a8aa3;
+  --text-muted:  #5c6c89;
 
   --green:       #16864d;
   --green-rgb:   22, 134, 77;
@@ -88,7 +88,7 @@ body {
   --text1:       #f0ecde;
   --text2:       #b3bccd;
   --text3:       #7a85a0;
-  --text-muted:  #5d6883;
+  --text-muted:  #7c87a2;
 
   --green:       #5cb88a;
   --green-rgb:   92, 184, 138;
@@ -162,7 +162,7 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 ::selection { background: rgba(var(--accent-rgb), 0.35); color: var(--text); }
 
 :focus-visible {
-  outline: 2px solid rgba(var(--accent-rgb), 0.6);
+  outline: 2px solid var(--accent-text);
   outline-offset: 2px;
   border-radius: 4px;
 }
