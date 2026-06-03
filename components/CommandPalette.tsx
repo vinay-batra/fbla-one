@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { COMPETITIONS } from "@/lib/competitions";
+import { COMPETITION_INDEX } from "@/lib/competitionIndex";
 
 type NavItem = {
   label: string;
@@ -108,7 +108,7 @@ export function CommandPalette() {
   }, [open]);
 
   const compResults = query.trim()
-    ? COMPETITIONS.filter((c) =>
+    ? COMPETITION_INDEX.filter((c) =>
         c.name.toLowerCase().includes(query.toLowerCase()) ||
         c.category.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 5)
