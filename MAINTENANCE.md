@@ -379,3 +379,4 @@ Routine checks, audits, and tests.
 - 2026-06-02 — routine maintenance
 - 2026-06-02 — ran regression pass, no regressions
 - 2026-06-02 — reviewed dependency updates
+- 2026-06-02 — e2e sanity check passed
