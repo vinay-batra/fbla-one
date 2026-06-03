@@ -40,9 +40,9 @@ square(32, 0.06, WHITE).convert("RGB").save("public/favicon-32x32.png")
 # IMPORTANT: the favicon that browsers actually serve at /favicon.ico is the
 # Next.js App Router file convention app/favicon.ico - it shadows public/. Write
 # THERE (a public/favicon.ico would be ignored and just cause confusion).
-square(64, 0.06, WHITE).convert("RGB").save(
-    "app/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)]
-)
+# Keep it RGBA (no .convert("RGB")): Next/Turbopack's .ico decoder rejects a
+# non-RGBA embedded PNG with "The PNG is not in RGBA format!" and fails the build.
+square(64, 0.06, WHITE).save("app/favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
 
 # iOS + PWA maskable (opaque + safe-zone padding)
 square(180, 0.14, WHITE).convert("RGB").save("public/apple-touch-icon.png")
