@@ -81,16 +81,15 @@ function CompetitionsList() {
         </div>
       </section>
 
-      {/* FILTER BAR */}
+      {/* FILTER BAR - sticks flush to the very top with an opaque background.
+          (Was top:64 + translucent: when the nav hides on scroll, that left a
+          64px gap above the bar where the scrolling grid showed through.) */}
       <section
         style={{
           position: "sticky",
-          top: 64,
+          top: 0,
           zIndex: 40,
-          background: "var(--nav-bg)",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
-          borderTop: "0.5px solid var(--border)",
+          background: "var(--bg)",
           borderBottom: "0.5px solid var(--border)",
           padding: "16px 0",
         }}

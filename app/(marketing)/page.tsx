@@ -91,19 +91,6 @@ export default function Landing() {
                 </Link>
               </div>
             </ScrollReveal>
-            <ScrollReveal delay={0.24}>
-              <p
-                className="font-mono"
-                style={{
-                  marginTop: 24,
-                  fontSize: 11,
-                  color: "var(--text-muted)",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                ALWAYS FREE · BUILT BY AN FBLA STUDENT · 45 OBJECTIVE EVENTS WITH AI TESTS
-              </p>
-            </ScrollReveal>
           </div>
 
           {/* Product preview: a live-feel AI practice question in a framed window */}
@@ -360,7 +347,7 @@ export default function Landing() {
               {
                 step: "02",
                 title: "Train with AI",
-                body: "Generate a 10, 25, or 50-question practice test for any objective event. Claude writes questions calibrated to the exact FBLA topic outline. Review every wrong answer with a full explanation.",
+                body: "Generate a 10, 25, or 50-question practice test for any objective event, calibrated to its exact FBLA topic outline. Every wrong answer comes with a full explanation, so you actually learn the material instead of just memorizing.",
               },
               {
                 step: "03",

@@ -176,35 +176,40 @@ function PublicAIChatInner() {
           bottom: 24,
           right: 24,
           zIndex: 1000,
-          width: 60,
-          height: 60,
+          width: 58,
+          height: 58,
           borderRadius: "50%",
-          // Gold gradient in BOTH themes so the blue FBLA One mark pops on it.
-          background: open
-            ? "var(--bg3)"
-            : "linear-gradient(155deg, #ffd270 0%, var(--accent) 55%, #a86f14 100%)",
-          border: open ? "0.5px solid var(--border2)" : "0.5px solid rgba(255,255,255,0.25)",
+          // Simple: a clean white disc with the logo. White reads in both themes
+          // (the blue mark always pops) and stands out on the dark page.
+          background: open ? "var(--bg3)" : "#ffffff",
+          border: open
+            ? "0.5px solid var(--border2)"
+            : dark
+              ? "0.5px solid rgba(255,255,255,0.14)"
+              : "0.5px solid var(--border)",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: open
-            ? "0 4px 14px rgba(0,0,0,0.18)"
-            : "0 10px 32px rgba(200,136,26,0.42), 0 2px 8px rgba(200,136,26,0.28), inset 0 1px 0 rgba(255,255,255,0.35)",
-          transition: "background 0.2s, box-shadow 0.2s, transform 0.2s, border 0.2s",
+          boxShadow: dark
+            ? "0 8px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)"
+            : "0 8px 24px rgba(11,26,51,0.16), 0 1px 3px rgba(11,26,51,0.1)",
+          transition: "box-shadow 0.2s, transform 0.2s, background 0.2s",
           transform: open ? "scale(0.96)" : "scale(1)",
         }}
         onMouseEnter={(e) => {
           if (open) return;
-          e.currentTarget.style.transform = "translateY(-2px) scale(1.04)";
-          e.currentTarget.style.boxShadow =
-            "0 14px 40px rgba(200,136,26,0.58), 0 0 0 5px rgba(200,136,26,0.18), inset 0 1px 0 rgba(255,255,255,0.4)";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = dark
+            ? "0 12px 30px rgba(0,0,0,0.6), 0 0 0 4px rgba(var(--accent-rgb),0.18)"
+            : "0 12px 30px rgba(11,26,51,0.2), 0 0 0 4px rgba(var(--accent-rgb),0.14)";
         }}
         onMouseLeave={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow =
-            "0 10px 32px rgba(200,136,26,0.42), 0 2px 8px rgba(200,136,26,0.28), inset 0 1px 0 rgba(255,255,255,0.35)";
+          e.currentTarget.style.boxShadow = dark
+            ? "0 8px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)"
+            : "0 8px 24px rgba(11,26,51,0.16), 0 1px 3px rgba(11,26,51,0.1)";
         }}
       >
         {open ? (
@@ -212,23 +217,8 @@ function PublicAIChatInner() {
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          // The FBLA One mark, on a white disc so the blue reads crisply on gold.
-          <span
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.06)",
-              pointerEvents: "none",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-mark.png" alt="" width={30} height={30} style={{ objectFit: "contain" }} />
-          </span>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/logo-mark.png" alt="" width={34} height={34} style={{ objectFit: "contain", pointerEvents: "none" }} />
         )}
       </button>
 

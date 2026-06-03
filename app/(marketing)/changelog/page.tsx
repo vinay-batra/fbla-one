@@ -65,7 +65,7 @@ const ERAS: Era[] = [
     intro:
       "The core feature shipped: unlimited AI practice tests calibrated to every objective event.",
     highlights: [
-      "Claude streams realistic 100-question tests matched to each topic outline",
+      "Streams realistic practice tests matched to each event's exact topic outline",
       "Four-phase coach UI: idle, generating, taking, and reviewing",
       "45 eligible objective events, each with full wrong-answer rationales",
       "Demo mode lets advisors try the platform with no sign-up required",

@@ -56,7 +56,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How does the AI practice test work?",
-        a: "You pick a competition and a question count (10, 25, or 50). Claude generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live as they're generated. After you submit, every wrong answer gets a full explanation.",
+        a: "You pick a competition and a question count (10, 25, or 50). FBLA One generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
       },
       {
         q: "How accurate are the AI-generated questions?",

@@ -10,7 +10,7 @@ CRITICAL OUTPUT FORMAT - follow exactly:
 - Output ONLY raw NDJSON: one valid JSON object per line, nothing else
 - No markdown, no code fences, no commentary, no blank lines between questions
 - Each line must be a complete, valid JSON object with this exact schema:
-{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"A is correct because [specific reason]. B is wrong because [reason]. C is wrong because [reason]. D is wrong because [reason]."}
+{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"Why A is correct, plus the key reason the most tempting wrong option is wrong."}
 
 Question quality rules:
 - Distractors must be plausible - rooted in common misconceptions, not obviously wrong
@@ -18,6 +18,7 @@ Question quality rules:
 - Mix question types: definition (20%), scenario/application (50%), compare/contrast (20%), calculation when applicable (10%)
 - Never repeat the same concept twice across the test
 - Difficulty should match actual FBLA national competition level - challenging but fair
+- Keep each explanation to ONE or TWO sentences: why the correct answer is right and the single biggest reason a student picks the wrong one. Do not walk through all four options. Concise explanations matter - the whole test must stream quickly.
 - Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field. The question and explanation strings are shown verbatim to students.`;
 
 function buildUserPrompt(slug: string, count: number): string {
@@ -117,11 +118,14 @@ export async function POST(req: Request): Promise<Response> {
     async start(controller) {
       try {
         const anthropicStream = client.messages.stream({
-          model: "claude-sonnet-4-5",
-          // Scale with question count: each question (text + 4 options + a
-          // 4-part explanation) runs ~250 tokens. A flat 8000 truncated
-          // 50-question tests mid-stream and silently under-delivered.
-          max_tokens: Math.min(16000, count * 320 + 800),
+          // Haiku 4.5 generates objective MCQs ~2-3x faster than Sonnet at
+          // comparable quality for this calibrated, well-specified task - the
+          // single biggest lever on "the tests take too long". Combined with
+          // the now-concise one-line explanations, a 25-question test streams
+          // in a fraction of the previous time.
+          model: "claude-haiku-4-5-20251001",
+          // Scale with question count; concise explanations keep this modest.
+          max_tokens: Math.min(12000, count * 220 + 600),
           system: SYSTEM_PROMPT,
           messages: [{ role: "user", content: buildUserPrompt(slug, count) }],
         });
