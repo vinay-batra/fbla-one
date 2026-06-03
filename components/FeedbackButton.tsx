@@ -1,19 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { getSupabase } from "@/lib/supabase";
 
 const TYPES = ["Bug", "Feedback", "Feature request"] as const;
 type FeedbackType = (typeof TYPES)[number];
 
 export function FeedbackButton() {
-  const pathname = usePathname();
-  // The public AI chat bubble (60px) owns the bottom-right corner on public
-  // pages, so feedback sits to its left at right 96. On /app the chat is hidden,
-  // so feedback takes the corner slot.
-  const onApp = pathname?.startsWith("/app");
-  const fabRight = onApp ? 24 : 96;
+  // The AI chat bubble (60px) owns the bottom-right corner on every page, so the
+  // feedback flag always sits to its left at right 96.
+  const fabRight = 96;
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<FeedbackType>("Bug");
   const [message, setMessage] = useState("");
@@ -97,7 +93,7 @@ export function FeedbackButton() {
         onClick={() => setOpen(true)}
         aria-label="Report a bug or send feedback"
         title="Report a bug"
-        className={onApp ? "fbla-feedback-btn fbla-feedback-btn--solo" : "fbla-feedback-btn"}
+        className="fbla-feedback-btn"
         style={{
           position: "fixed",
           bottom: 24,
@@ -131,8 +127,10 @@ export function FeedbackButton() {
           e.currentTarget.style.transform = "translateY(0)";
         }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M4 3h16a1 1 0 0 1 .73 1.68l-4.73 5.32 4.73 5.32A1 1 0 0 1 20 17H5v4a1 1 0 0 1-2 0V4a1 1 0 0 1 1-1z" />
+        {/* Waving flag on a pole - the classic "report" mark, stroked for a cleaner look */}
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 21V4" />
+          <path d="M5 4c2.5-1.4 5-1.4 7.5 0s5 1.4 7.5 0v9c-2.5 1.4-5 1.4-7.5 0s-5-1.4-7.5 0" />
         </svg>
       </button>
 

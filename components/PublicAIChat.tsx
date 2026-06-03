@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 interface Message {
   role: "user" | "assistant";
@@ -59,7 +58,6 @@ export default function PublicAIChat() {
 }
 
 function PublicAIChatInner() {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -118,9 +116,6 @@ function PublicAIChatInner() {
     };
   }, [open]);
 
-  // Hide on the authenticated app shell (it has its own chrome).
-  if (pathname?.startsWith("/app")) return null;
-
   const send = async (text: string) => {
     const q = text.trim();
     if (!q || loading) return;
@@ -178,62 +173,56 @@ function PublicAIChatInner() {
           width: 60,
           height: 60,
           borderRadius: "50%",
+          // Gold gradient in BOTH themes so the blue FBLA One mark pops on it.
           background: open
             ? "var(--bg3)"
-            : dark
-              ? "linear-gradient(155deg, #14233d 0%, #0a1322 55%, #060c16 100%)"
-              : "linear-gradient(155deg, #ffd270 0%, var(--accent) 55%, #a86f14 100%)",
-          border: open
-            ? "0.5px solid var(--border2)"
-            : dark
-              ? "0.5px solid rgba(var(--accent-rgb),0.45)"
-              : "0.5px solid rgba(255,255,255,0.18)",
+            : "linear-gradient(155deg, #ffd270 0%, var(--accent) 55%, #a86f14 100%)",
+          border: open ? "0.5px solid var(--border2)" : "0.5px solid rgba(255,255,255,0.25)",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           boxShadow: open
             ? "0 4px 14px rgba(0,0,0,0.18)"
-            : dark
-              ? "0 10px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3), 0 0 22px rgba(var(--accent-rgb),0.25)"
-              : "0 10px 32px rgba(200,136,26,0.4), 0 2px 8px rgba(200,136,26,0.25), inset 0 1px 0 rgba(255,255,255,0.3)",
+            : "0 10px 32px rgba(200,136,26,0.42), 0 2px 8px rgba(200,136,26,0.28), inset 0 1px 0 rgba(255,255,255,0.35)",
           transition: "background 0.2s, box-shadow 0.2s, transform 0.2s, border 0.2s",
           transform: open ? "scale(0.96)" : "scale(1)",
         }}
         onMouseEnter={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "translateY(-2px) scale(1.04)";
-          e.currentTarget.style.boxShadow = dark
-            ? "0 14px 40px rgba(0,0,0,0.55), 0 0 0 5px rgba(var(--accent-rgb),0.22), 0 0 30px rgba(var(--accent-rgb),0.32)"
-            : "0 14px 40px rgba(200,136,26,0.55), 0 0 0 5px rgba(200,136,26,0.18), inset 0 1px 0 rgba(255,255,255,0.34)";
+          e.currentTarget.style.boxShadow =
+            "0 14px 40px rgba(200,136,26,0.58), 0 0 0 5px rgba(200,136,26,0.18), inset 0 1px 0 rgba(255,255,255,0.4)";
         }}
         onMouseLeave={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = dark
-            ? "0 10px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3), 0 0 22px rgba(var(--accent-rgb),0.25)"
-            : "0 10px 32px rgba(200,136,26,0.4), 0 2px 8px rgba(200,136,26,0.25), inset 0 1px 0 rgba(255,255,255,0.3)";
+          e.currentTarget.style.boxShadow =
+            "0 10px 32px rgba(200,136,26,0.42), 0 2px 8px rgba(200,136,26,0.28), inset 0 1px 0 rgba(255,255,255,0.35)";
         }}
       >
         {open ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a1322" strokeWidth="2.5" strokeLinecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          /* Chat bubble glyph - dark on the gold gradient (light), gold on the dark gradient (dark) */
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={dark ? "var(--accent)" : "#0a1322"}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ pointerEvents: "none" }}
+          // The FBLA One mark, on a white disc so the blue reads crisply on gold.
+          <span
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              background: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.06)",
+              pointerEvents: "none",
+            }}
           >
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-mark.png" alt="" width={30} height={30} style={{ objectFit: "contain" }} />
+          </span>
         )}
       </button>
 
