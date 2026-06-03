@@ -83,11 +83,11 @@ export default function Landing() {
                   flexWrap: "wrap",
                 }}
               >
-                <Link href="/api/preview?redirect=/app/coach" className="btn btn-accent btn-lg cta-shimmer">
-                  Try AI Practice Tests
+                <Link href="/auth?mode=signup" className="btn btn-accent btn-lg cta-shimmer">
+                  Get started
                 </Link>
-                <Link href="/competitions" className="btn btn-ghost btn-lg">
-                  Browse competitions
+                <Link href="/app" className="btn btn-ghost btn-lg">
+                  Go to dashboard
                 </Link>
               </div>
             </ScrollReveal>
@@ -503,11 +503,11 @@ export default function Landing() {
                   AI practice tests, study guides, and chapter management, all in one place.
                 </p>
                 <div style={{ marginTop: 32, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Link href="/auth" className="btn btn-accent btn-lg cta-shimmer">
+                  <Link href="/auth?mode=signup" className="btn btn-accent btn-lg cta-shimmer">
                     Get started free
                   </Link>
-                  <Link href="/competitions" className="btn btn-ghost btn-lg">
-                    Browse competitions
+                  <Link href="/app" className="btn btn-ghost btn-lg">
+                    Go to dashboard
                   </Link>
                 </div>
               </div>

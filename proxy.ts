@@ -26,7 +26,12 @@ export async function proxy(req: NextRequest) {
             name,
             value,
             ...options,
-            httpOnly: true,
+            // httpOnly MUST be false: @supabase/ssr's browser client restores
+            // the session by reading the auth cookie from document.cookie on
+            // every load. httpOnly:true makes it unreadable, so the client sees
+            // no session and "sign in does nothing" (you bounce back to /auth).
+            // This is the same bug + fix as Corvo. Keep sameSite=lax + secure.
+            httpOnly: false,
             sameSite: "lax",
             secure: process.env.NODE_ENV === "production",
             path: "/",

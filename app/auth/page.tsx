@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -72,7 +72,6 @@ type Mode = "login" | "signup" | "magic" | "reset";
 // Actual form (needs Suspense because of useSearchParams)
 // ---------------------------------------------------------------------------
 function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") ?? "/app";
 
@@ -143,9 +142,11 @@ function AuthForm() {
           options: captchaToken ? { captchaToken } : undefined,
         });
         if (error) throw error;
-        router.push(nextPath);
+        // Full reload (not router.push) so the server picks up the fresh
+        // session cookie on the very next request and renders the dashboard.
+        window.location.href = nextPath;
       } else if (mode === "signup") {
-        const { error } = await supa.auth.signUp({
+        const { data, error } = await supa.auth.signUp({
           email,
           password,
           options: {
@@ -154,7 +155,14 @@ function AuthForm() {
           },
         });
         if (error) throw error;
-        setSuccess("Check your inbox to confirm your email, then sign in.");
+        // Email confirmation is disabled, so signUp returns a live session.
+        // Go straight to the dashboard. If a project ever turns confirmation
+        // back on, there's no session and we fall back to the inbox message.
+        if (data.session) {
+          window.location.href = nextPath;
+        } else {
+          setSuccess("Account created. Check your inbox to confirm, then sign in.");
+        }
       } else if (mode === "magic") {
         const { error } = await supa.auth.signInWithOtp({
           email,
