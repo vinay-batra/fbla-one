@@ -11,9 +11,10 @@ import { getSupabase } from "@/lib/supabase";
 type NavLinkSpec = { href: string; label: string };
 
 const NAV_LINKS: NavLinkSpec[] = [
+  { href: "/", label: "Features" },
   { href: "/competitions", label: "Competitions" },
+  { href: "/changelog", label: "Changelog" },
   { href: "/faq", label: "FAQ" },
-  { href: "/about", label: "About" },
 ];
 
 export function PublicNav() {

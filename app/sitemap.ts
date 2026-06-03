@@ -6,7 +6,7 @@ const BASE = "https://fbla.one";
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const staticRoutes = ["", "/competitions", "/about", "/faq", "/privacy", "/terms"].map((path) => ({
+  const staticRoutes = ["", "/competitions", "/changelog", "/faq", "/privacy", "/terms"].map((path) => ({
     url: `${BASE}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

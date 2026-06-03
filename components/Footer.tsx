@@ -18,7 +18,7 @@ const COLS: FooterCol[] = [
   {
     title: "Company",
     links: [
-      { href: "/about", label: "About" },
+      { href: "/changelog", label: "Changelog" },
       { href: "/faq", label: "FAQ" },
     ],
   },
