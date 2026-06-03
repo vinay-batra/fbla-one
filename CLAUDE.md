@@ -14,14 +14,14 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.1 (June 2, 2026) - advisor leaderboard + chapter stats, chapter-shared deadlines, security audit fixes.
+**LIVE in production at [fbla.one](https://fbla.one).** Last shipped: v1.2 (June 3, 2026) - real shield logo, removed Cmd+K palette, Supabase-backed feedback button (migration 0008 - apply in SQL editor).
 
 **RESOLVED (verified live):** migrations `0006_fix_rls_recursion.sql` + `0007_invite_validated_join.sql` are applied to prod and verified 18/18 via `node _rls_test.mjs`. 0006 fixed an infinite-recursion bug in the chapter/advisor RLS (a chapters <-> profiles loop from 0004) that had been breaking chapter creation + the advisor dashboard; 0007 closed the chapter-join holes (world-readable invite codes; self-join any chapter without an invite). Both found by the live test, not the static audit.
 
 **Status: fully deployed; migrations 0006 + 0007 applied and verified live (18/18). Advisor leaderboard + chapter-shared deadlines working end-to-end.**
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
 - Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
-- Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0007 in repo and ALL applied live; 0006 (RLS recursion fix) + 0007 (invite-validated join) verified 18/18 via `_rls_test.mjs`. NOTE: `service_role` has no table grants here (0003 granted only `authenticated`) - admin scripts must use the auth API or a signed-in client.
+- Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0008 in repo. 0001-0007 ALL applied live (0006+0007 verified 18/18 via `_rls_test.mjs`). **0008 (feedback table) MUST be applied** - paste `supabase/migrations/0008_feedback.sql` in the SQL editor or the feedback button errors on submit. NOTE: `service_role` has no table grants here (0003 granted only `authenticated`) - admin scripts must use the auth API or a signed-in client.
 - Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-sonnet-4-5).
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
@@ -33,21 +33,16 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - **Demo mode**: `/api/preview` sets `fbla_preview=1` cookie, bypasses auth gate in AppLayout. Preview banner in AppShell. Landing page "Try AI Practice Tests" + "Preview the platform" buttons both route through this.
 - **Saved resources**: `StudyResourcesList` client component on competition pages with bookmark save/unsave. `/app/resources` page with competition filter and remove.
 - **Score trends chart**: pure SVG bar chart on dashboard showing last 8 scored logs per competition. Color-coded green/amber/red. Uses shared `components/Sparkbars.tsx`.
-- **Advisor leaderboard + chapter stats** (`/app/chapter`, advisor view): `getChapterStats()` ranks members by practice volume then avg score, plus chapter totals, active-this-week, chapter average, top event, and an 8-week trend. RLS-scoped to the advisor's chapter (needs migration 0006).
+- **Advisor leaderboard + chapter stats** (`/app/chapter`, advisor view): `getChapterStats()` ranks members by practice volume then avg score, plus chapter totals, active-this-week, chapter average, top event, and an 8-week trend.
 - **Chapter-shared deadlines**: in a chapter the deadline calendar is shared (advisor writes to `public.deadlines`, members read-only); solo/preview users keep personal localStorage deadlines. `lib/storage.ts` mirrors chapter deadlines via `setChapterContext()` + `syncChapterDeadlines()`; `canManageDeadlines()` gates the UI.
-- **Onboarding modal**: first-visit welcome with 3 guided steps. localStorage flag `fbla_onboarded`.
+- **Onboarding modal**: first-visit welcome with 3 guided steps. localStorage flag `fbla_onboarded`. role=dialog + Escape + Tab focus-trap.
 - **Deadline alerts**: in-app strip for deadlines within 3 days. Per-alert dismiss in `fbla_dismissed_deadline_alerts`.
-- **Command palette** (`components/CommandPalette.tsx`): Cmd+K / Ctrl+K. Searches all 55 competitions + navigates to any app page. Includes "AI Practice Tests" nav item.
-- **Feedback button** (`components/FeedbackButton.tsx`): fixed FAB, opens compose panel, fires `mailto:hello@fbla.one`.
-- **SVG logo** (`components/Logo.tsx`): inline SVG shield+torch using `var(--brand)` + `var(--accent)` - auto-adapts to light/dark.
-- `/competitions` (filterable grid) + `/competitions/[slug]` (SSG detail, 55 pages).
+- **Feedback button** (`components/FeedbackButton.tsx`): 52px FAB bottom-right. Opens a centered modal with Bug / Feedback / Feature request selector + message, inserts to `public.feedback` via the anon client. role=dialog + Escape + focus-trap. **Needs migration 0008 applied.**
+- **Logo** (`components/Logo.tsx`): `public/logo-mark.png` (the real navy+gold shield mark) + FBLA/One wordmark. Adapts size via SIZES map.
+- `/competitions` (filterable grid) + `/competitions/[slug]` (SSG detail, 55 pages). All 55 events have longDescription + topics + studyResources.
 - `/auth` - Google OAuth + email/password + magic link. **GitHub OAuth removed.** PKCE flow via `/auth/callback`.
 - `/app/*` - **auth-gated** (redirects to `/auth` when signed out). Dashboard, my competitions, tracker, chapter, settings (with avatar upload + delete account).
-- **Chapter page** (`/app/chapter`): deadline calendar (add/view/delete, linked to competitions, countdown badges), registered events chip grid, advisor coming-soon card.
-- **Deadline storage**: `Deadline` type + CRUD in `lib/storage.ts` (key: `fbla_deadlines`). Local-first, Supabase sync not yet wired (DB table exists: `public.deadlines`).
-- **Command palette** (`components/CommandPalette.tsx`): Cmd+K / Ctrl+K. Searches all 55 competitions + navigates to any app page. Arrow keys + Enter + Escape.
-- **Feedback button** (`components/FeedbackButton.tsx`): fixed FAB (bottom-right), opens compose panel, fires `mailto:hello@fbla.one`.
-- **SVG logo** (`components/Logo.tsx`): inline SVG shield+torch using `var(--brand)` + `var(--accent)` - auto-adapts to light/dark. PNG files (`public/logo-mark.png`) still used for favicon/OG.
+- **Chapter page** (`/app/chapter`): advisor leaderboard + 8-week stats, deadline calendar (Supabase-backed in a chapter, localStorage for solo), registered events chip grid.
 - **Data sync (verified via live integration test):** registrations / practice logs / saved resources persist to Supabase when signed in, sync across devices, migrate preview-mode data up on first sign-in. Driven by `components/DataSync.tsx` + `lib/storage.ts`.
 - Profile auto-created **app-side** on sign-in (`ensureProfile` in storage.ts) - NOT via DB trigger (see gotchas).
 - UserMenu dropdown (avatar/initials, Escape-to-close), auth-reactive nav.
@@ -55,14 +50,13 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - PWA: `manifest.ts` (installable), theme-color, apple-web-app meta.
 - Branded `not-found.tsx`, `error.tsx`, `global-error.tsx`.
 - Corvo-grade theme system (light + dark), logo wired into nav + footer watermark + favicons.
-- Build clean (75 routes), lint clean. No em dashes in source.
+- Build clean (79 routes), lint clean. No em dashes in source. No CommandPalette (removed).
 
 ### Next up
-1. DONE: migrations 0006 + 0007 applied to prod and verified 18/18 via `_rls_test.mjs` (chapter/advisor RLS recursion fixed; invite-validated join + chapters lockdown live).
-2. DONE: all 55 events have a longDescription; CommandPalette ships `lib/competitionIndex.ts` (light index) instead of the full registry; a11y focus-traps/Escape/dialog-roles on modals + nav drawers; light-theme WCAG AA contrast (audit #6/#7/#8/#10/#11/#12).
-3. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
-4. Push notification reminders for deadlines (service worker + VAPID).
-5. Export competition sign-ups in FBLA's exact regional registration format.
+1. **Apply migration 0008** (feedback table) in the Supabase SQL editor - paste `supabase/migrations/0008_feedback.sql`. Until applied, the feedback button errors on submit (Supabase table doesn't exist).
+2. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
+3. Push notification reminders for deadlines (service worker + VAPID).
+4. Export competition sign-ups in FBLA's exact regional registration format.
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.

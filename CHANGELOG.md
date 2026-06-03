@@ -2,6 +2,12 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.2 - June 3, 2026 - Real logo, feedback system, nav cleanup
+
+- **Logo:** replaced the simplified inline SVG mark with the actual brand asset (`public/logo-mark.png` - navy+gold shield+arrow+torch). Was visually wrong vs. the real brand.
+- **Feedback button:** upgraded from a mailto FAB to a Corvo-style Supabase-backed widget. 52px floating button opens a centered modal with Bug / Feedback / Feature request type selector + message textarea. Inserts to `public.feedback` table (`migration 0008`). role=dialog + Escape + Tab focus-trap. **Apply migration 0008 in the Supabase SQL editor to activate.**
+- **Cmd+K command palette removed:** the search/K button (left of the theme toggle in both navs), the CommandPalette component, and the keyboard shortcut listener are all gone. Also removed the now-unused `lib/competitionIndex.ts` light index.
+
 ## v1.1.1 - June 3, 2026 - Content completeness, bundle perf, accessibility
 
 - **Content:** filled in longDescription for the 23 events that were marked "complete" but had none, so all 55 event detail pages now have a real description (audit #7-low).
