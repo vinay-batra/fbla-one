@@ -189,6 +189,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Accounting & Finance",
     format: "objective-test",
     description: "Time-value-of-money math: simple/compound interest, annuities, loans, and investment growth.",
+    longDescription:
+      "Financial Math is a calculation-heavy test built around the time value of money. Expect to compute simple and compound interest, present and future values, ordinary annuities and annuities due, loan amortization, and effective versus nominal rates. A reliable financial calculator and fluency with the core formulas matter more than memorization - most questions are word problems you have to set up correctly under time pressure.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Simple & compound interest",
@@ -214,6 +216,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Accounting & Finance",
     format: "objective-test",
     description: "Foundational money math for 9th-10th graders: percent, interest, discounts, and basic business calculations.",
+    longDescription:
+      "Intro to Financial Math is the 9th-10th grade entry point to the finance calculation events. It stays in practical, everyday math: percentages, markup and discount, simple interest, payroll and gross pay, sales tax, and tipping. There is no compound interest or annuity math here - that is what the full Financial Math event adds, so this is the place to build speed and confidence with business arithmetic first.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Percentages", "Markup & discount", "Simple interest", "Payroll math", "Sales tax", "Tipping & gratuity"],
     studyResources: [
@@ -229,6 +233,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Accounting & Finance",
     format: "objective-test",
     description: "Equity and fixed-income markets, portfolio theory, valuation, and regulatory environment.",
+    longDescription:
+      "Securities and Investments tests how capital markets work and how investments are valued. Questions cover equity (common and preferred stock), fixed income and bond yields, mutual funds and ETFs, options and derivatives basics, portfolio diversification, order types, and the regulatory roles of the SEC and FINRA. Expect both conceptual questions and light valuation math such as P/E ratios and the dividend discount model.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Stocks (common, preferred)",
@@ -285,6 +291,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Accounting & Finance",
     format: "objective-test",
     description: "Insurance product types, risk pooling, underwriting, and personal/commercial risk management.",
+    longDescription:
+      "Insurance and Risk Management covers how individuals and businesses identify, transfer, and manage risk. The test spans the major personal lines (auto, home, life, and health insurance), commercial coverage, core principles like indemnity and insurable interest, the underwriting process, and how claims are filed and settled. Strong scorers understand not just product types but the reasoning behind risk pooling and premium pricing.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Risk types", "Insurance principles", "Auto/home/life/health insurance", "Commercial insurance", "Underwriting", "Claims process"],
     studyResources: [
@@ -361,6 +369,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Practical business math: percent, markups, payroll, statistics, and word problems.",
+    longDescription:
+      "Business Calculations is a practical business-math test taken under tight time pressure. It blends percent and markup problems, payroll and gross-pay calculations, discounts, and basic statistics (mean, median, mode, and simple probability), almost all delivered as word problems. Accuracy and speed both count - the strongest competitors can set up and solve each problem in well under a minute.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Percent & markup", "Payroll & gross pay", "Discount calculations", "Statistics (mean, median, mode)", "Probability", "Word problems"],
     studyResources: [
@@ -376,6 +386,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Communication & Public Speaking",
     format: "objective-test",
     description: "Grammar, mechanics, business writing, and professional communication conventions.",
+    longDescription:
+      "Business Communication tests the grammar, mechanics, and writing conventions expected in a professional workplace. Questions cover punctuation and usage, business letter and memo formats, email and report writing, active versus passive voice, and tone. It rewards careful editors - many items ask you to find the single error in a sentence or choose the most professional phrasing among close options.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Grammar", "Punctuation & mechanics", "Business letter format", "Memos & emails", "Reports", "Active vs. passive voice", "Tone & register", "Editing"],
     studyResources: [
@@ -393,6 +405,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Micro and macro fundamentals: supply/demand, market structures, GDP, monetary and fiscal policy.",
+    longDescription:
+      "Economics covers both microeconomics and macroeconomics at roughly an AP level. Micro topics include supply and demand, elasticity, and the spectrum of market structures from perfect competition to monopoly; macro topics include GDP, inflation, unemployment, fiscal and monetary policy, and international trade. Expect a mix of graph interpretation, definitions, and applied scenarios about how policy decisions ripple through an economy.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Supply & demand",
@@ -422,6 +436,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Marketing & Sales",
     format: "objective-test",
     description: "The 4 P's, segmentation, branding, advertising, digital marketing, and consumer behavior.",
+    longDescription:
+      "Marketing tests the full marketing function, anchored on the marketing mix of product, price, place, and promotion. Questions span market segmentation and targeting, consumer behavior, branding, pricing strategy, advertising and promotion, digital and social media marketing, distribution channels, marketing research, and the product life cycle. It is one of the most popular events and pairs naturally with Advertising and the sales-focused events.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Marketing mix (4 P's)",
@@ -450,6 +466,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Marketing & Sales",
     format: "objective-test",
     description: "Advertising history, media planning, copywriting, creative development, and digital advertising.",
+    longDescription:
+      "Advertising digs into the strategy and craft behind promotional campaigns. Expect questions on advertising history, media planning and buying, the creative development process, copywriting, the differences between print, broadcast, and digital formats, and the ethics and regulation of advertising. It rewards competitors who can connect creative decisions to a campaign's business objective and target audience.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Advertising history", "Media planning & buying", "Creative process", "Copywriting", "Print, broadcast & digital ads", "Brand campaigns", "Ethics & regulation"],
     studyResources: [
@@ -465,6 +483,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Marketing & Sales",
     format: "objective-test",
     description: "Sports marketing, event management, sponsorships, ticketing, and the business of entertainment.",
+    longDescription:
+      "Sports and Entertainment Management applies marketing and management principles to the business of sports, music, and live events. Topics include sports marketing and sponsorship sales, event and venue management, ticketing, talent representation, and broadcasting rights. Strong scorers understand how sponsorship, media, and ticketing revenue streams fit together to make events profitable.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Sports marketing", "Event management", "Sponsorship sales", "Venue & ticketing", "Talent management", "Broadcasting rights"],
     studyResources: [
@@ -480,6 +500,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Logistics, procurement, inventory, distribution, and global supply chain dynamics.",
+    longDescription:
+      "Supply Chain Management covers how goods move from raw materials to the end customer. The test spans procurement and sourcing, inventory models (EOQ and just-in-time), warehousing, transportation modes, distribution, reverse logistics, supply chain risk, and the ERP systems that coordinate it all. Expect both conceptual questions and applied trade-offs, such as balancing inventory holding costs against stockout risk.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: [
       "Procurement & sourcing",
@@ -504,6 +526,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Healthcare systems, insurance, regulation, ethics, and the business of medicine in the US.",
+    longDescription:
+      "Health Care Administration examines the business and policy side of the US healthcare system. Topics include how care is financed (private insurance, Medicare, and Medicaid), HIPAA and patient privacy, hospital operations, major regulation such as the ACA, and healthcare ethics. It is a strong fit for members interested in health professions who want to understand the administrative and economic forces behind medicine.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["US healthcare system", "Insurance (private, Medicare, Medicaid)", "HIPAA & patient privacy", "Hospital operations", "Healthcare regulation (ACA)", "Healthcare ethics"],
     studyResources: [
@@ -519,6 +543,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Agriculture economics, farm management, agricultural finance, and global food systems.",
+    longDescription:
+      "Agribusiness applies economics and management to agriculture and the global food system. Questions cover farm economics, agricultural finance and credit, commodity markets, sustainability, the food supply chain, and agricultural policy and subsidies. It connects classic business concepts to the unique risks of agriculture, from weather and commodity price swings to international trade policy.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Farm economics", "Ag finance & credit", "Commodity markets", "Sustainability", "Food supply chain", "Ag policy & subsidies"],
     studyResources: [
@@ -564,6 +590,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "Hardware troubleshooting, software diagnostics, networking issues, and IT support fundamentals.",
+    longDescription:
+      "Computer Problem Solving tests practical IT support and troubleshooting at roughly a CompTIA A+ level. Expect questions on hardware components, operating system troubleshooting, networking basics, everyday cybersecurity hygiene, and help-desk workflow for diagnosing common Windows and macOS issues. It rewards a methodical troubleshooting mindset - identify the symptom, isolate the cause, and test the fix.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Hardware components", "OS troubleshooting", "Networking basics", "Cybersecurity hygiene", "Help desk workflow", "Common Windows/macOS issues"],
     studyResources: [
@@ -611,6 +639,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "OSI model, TCP/IP, routing, switching, wireless, and network security fundamentals.",
+    longDescription:
+      "Networking Infrastructures covers computer networking at roughly a CompTIA Network+ level. Topics include the OSI and TCP/IP models, IP addressing and subnetting, routing and switching, wireless standards, network topologies and cabling, common protocols (DNS, DHCP, HTTP), and network security basics. Subnetting and protocol knowledge tend to separate top scorers, and the material overlaps heavily with Cyber Security.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["OSI & TCP/IP models", "IP addressing & subnetting", "Routing & switching", "Wireless standards", "Network topologies", "Cabling", "Common protocols (DNS, DHCP, HTTP)", "Network security basics"],
     studyResources: [
@@ -627,6 +657,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "Foundational IT for 9th-10th graders: hardware, software, internet, productivity, and digital citizenship.",
+    longDescription:
+      "Intro to Information Technology is the 9th-10th grade entry point to the IT events. It covers the fundamentals: hardware and software basics, how the internet works, everyday productivity software, digital citizenship, and basic cyber hygiene. It is the place to build core vocabulary before moving on to deeper events like Networking Infrastructures, Cyber Security, or Coding and Programming.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Hardware basics", "Software types", "Internet fundamentals", "Productivity software", "Digital citizenship", "Cyber hygiene"],
     studyResources: [
@@ -642,6 +674,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "Business technology systems: ERP, CRM, databases, analytics, and IT strategy.",
+    longDescription:
+      "Management Information Systems sits at the intersection of business and technology. The test covers database concepts and basic SQL, enterprise systems like ERP and CRM, business intelligence and data warehousing, the systems development life cycle, and IT governance. It suits competitors who want to understand how organizations use information systems to make decisions and run operations.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Database concepts (SQL basics)", "ERP & CRM systems", "Business intelligence", "Data warehousing", "System development lifecycle", "IT governance"],
     studyResources: [
@@ -657,6 +691,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "Programming concepts: variables, control flow, data structures, OOP, and algorithm basics.",
+    longDescription:
+      "Coding and Programming tests core programming concepts in a language-agnostic way, so the focus is on logic rather than the syntax of any single language. Expect questions on variables and data types, control flow, functions, arrays and collections, object-oriented fundamentals, recursion, basic Big-O reasoning, and debugging. Competitors who have written real code in any language - Python, Java, or C++ - will recognize most of the patterns.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Variables & types", "Control flow (if/loop)", "Functions", "Arrays & collections", "OOP fundamentals", "Recursion", "Big-O basics", "Debugging"],
     studyResources: [
@@ -673,6 +709,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Information Technology",
     format: "objective-test",
     description: "Deep Microsoft Word: styles, mail merge, tables of contents, references, collaboration, macros.",
+    longDescription:
+      "Word Processing tests advanced document production, with a heavy Microsoft Word focus. Questions go well beyond basic typing into styles and themes, mail merge, tables and lists, tables of contents and cross-references, track changes and collaboration, macros and forms, and templates. It pairs well with Computer Applications, which spreads the same depth across Word, Excel, and PowerPoint.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Document formatting", "Styles & themes", "Mail merge", "Tables & lists", "TOC & cross-references", "Track changes", "Macros & forms", "Templates"],
     studyResources: [
@@ -718,6 +756,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Business fundamentals for 9th-10th graders: economics basics, business types, marketing, management, and finance overview.",
+    longDescription:
+      "Intro to Business is the 9th-10th grade survey of how businesses work. It touches every major area at a foundational level: economic systems, types of business ownership, marketing and management basics, personal finance, and entrepreneurship. It is the natural starting point for newer members and a launchpad toward deeper events like Business Management, Marketing, and Economics.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Economic systems", "Business types", "Marketing basics", "Management basics", "Personal finance basics", "Entrepreneurship"],
     studyResources: [
@@ -734,6 +774,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Communication & Public Speaking",
     format: "objective-test",
     description: "Communication fundamentals for 9th-10th graders: grammar, business writing, and professional email.",
+    longDescription:
+      "Intro to Business Communication is the 9th-10th grade entry point to the communication events. It keeps the focus on the fundamentals: grammar and punctuation, professional email etiquette, business letter format, and general workplace professionalism. It builds the foundation that the full Business Communication event then expands into reports, tone, and heavier editing.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Grammar basics", "Punctuation", "Email etiquette", "Business letters", "Professionalism"],
     studyResources: [
@@ -749,6 +791,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Business Management",
     format: "objective-test",
     description: "Office procedures for 9th-10th graders: filing, records, mail, telephone, scheduling, and document handling.",
+    longDescription:
+      "Intro to Business Procedures introduces the day-to-day operations of a professional office, aimed at 9th-10th graders. Topics include filing and records management, mail and document handling, scheduling, telephone procedures, and common office equipment. It gives newer members a practical feel for how an office runs before they move into broader management events.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["Filing systems", "Records management", "Mail handling", "Scheduling", "Phone procedures", "Office equipment"],
     studyResources: [{ title: "FBLA Intro to Business Procedures Event Page", kind: "FBLA Guide", url: FBLA_EVENT_PAGE }],
@@ -761,6 +805,8 @@ export const COMPETITIONS: Competition[] = [
     category: "Career Development",
     format: "objective-test",
     description: "US government, political theory, comparative politics, and international relations.",
+    longDescription:
+      "Political Science covers US government, political theory, and the basics of comparative politics and international relations. Expect questions on the Constitution, the three branches of government, civil liberties and civil rights, elections and political parties, foundational political theory, and how the US interacts with other nations. It overlaps closely with an AP US Government course and suits members interested in law, public policy, or government careers.",
     duration: "60 minutes, 100 multiple-choice questions",
     topics: ["US Constitution", "Branches of government", "Civil liberties & rights", "Elections & parties", "Political theory", "International relations basics"],
     studyResources: [
