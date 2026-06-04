@@ -8,9 +8,9 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0009; apply 0009 in the SQL editor) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0011; 0010 + 0011 applied + verified live, 0008 verified, apply 0009 if not already - idempotent) |
 | Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
-| AI | Anthropic claude-sonnet-4-5 (practice tests) + claude-haiku-4-5 (public chat), via `ANTHROPIC_API_KEY` |
+| AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
 
 See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHANGELOG.md) for version history.
 
@@ -18,14 +18,23 @@ See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHAN
 
 ## What it does
 
-- **55 competition guides** -- every FBLA event with test format, topic list, curated study resources, and "What to expect on test day"
-- **AI Practice Test Engine** -- Claude generates 10/25/50-question tests calibrated to each event's topic outline, streams them live, and explains every wrong answer. 45 objective-test events supported.
-- **Score tracker** -- log practice sessions, see score trend charts per competition on the dashboard
-- **Deadline calendar** -- add sign-up dates and test days, get in-app alerts when deadlines are 3 days out
-- **Saved resources** -- bookmark any study resource from any competition page, manage at `/app/resources`
-- **Chapter advisor dashboard** -- create a chapter, generate an invite code, see member roster + their registered events + recent practice activity, export CSVs for regional registration
-- **Demo mode** -- `/api/preview` lets anyone explore the full app without signing up (1-hour cookie)
-- **Command palette** -- Cmd+K searches all 55 events and navigates the app
+Sign up (as a student or advisor), pick your event, then everything lives in the gated dashboard at `/app`.
+
+**For students**
+- **55 competition guides** -- every FBLA event with test format, topic list, curated study resources, and a link to its official FBLA guidelines
+- **AI practice tests** -- 10/25/50-question tests calibrated to your event's exact topic outline, streamed live, with an explanation on every wrong answer. Each question is topic-tagged.
+- **Weak-topic drills** -- the coach learns your lowest-accuracy topics and a "Drill" button generates a test focused on just that topic
+- **Retry your misses** -- re-quiz only the questions you got wrong
+- **Day streak + score tracker** -- consecutive-practice streak and per-event score trends on the dashboard
+- **Road to Nationals** -- a study plan with the full Regionals -> States -> Nationals path, countdowns, and a weekly practice-pace target
+- **Chapter leaderboard** -- a friendly, effort-based ranking of everyone in your chapter (plus your rank on the dashboard)
+- **Deadline calendar + saved resources** -- in-app alerts 3 days out; bookmark any study resource
+
+**For advisors**
+- **Run your chapter** -- create a chapter, share a one-tap invite link + QR (or code), see a member roster, leaderboard, 8-week stats, and CSV exports
+- **Assignments** -- set practice goals for the whole chapter and watch a live completion grid fill in as members practice
+
+**Onboarding**: a guided spotlight tour on first visit (replayable from Settings). Free for every FBLA member.
 
 ---
 

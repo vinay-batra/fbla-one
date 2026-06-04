@@ -2,6 +2,29 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.4 - June 4, 2026 - Chapter + learning platform
+
+The release that makes a whole chapter adopt it: advisors run their chapter, students have a daily reason to come back.
+
+### Advisor tools
+- **Chapter assignments** (migration `0010`): an advisor sets a practice goal ("log 3 Accounting tests by Friday" - specific event or any) and sees a live completion grid: a progress bar, "X / Y members done," and a chip per member that turns green on completion (computed from members' practice logs). Members see "Your assignments" with their own progress bar + a "Practice now" shortcut. RLS mirrors the deadlines pattern (members read; only the advisor writes) via the 0006 SECURITY DEFINER helpers. Verified live 9/9.
+- **Shareable invite**: a one-tap join link + Copy/Share + QR code on the advisor Chapter page. New `/join/<code>` route stashes the code and routes to the chapter (signed in) or signup (new user); the chapter page then auto-joins - no code to type.
+
+### Student retention + learning
+- **Chapter leaderboard students can see** (migration `0011`): a `get_chapter_leaderboard()` SECURITY DEFINER RPC returns only aggregates (name, test count, this-week) for the caller's own chapter, ranked by practice volume. Every student sees the board on their Chapter page (medal top 3, "You" highlighted) plus a "Chapter rank #X of Y" chip on the dashboard. Ranks by effort, not scores - no peer score leak. Verified live 8/8.
+- **Weak-topic drills**: practice tests now tag each question with its topic; the coach builds a per-event "Your weak spots" panel (lowest-accuracy topics with bars) and a "Drill" button that generates a test focused entirely on that one topic.
+- **Road to Nationals study plan** on the dashboard: the full season path Regionals -> States -> Nationals with editable dates, a live countdown to the next stage, completed stages checked off, and a weekly practice-pace target that ramps as the next competition nears.
+- **Day streak** (consecutive practice days) on the dashboard, and **retry-your-misses** on the practice review screen (re-quiz only the ones you got wrong).
+
+### Product + onboarding
+- **Single event**: you pick the one event you're competing in (registering replaces). "My competitions" -> "My event" everywhere. Removing an event uses a styled modal, not the browser popup.
+- **Guided spotlight tour** that dims the app and highlights each section (Back/Next/Skip), on first visit or via Settings -> Replay tour.
+- **Role at signup**: a Student / Advisor picker. Advisors land on the Chapter page to create their chapter + invite code.
+- **Expanded Settings**: account (email + role) and preferences (deadline-reminder toggle, default practice length, replay tour); delete-account is a styled modal.
+
+### Polish
+- AI chat button simplified to the logo on a clean disc with a gold glow; auth page uses the real logo; hero/CTAs are auth-aware (one button: "Go to dashboard" when signed in, "Get started" when not); app pages center their content; practice tests generate faster (Haiku 4.5 + concise explanations); the competitions filter bar sticks flush to the top; "Official guidelines" links to each event's FBLA guideline PDF; "Email us" opens a real mail client; removed "Claude generates the tests" framing in favor of the FBLA-specific value.
+
 ## v1.3 - June 3, 2026 - Public AI chat, auth + sign-in flow, new logo, full audit
 
 ### Sign-in actually works now (the headline fix)
