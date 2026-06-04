@@ -337,6 +337,30 @@ export type ChapterStats = {
   topEvents: { slug: string; tests: number }[]; // top 5 by test count
 };
 
+// ── Student-visible leaderboard (aggregates only, via RPC) ────
+
+export type LeaderboardRow = { userId: string; name: string; tests: number; last7: number };
+
+/** Every chapter member can call this; the RPC returns only aggregates for the
+ *  caller's own chapter (no raw scores), ranked by practice volume. */
+export async function getMyChapterLeaderboard(): Promise<LeaderboardRow[]> {
+  const supa = getSupabase();
+  if (!supa) return [];
+  try {
+    const { data, error } = await supa.rpc("get_chapter_leaderboard");
+    if (error) { devErr("getMyChapterLeaderboard:", error); return []; }
+    return (data ?? []).map((r: Record<string, unknown>) => ({
+      userId: String(r.user_id),
+      name: (r.display_name as string)?.trim() || "Member",
+      tests: Number(r.tests) || 0,
+      last7: Number(r.last7) || 0,
+    }));
+  } catch (e) {
+    devErr("getMyChapterLeaderboard:", e);
+    return [];
+  }
+}
+
 // ── Assignments ───────────────────────────────────────────────
 
 export type Assignment = {

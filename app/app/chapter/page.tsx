@@ -31,6 +31,8 @@ import {
   getChapterAssignmentBoard,
   createAssignment,
   deleteAssignment,
+  getMyChapterLeaderboard,
+  type LeaderboardRow,
   type ChapterProfile,
   type ChapterInfo,
   type MemberRow,
@@ -182,6 +184,7 @@ export default function ChapterPage() {
   const [stats, setStats] = useState<ChapterStats | null>(null);
   const [assignments, setAssignments] = useState<Assignment[]>([]); // member view
   const [board, setBoard] = useState<AssignmentProgress[]>([]); // advisor view
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -242,7 +245,9 @@ export default function ChapterPage() {
         setStats(st);
         setBoard(bd);
       } else if (ch) {
-        setAssignments(await getChapterAssignments(ch.id));
+        const [asg, lb] = await Promise.all([getChapterAssignments(ch.id), getMyChapterLeaderboard()]);
+        setAssignments(asg);
+        setLeaderboard(lb);
       }
     }
     return prof;
@@ -569,6 +574,36 @@ export default function ChapterPage() {
                       Practice now
                     </a>
                   )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* ── LEADERBOARD (member-visible) ── */}
+      {hasChapter && !isAdvisor && leaderboard.length > 0 && (
+        <Card>
+          <CardHeader eyebrow="Chapter leaderboard" title="Who's putting in the work" tagline="Ranked by practice tests taken. Climb the board by practicing - effort, not scores." />
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 12 }}>
+            {leaderboard.map((row, i) => {
+              const me = row.userId === userId;
+              const rankColor = i === 0 ? "#d4af37" : i === 1 ? "#aab4c2" : i === 2 ? "#c07f3c" : "var(--text3)";
+              return (
+                <div key={row.userId} style={{
+                  display: "grid", gridTemplateColumns: "32px 1fr auto auto", alignItems: "center", gap: 12,
+                  padding: "11px 14px", borderRadius: 10,
+                  background: me ? "var(--accent-dim)" : "transparent",
+                  border: me ? "0.5px solid var(--accent-border)" : "0.5px solid transparent",
+                }}>
+                  <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: rankColor, textAlign: "center" }}>{i + 1}</span>
+                  <span style={{ fontSize: 14, color: "var(--text)", fontWeight: me ? 700 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {row.name}{me && <span style={{ color: "var(--accent-text)", fontWeight: 700 }}> · You</span>}
+                  </span>
+                  {row.last7 > 0 && (
+                    <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: "rgba(var(--green-rgb),0.12)", color: "var(--green)", whiteSpace: "nowrap" }}>+{row.last7} this week</span>
+                  )}
+                  <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", minWidth: 60, textAlign: "right" }}>{row.tests} <span style={{ fontSize: 10, color: "var(--text3)", fontWeight: 400 }}>tests</span></span>
                 </div>
               );
             })}

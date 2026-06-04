@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
 import { StudyPlan } from "@/components/StudyPlan";
+import { ChapterRankChip } from "@/components/ChapterRankChip";
 import { getCompetition, FORMAT_LABEL } from "@/lib/competitions";
 import {
   getRegistered,
@@ -177,6 +178,9 @@ export default function Dashboard() {
 
       {/* Road to Nationals: season milestones + practice pacing */}
       <StudyPlan />
+
+      {/* Chapter standing (renders only for users in a chapter) */}
+      <ChapterRankChip />
 
       {/* Upcoming deadlines strip (only shown when deadlines exist) */}
       {upcomingDeadlines.length > 0 && (
