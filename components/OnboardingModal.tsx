@@ -134,7 +134,7 @@ export function OnboardingModal() {
           width: "min(560px, 100%)",
           background: "var(--card-bg)",
           border: "0.5px solid var(--border2)",
-          borderRadius: 20,
+          borderRadius: 16,
           boxShadow: "var(--shadow-lg)",
           padding: "32px 32px 28px",
           animation: "fadeUp 0.2s ease",

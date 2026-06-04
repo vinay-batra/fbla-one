@@ -47,14 +47,14 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - GitHub: `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys)
 - Vercel: project `fbla-one`, custom domain `fbla.one` + `www.fbla.one` (SSL active)
 - Supabase: project `osxoygndwazbygiqyjhu`. Migrations 0001-0008 in repo. **0001-0008 ALL applied live** (0006+0007 verified 18/18 via `_rls_test.mjs`; 0008 verified 5/5 via `_feedback_test.mjs` - anon insert, auth insert, read isolation). NOTE: `service_role` has no table grants here (0003 granted only `authenticated`) - admin scripts must use the auth API or a signed-in client.
-- Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-sonnet-4-5).
+- Anthropic: `ANTHROPIC_API_KEY` set locally (.env.local) and on Vercel. Powers `/api/practice-test` (claude-haiku-4-5).
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
 **What's built and verified working:**
 - Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page. About + FAQ fully rewritten for advisor audience.
 - 55-event competition registry (`lib/competitions.ts`). **55 complete, 0 partial, 0 coming-soon.** All events have longDescription + topics + studyResources.
-- **AI Practice Test Engine** (`/app/coach` + `/api/practice-test`): Claude claude-sonnet-4-5 streams NDJSON questions calibrated to each event's topic outline. 4-phase UI: idle, generating (live progress), taking (keyboard shortcuts), reviewing (explanations + score logging). 45 eligible objective-test events.
+- **AI Practice Test Engine** (`/app/coach` + `/api/practice-test`): Claude claude-haiku-4-5 streams NDJSON questions calibrated to each event's topic outline. 4-phase UI: idle, generating (live progress), taking (keyboard shortcuts), reviewing (explanations + score logging). 34 eligible objective-test events.
 - **Demo mode**: `/api/preview` sets `fbla_preview=1` cookie, bypasses auth gate in AppLayout. Preview banner in AppShell. Landing page "Try AI Practice Tests" + "Preview the platform" buttons both route through this.
 - **Saved resources**: `StudyResourcesList` client component on competition pages with bookmark save/unsave. `/app/resources` page with competition filter and remove.
 - **Score trends chart**: pure SVG bar chart on dashboard showing last 8 scored logs per competition. Color-coded green/amber/red. Uses shared `components/Sparkbars.tsx`.

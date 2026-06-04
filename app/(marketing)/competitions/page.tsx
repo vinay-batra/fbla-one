@@ -157,7 +157,6 @@ function CompetitionsList() {
             <option value="all">Any content</option>
             <option value="complete">Full guides</option>
             <option value="partial">Partial</option>
-            <option value="coming-soon">Coming soon</option>
           </select>
 
           <div

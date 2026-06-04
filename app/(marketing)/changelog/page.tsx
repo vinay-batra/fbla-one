@@ -373,7 +373,7 @@ export default function ChangelogPage() {
           font-weight: 700;
           color: var(--accent);
           background: rgba(var(--accent-rgb), 0.08);
-          border: 1px solid rgba(var(--accent-rgb), 0.25);
+          border: 0.5px solid rgba(var(--accent-rgb), 0.25);
           border-radius: 6px;
           padding: 3px 9px;
           letter-spacing: 0.04em;
@@ -388,7 +388,7 @@ export default function ChangelogPage() {
         .cl-tag {
           padding: 3px 10px;
           background: rgba(var(--accent-rgb), 0.08);
-          border: 1px solid rgba(var(--accent-rgb), 0.35);
+          border: 0.5px solid rgba(var(--accent-rgb), 0.35);
           border-radius: 20px;
           font-size: 10px;
           color: var(--accent);
