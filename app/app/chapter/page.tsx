@@ -175,6 +175,7 @@ export default function ChapterPage() {
   const [stats, setStats] = useState<ChapterStats | null>(null);
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Chapter setup forms
   const [createName, setCreateName] = useState("");
@@ -215,6 +216,7 @@ export default function ChapterPage() {
         setStats(st);
       }
     }
+    return prof;
   }, []);
 
   useEffect(() => {
@@ -225,7 +227,15 @@ export default function ChapterPage() {
     supa.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setSupaLoading(false); return; }
       setUserId(data.user.id);
-      await loadChapterData(data.user.id);
+      const prof = await loadChapterData(data.user.id);
+      // Auto-join when arriving from a chapter invite link (/join/CODE stashes it).
+      let pendingJoin: string | null = null;
+      try { pendingJoin = localStorage.getItem("fbla_pending_join"); } catch {}
+      if (pendingJoin && prof && !prof.chapter_id) {
+        try { localStorage.removeItem("fbla_pending_join"); } catch {}
+        const r = await joinChapter(data.user.id, pendingJoin.trim());
+        if (r.data) await loadChapterData(data.user.id);
+      }
       setSupaLoading(false);
     });
   }, [loadChapterData]);
@@ -267,6 +277,21 @@ export default function ChapterPage() {
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2000);
     });
+  }
+
+  const joinLink = chapter ? `${typeof window !== "undefined" ? window.location.origin : "https://fbla.one"}/join/${chapter.invite_code}` : "";
+  function copyJoinLink() {
+    if (!joinLink) return;
+    navigator.clipboard.writeText(joinLink).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    });
+  }
+  function shareJoinLink() {
+    if (!joinLink) return;
+    const data = { title: `Join ${chapter?.name ?? "our chapter"} on FBLA One`, text: "Tap to join our FBLA chapter:", url: joinLink };
+    if (typeof navigator !== "undefined" && navigator.share) navigator.share(data).catch(() => {});
+    else copyJoinLink();
   }
 
   function submitDeadline(e: React.FormEvent) {
@@ -455,6 +480,46 @@ export default function ChapterPage() {
               </button>
             )}
           </div>
+        </Card>
+      )}
+
+      {/* ── SHARE / INVITE (advisor) ── */}
+      {isAdvisor && hasChapter && chapter && (
+        <Card>
+          <CardHeader eyebrow="Grow your chapter" title="Invite your members" tagline="Share one link. Members open it, sign up, and they're in your chapter automatically - no code to type." />
+          <div className="invite-share" style={{ display: "flex", gap: 24, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+              <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Invite link</p>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input readOnly value={joinLink} onFocus={(e) => e.currentTarget.select()} className="input-field" style={{ flex: 1, fontSize: 13, minWidth: 0 }} aria-label="Chapter invite link" />
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button type="button" onClick={copyJoinLink} className="btn btn-accent btn-sm btn-pill" style={{ minWidth: 110 }}>
+                  {copiedLink ? "Copied!" : "Copy link"}
+                </button>
+                <button type="button" onClick={shareJoinLink} className="btn btn-ghost btn-sm btn-pill">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
+                  Share
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 12, lineHeight: 1.5 }}>
+                Prefer a code? Share <span className="font-mono" style={{ color: "var(--accent)", fontWeight: 700 }}>{chapter.invite_code}</span> and have members enter it on their Chapter page.
+              </p>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ padding: 10, background: "#fff", borderRadius: 12, border: "0.5px solid var(--border)", display: "inline-block" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${encodeURIComponent(joinLink)}`}
+                  alt="Chapter invite QR code"
+                  width={150}
+                  height={150}
+                />
+              </div>
+              <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 8 }}>Scan to join</p>
+            </div>
+          </div>
+          <style>{`@media (max-width:640px){ .invite-share { flex-direction: column; align-items: stretch; } }`}</style>
         </Card>
       )}
 

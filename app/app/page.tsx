@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
-import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
+import { getCompetition, FORMAT_LABEL } from "@/lib/competitions";
 import {
   getRegistered,
   getPracticeLogs,
@@ -114,6 +114,24 @@ export default function Dashboard() {
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const logsThisWeek = logs.filter((l) => new Date(l.loggedAt).getTime() >= weekAgo).length;
 
+  // Practice streak: consecutive days (ending today or yesterday) with >=1 log.
+  const streakDays = (() => {
+    const days = new Set(logs.map((l) => new Date(l.loggedAt).toLocaleDateString("en-CA")));
+    if (days.size === 0) return 0;
+    const oneDay = 86400000;
+    const cur = new Date();
+    cur.setHours(0, 0, 0, 0);
+    const todayKey = cur.toLocaleDateString("en-CA");
+    // Allow the streak to count even if today has no log yet (start from yesterday).
+    if (!days.has(todayKey)) cur.setTime(cur.getTime() - oneDay);
+    let n = 0;
+    while (days.has(cur.toLocaleDateString("en-CA"))) {
+      n++;
+      cur.setTime(cur.getTime() - oneDay);
+    }
+    return n;
+  })();
+
   const upcomingDeadlines = getUpcomingDeadlines(3);
 
   const registeredCompetitions = registered
@@ -150,7 +168,7 @@ export default function Dashboard() {
           gap: 14,
         }}
       >
-        <Stat label="Registered" value={String(registeredCompetitions.length)} sub={`of ${COMPETITIONS.length} events`} href="/app/competitions" />
+        <Stat label="Day streak" value={String(streakDays)} sub={streakDays === 0 ? "Practice today to start" : streakDays === 1 ? "day in a row" : "days in a row"} href="/app/coach" />
         <Stat label="Logs this week" value={String(logsThisWeek)} sub={logsThisWeek === 0 ? "Log your first practice" : "keep going"} href="/app/tracker" />
         <Stat label="Total practice" value={String(logs.length)} sub="all-time" href="/app/tracker" />
         <Stat label="Saved resources" value={String(saved.length)} sub="across all events" href="/app/resources" />

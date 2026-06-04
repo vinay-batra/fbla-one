@@ -197,6 +197,20 @@ function CoachInner() {
     setGenError("");
   }
 
+  // Re-quiz only the questions you got wrong - the highest-leverage way to study.
+  function retryMisses() {
+    const missed = questions
+      .filter((q) => answers[q.id - 1] !== q.correct)
+      .map((q, i) => ({ ...q, id: i + 1 }));
+    if (missed.length === 0) return;
+    setQuestions(missed);
+    setAnswers({});
+    setCurrentIdx(0);
+    setLogged(false);
+    setGenError("");
+    setPhase("taking");
+  }
+
   const comp = getCompetition(selectedSlug);
   const allAnswered = questions.length > 0 && questions.every((_, i) => answers[i] !== undefined);
   const correctCount = questions.filter((q) => answers[q.id - 1] === q.correct).length;
@@ -633,11 +647,19 @@ function CoachInner() {
                 Logged
               </span>
             )}
+            {correctCount < questions.length && (
+              <button type="button" onClick={retryMisses} className="btn btn-brand btn-sm btn-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
+                </svg>
+                Retry the {questions.length - correctCount} you missed
+              </button>
+            )}
             <button type="button" onClick={generate} className="btn btn-ghost btn-sm btn-pill">
               New test
             </button>
             <button type="button" onClick={restart} className="btn btn-ghost btn-sm btn-pill">
-              Change competition
+              Change event
             </button>
           </div>
         </div>

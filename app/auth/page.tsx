@@ -166,7 +166,9 @@ function AuthForm() {
         // code; students go to the dashboard. If confirmation is ever turned
         // back on, there's no session and we fall back to the inbox message.
         if (data.session) {
-          window.location.href = role === "advisor" ? "/app/chapter" : nextPath;
+          let pendingJoin = false;
+          try { pendingJoin = !!localStorage.getItem("fbla_pending_join"); } catch {}
+          window.location.href = (role === "advisor" || pendingJoin) ? "/app/chapter" : nextPath;
         } else {
           setSuccess("Account created. Check your inbox to confirm, then sign in.");
         }
