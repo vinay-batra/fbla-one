@@ -244,7 +244,7 @@ function CoachInner() {
         </div>
 
         {genError && (
-          <div style={{ padding: "12px 16px", background: "rgba(var(--red-rgb), 0.08)", border: "0.5px solid var(--red)", borderRadius: 10, fontSize: 13, color: "var(--red)" }}>
+          <div role="alert" style={{ padding: "12px 16px", background: "rgba(var(--red-rgb), 0.08)", border: "0.5px solid var(--red)", borderRadius: 10, fontSize: 13, color: "var(--red)" }}>
             {genError}
           </div>
         )}
@@ -555,6 +555,7 @@ function CoachInner() {
                 <button
                   key={opt}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => setAnswers((prev) => ({ ...prev, [currentIdx]: opt }))}
                   style={{
                     display: "flex",

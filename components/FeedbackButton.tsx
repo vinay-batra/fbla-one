@@ -237,7 +237,7 @@ export function FeedbackButton() {
                     />
                   </div>
 
-                  {error && <p style={{ fontSize: 12, color: "var(--red)", marginBottom: 12 }}>{error}</p>}
+                  {error && <p role="alert" style={{ fontSize: 12, color: "var(--red)", marginBottom: 12 }}>{error}</p>}
 
                   <button type="button" onClick={submit} disabled={submitting} className="btn btn-accent btn-pill" style={{ width: "100%", opacity: submitting ? 0.7 : 1 }}>
                     {submitting ? "Sending..." : "Send"}

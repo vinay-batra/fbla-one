@@ -221,7 +221,7 @@ export default function Settings() {
         </div>
 
         {msg && (
-          <p style={{ marginTop: 12, fontSize: 13, color: msg.ok ? "var(--green)" : "var(--red)" }}>
+          <p role="status" aria-live={msg.ok ? "polite" : "assertive"} style={{ marginTop: 12, fontSize: 13, color: msg.ok ? "var(--green)" : "var(--red)" }}>
             {msg.text}
           </p>
         )}

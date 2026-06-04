@@ -758,6 +758,7 @@ function AuthForm() {
           {/* Error / success */}
           {error && (
             <div
+              role="alert"
               style={{
                 padding: "10px 12px",
                 background: "rgba(var(--red-rgb),0.1)",
