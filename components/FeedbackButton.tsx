@@ -230,6 +230,7 @@ export function FeedbackButton() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Describe the bug, idea, or feedback..."
+                      maxLength={4000}
                       rows={4}
                       className="input-field"
                       style={{ width: "100%", resize: "vertical", minHeight: 90, lineHeight: 1.55 }}

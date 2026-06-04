@@ -70,7 +70,11 @@ export async function POST(req: Request): Promise<Response> {
   const inPreview = cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
   if (inPreview) {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
+    // Prefer Vercel's edge header (not client-controllable) over the spoofable
+    // x-forwarded-for, so an anon caller cannot dodge the limit by faking the IP.
+    const ip = (req.headers.get("x-vercel-forwarded-for") || "").split(",")[0].trim()
+      || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim()
+      || "anon";
     rateKey = `preview:${ip}`;
   } else {
     const supabase = await getSupabaseServer();

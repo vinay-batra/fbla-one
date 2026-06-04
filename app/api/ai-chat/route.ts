@@ -35,10 +35,19 @@ function sanitizeMessages(raw: unknown): ChatMsg[] | null {
     const role = (m as { role?: unknown }).role;
     const content = (m as { content?: unknown }).content;
     if ((role === "user" || role === "assistant") && typeof content === "string" && content.trim()) {
-      out.push({ role, content: content.slice(0, 4000) });
+      out.push({ role, content: content.slice(0, 2000) });
     }
   }
-  return out.length ? out : null;
+  // Bound the TOTAL forwarded size too: keep the most recent messages within
+  // ~10k chars so a caller cannot force a large (costly) prompt by padding turns.
+  const capped: ChatMsg[] = [];
+  let total = 0;
+  for (let i = out.length - 1; i >= 0; i--) {
+    if (capped.length && total + out[i].content.length > 10000) break;
+    total += out[i].content.length;
+    capped.unshift(out[i]);
+  }
+  return capped.length ? capped : null;
 }
 
 function isRateLimited(ip: string): boolean {
