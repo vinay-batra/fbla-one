@@ -2,6 +2,38 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.5 - June 4, 2026 - Audit hardening pass
+
+A full multi-dimension audit (UI, UX, accessibility, security, performance, copy, completeness) plus two fixes flagged in testing. No new features - a correctness, trust, and accessibility pass across the whole app.
+
+### Trust + copy (the product now matches its own claims)
+- "100 questions" became "up to 50" everywhere (the generator caps at 50). "45 AI practice events" was really 34 (31 objective-test + 2 test+presentation + 1 team-test) - fixed on the landing stat, FAQ, and changelog.
+- FAQ/privacy/terms no longer promise things that do not exist: dropped the unwired Resend email + "email all account holders," the nonexistent Settings data-export, "deletion within 30 days" (it is immediate), and "5-character" invite codes (they are 6). Stopped calling the current logo a retired "navy-and-gold shield." Deleted a stale "Coming soon - advisor dashboard" card advertising features already shipping.
+
+### Practice-test answer quality
+- Killed two answer giveaways: the correct option was often the longest/most-detailed, and the correct letter could cluster. The prompt now requires all four options to match in length with an even A/B/C/D spread, and the client Fisher-Yates shuffles each question's options (remapping the correct letter) - verified to never mis-score and to distribute evenly.
+
+### Broken study links
+- Every event's "Official guidelines" link pointed at a constructed connect.fbla.org PDF path; FBLA renames those files each cycle (and renamed several events for 2025-26), so they 404'd with "Missing file ID." All official-guideline links now point at FBLA's stable competitive-events hub.
+
+### Security (migrations 0012-0014)
+- **0013**: profile INSERT is pinned to role `member` - the privilege guard was UPDATE-only, so a client could insert itself as admin/advisor. Verified live: escalation blocked via both insert and update.
+- **0012**: DB length caps on the anon-writable feedback table (message/type/page) + a textarea maxLength.
+- **0014**: `join_chapter_by_code` returns the full chapter row, dropping a client round-trip on join (verified 18/18 via the RLS test).
+- The practice-test rate limit keys on Vercel's non-spoofable IP header (matching ai-chat), the AI chat caps its total forwarded size, and the practice-test rate bucket now evicts so it can't leak memory.
+
+### Accessibility
+- prefers-reduced-motion is honored (ScrollReveal + a global animation/transition override).
+- Contrast: eyebrows/accent text use an AA-safe gold in light mode, dark muted text clears 4.5:1, and the light-mode leaderboard medals use theme tokens instead of illegible metallic hexes.
+- Focus traps (focus first control, trap Tab, Escape, restore focus) on the Delete-account and Remove-event dialogs and the spotlight tour, via a shared `useFocusTrap` hook. Error/success banners announce via `role="alert"` / `aria-live`; coach answers expose `aria-pressed`; form labels are associated; the off-screen mobile sidebar and collapsed FAQ answers leave the tab + screen-reader tree; the avatar upload is a real button.
+
+### UI polish
+- The nav logo sits on a white rounded plate matching the favicon/PWA icons; the AI-chat close X reads white in dark mode and the feedback FAB toggles to a matching X when open; changelog chips use 0.5px hairlines; modal radii are consistent.
+
+### Performance + cleanup
+- Dashboard derives its stats in a memo (not every render); the advisor 8-week trend buckets in one pass instead of eight; chapter event lists are hoisted out of render; the tracker caps history to the most recent 100 with a "show all"; the rank chip parallelizes its fetches; the footer watermark uses `next/image`.
+- Extracted duplicated helpers (relativeTime, daysUntil, scoreColor, CSV build/download) into `lib/format.ts`; removed dead code + a stale status filter; standardized in-app wording on "event."
+
 ## v1.4 - June 4, 2026 - Chapter + learning platform
 
 The release that makes a whole chapter adopt it: advisors run their chapter, students have a daily reason to come back.

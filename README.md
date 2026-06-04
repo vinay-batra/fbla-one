@@ -8,7 +8,7 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0011; 0010 + 0011 applied + verified live, 0008 verified, apply 0009 if not already - idempotent) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0014, all applied + verified live; RLS 18/18, role-insert guard + feedback caps verified) |
 | Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
 | AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
 
