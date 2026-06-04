@@ -51,9 +51,11 @@ const STEPS = [
 export function OnboardingModal() {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    try { setSignedIn(localStorage.getItem("fbla_logged_in") === "1"); } catch {}
     // The /app area uses the spotlight tour (AppTour) instead of this modal,
     // and it must never cover the /auth form. Marketing pages only.
     if (pathname?.startsWith("/app") || pathname?.startsWith("/auth")) return;
@@ -165,7 +167,7 @@ export function OnboardingModal() {
           {STEPS.map((s) => (
             <Link
               key={s.title}
-              href={s.href}
+              href={s.href.startsWith("/app") && !signedIn ? "/auth?mode=signup" : s.href}
               onClick={dismiss}
               style={{
                 display: "flex",

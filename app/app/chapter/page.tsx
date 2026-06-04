@@ -195,6 +195,7 @@ export default function ChapterPage() {
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
   const [joinLoading, setJoinLoading] = useState(false);
+  const [autoJoinMsg, setAutoJoinMsg] = useState<{ kind: "error" | "info"; text: string } | null>(null);
 
   // Deadline form
   const [showDlForm, setShowDlForm] = useState(false);
@@ -264,10 +265,24 @@ export default function ChapterPage() {
       // Auto-join when arriving from a chapter invite link (/join/CODE stashes it).
       let pendingJoin: string | null = null;
       try { pendingJoin = localStorage.getItem("fbla_pending_join"); } catch {}
-      if (pendingJoin && prof && !prof.chapter_id) {
-        try { localStorage.removeItem("fbla_pending_join"); } catch {}
-        const r = await joinChapter(data.user.id, pendingJoin.trim());
-        if (r.data) await loadChapterData(data.user.id);
+      if (pendingJoin && prof) {
+        const code = pendingJoin.trim();
+        if (prof.chapter_id) {
+          // Already in a chapter - an invite link can't silently switch them.
+          try { localStorage.removeItem("fbla_pending_join"); } catch {}
+          setAutoJoinMsg({ kind: "info", text: "You're already in a chapter, so this invite link was ignored." });
+        } else {
+          const r = await joinChapter(data.user.id, code);
+          if (r.data) {
+            try { localStorage.removeItem("fbla_pending_join"); } catch {}
+            await loadChapterData(data.user.id);
+          } else {
+            // Surface the failure and prefill the join form so the code can be retried.
+            try { localStorage.removeItem("fbla_pending_join"); } catch {}
+            setJoinCode(code);
+            setAutoJoinMsg({ kind: "error", text: r.error || "That invite code is not valid. Enter it below to try again." });
+          }
+        }
       }
       setSupaLoading(false);
     });
@@ -391,6 +406,12 @@ export default function ChapterPage() {
             : "Track your competition deadlines and see your registered events."}
         </p>
       </div>
+
+      {autoJoinMsg && (
+        <div role="status" style={{ padding: "12px 16px", borderRadius: 12, fontSize: 13, lineHeight: 1.5, border: "0.5px solid var(--border2)", background: "var(--bg2)", color: autoJoinMsg.kind === "error" ? "var(--red)" : "var(--text2)" }}>
+          {autoJoinMsg.text}
+        </div>
+      )}
 
       {/* ── CHAPTER SETUP (signed in, no chapter yet) ── */}
       {isSupabaseConfigured && signedIn && !supaLoading && !hasChapter && (

@@ -612,7 +612,7 @@ function CoachInner() {
             Previous
           </button>
 
-          {currentIdx < questions.length - 1 ? (
+          {currentIdx < questions.length - 1 && !allAnswered ? (
             <button
               type="button"
               onClick={() => setCurrentIdx((i) => Math.min(i + 1, questions.length - 1))}

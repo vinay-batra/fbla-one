@@ -61,7 +61,9 @@ export function AppTour() {
     const forced = searchParams.get("tour") === "1";
     let done = false;
     try { done = localStorage.getItem("fbla_tour_done") === "1"; } catch {}
-    if (forced || !done) {
+    // Auto-start only on the dashboard so the nav-focused tour never dims a
+    // sub-page like the advisor chapter-creation form (forced replay still works anywhere).
+    if (forced || (!done && pathname === "/app")) {
       // Make sure the marketing onboarding modal never double-fires.
       try { localStorage.setItem("fbla_onboarded", "1"); } catch {}
       setStep(0);
