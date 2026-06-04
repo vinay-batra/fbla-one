@@ -22,11 +22,11 @@ export default function Privacy() {
         </Section>
 
         <Section title="Where it lives">
-          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Email is sent via Resend. Hosting is on Vercel. Logs that include personal data are retained for 30 days.</p>
+          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Authentication emails are sent through Supabase Auth. Hosting is on Vercel. Logs that include personal data are retained for 30 days.</p>
         </Section>
 
         <Section title="Your rights">
-          <p>You can export or delete your data anytime from Settings. We honor GDPR and CCPA requests within 30 days. Email privacy@fbla.one with any request.</p>
+          <p>You can delete your data anytime from Settings, and email privacy@fbla.one to request a copy of your data. We honor GDPR and CCPA requests within 30 days.</p>
         </Section>
 
         <Section title="Children">
@@ -34,7 +34,7 @@ export default function Privacy() {
         </Section>
 
         <Section title="Changes">
-          <p>If we materially change this policy we'll email all account holders at least 30 days before the change takes effect. The "Last updated" date at the top of this page always reflects the current version.</p>
+          <p>If we materially change this policy we'll post a notice on this page and in the app at least 30 days before the change takes effect. The "Last updated" date at the top of this page always reflects the current version.</p>
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>

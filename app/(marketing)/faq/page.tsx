@@ -63,7 +63,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Which events support AI practice tests?",
-        a: "All 45 objective-test events -- the ones with a 60-minute, 100-question multiple-choice format. Presentation, case-study, and production events don't have a standardized test, so AI practice tests aren't applicable for those.",
+        a: "All 34 events that include a timed objective (multiple-choice) test. Presentation, case-study, and production events don't have a standardized test, so AI practice tests aren't applicable for those.",
       },
       {
         q: "Do my scores get saved?",
@@ -71,7 +71,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Is there a limit on how many tests I can generate?",
-        a: "No limit. Generate as many as you want. Every test produces a fresh set of questions -- no two tests are the same.",
+        a: "No daily cap - generate as many as you want, and every test is a fresh set of questions. A brief anti-abuse throttle only kicks in if you generate dozens within a few minutes.",
       },
     ],
   },
@@ -88,7 +88,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I delete my account?",
-        a: "Yes, from Settings. Account deletion removes all your data within 30 days.",
+        a: "Yes, from Settings. Account deletion is immediate and permanent - it removes all your data right away.",
       },
     ],
   },
@@ -97,7 +97,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How do advisors set up a chapter?",
-        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get a 5-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
+        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get a 6-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
       },
       {
         q: "What can advisors see?",

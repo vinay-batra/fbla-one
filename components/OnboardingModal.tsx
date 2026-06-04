@@ -24,7 +24,7 @@ const STEPS = [
   {
     num: "02",
     title: "Practice with AI",
-    body: "Generate a 100-question practice test for any objective event. Every wrong answer explained.",
+    body: "Generate a practice test of up to 50 questions for any objective event. Every wrong answer explained.",
     href: "/app/coach",
     cta: "Try a test",
     icon: (

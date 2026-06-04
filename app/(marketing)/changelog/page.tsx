@@ -67,7 +67,7 @@ const ERAS: Era[] = [
     highlights: [
       "Streams realistic practice tests matched to each event's exact topic outline",
       "Four-phase coach UI: idle, generating, taking, and reviewing",
-      "45 eligible objective events, each with full wrong-answer rationales",
+      "34 eligible objective events, each with full wrong-answer rationales",
       "Demo mode lets advisors try the platform with no sign-up required",
       "Scores log automatically after every test and feed the dashboard",
       "Bookmark study resources on any event and manage them in one place",
@@ -103,7 +103,7 @@ const ERAS: Era[] = [
       "Invite-validated join RPC closed the world-readable invite holes",
       "Accessibility: dialog roles, focus traps, Escape, WCAG AA contrast",
       "Completed long descriptions and resources for all 55 events",
-      "Shipped the real navy-and-gold shield logo across nav and favicons",
+      "Shipped the brand logo across nav and favicons",
       "Supabase-backed feedback button, verified live with real inserts",
     ],
     tags: ["Security", "A11y", "Brand"],

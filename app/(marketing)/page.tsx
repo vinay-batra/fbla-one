@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: { absolute: "FBLA One - AI Practice Tests for Every FBLA Objective Event" },
   description:
-    "Generate unlimited AI practice tests for every FBLA objective event. 100 questions, instant explanations, score tracking. Plus study guides, deadline calendar, and advisor dashboard -- all free.",
+    "Generate unlimited AI practice tests for every FBLA objective event. Up to 50 questions, instant explanations, score tracking. Plus study guides, deadline calendar, and advisor dashboard -- all free.",
   alternates: { canonical: "/" },
 };
 
@@ -69,7 +69,7 @@ export default function Landing() {
                   lineHeight: 1.65,
                 }}
               >
-                Unlimited AI practice tests for every FBLA objective event. 100 questions,
+                Unlimited AI practice tests for every FBLA objective event. Up to 50 questions,
                 instant explanations, score tracking. Plus study guides, a deadline calendar,
                 and an advisor dashboard. All free.
               </p>
@@ -91,7 +91,7 @@ export default function Landing() {
               <div className="hero-preview-body">
                 <div className="hero-preview-meta">
                   <span className="eyebrow" style={{ color: "var(--accent)" }}>AI Practice Test</span>
-                  <span className="font-mono hero-preview-count">Question 7 / 100 · Accounting I</span>
+                  <span className="font-mono hero-preview-count">Question 7 / 50 · Accounting I</span>
                 </div>
                 <p className="hero-preview-q">
                   A company purchases supplies on account. Which accounts are affected, and how?
@@ -142,8 +142,8 @@ export default function Landing() {
               }}
             >
               <StatBlock value="55" label="Competitions tracked" />
-              <StatBlock value="45" label="AI practice test events" />
-              <StatBlock value="100" label="Questions per test" />
+              <StatBlock value="34" label="AI practice test events" />
+              <StatBlock value="50" label="Questions per test" />
               <StatBlock value="Free" label="Always, forever" />
             </div>
           </ScrollReveal>

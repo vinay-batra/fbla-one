@@ -30,7 +30,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Pricing">
-          <p>FBLA One is free for every student and every chapter, forever. There are no paid tiers, no per-seat fees, and no upsells. If that ever changes, we'll notify all account holders at least 30 days before any pricing takes effect.</p>
+          <p>FBLA One is free for every student and every chapter, forever. There are no paid tiers, no per-seat fees, and no upsells. If that ever changes, we'll post a notice here and in the app at least 30 days before any pricing takes effect.</p>
         </Section>
 
         <Section title="Disclaimer">

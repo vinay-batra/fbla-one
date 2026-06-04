@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
-import { HeroBadge } from "@/components/HeroBadge";
 import {
   onStorageChange,
   getDeadlines,
@@ -1222,30 +1221,6 @@ export default function ChapterPage() {
           </div>
         )}
       </Card>
-
-      {/* ── COMING SOON (only for non-advisors) ── */}
-      {!isAdvisor && (
-        <Card variant="accent">
-          <HeroBadge>Coming soon - free for every chapter</HeroBadge>
-          <h2 style={{ fontSize: 20, marginTop: 12, marginBottom: 12, letterSpacing: "-0.02em" }}>
-            Full advisor dashboard on the way.
-          </h2>
-          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              "Advisor view - see all member sign-ups across every event",
-              "Member roster with officer and member roles",
-              "Export rosters for regional registration",
-            ].map((line) => (
-              <li key={line} style={{ display: "flex", gap: 10, fontSize: 13, color: "var(--text2)", lineHeight: 1.55 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
-                  <path d="M5 12l5 5L20 7" />
-                </svg>
-                {line}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
 
       <style>{`
         @media (max-width: 720px) {
