@@ -84,33 +84,11 @@ export type Competition = {
 
 export const FBLA_EVENT_PAGE = "https://www.fbla.org/high-school/competitive-events/";
 
-// FBLA publishes each event's official guidelines (with the rubric/topic
-// outline) as a PDF on connect.fbla.org, foldered by event type. There are no
-// stable per-event web pages, so this builds the direct guideline-PDF link for
-// an event - far more specific than the generic hub. Note: FBLA changes file
-// names year to year, so a given event may occasionally need its name nudged.
-const FBLA_GUIDELINE_FOLDER: Record<CompetitionFormat, string> = {
-  "objective-test": "Objective Tests",
-  "team-test": "Objective Tests",
-  "objective-and-presentation": "Presentation Events",
-  presentation: "Presentation Events",
-  interview: "Presentation Events",
-  "role-play": "Presentation Events",
-  "case-study": "Presentation Events",
-  production: "Production Events",
-};
-
-export function officialGuidelinesUrl(c: Competition): string {
-  const folder = FBLA_GUIDELINE_FOLDER[c.format] ?? "Objective Tests";
-  const file = c.name
-    .replace(/&/g, "and")
-    .replace(/[^A-Za-z0-9 ]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
-  return encodeURI(
-    `https://connect.fbla.org/headquarters/files/High School Competitive Events Resources/Individual Guidelines/${folder}/${file}.pdf`
-  );
-}
+// We used to deep-link each event to its guideline PDF on connect.fbla.org, but
+// FBLA renames those files every cycle (the 2025-26 update also renamed several
+// events), so the constructed links broke with "Missing file ID". Official
+// guidelines now point at FBLA_EVENT_PAGE - the stable competitive-events hub
+// that links the current guidelines for every event.
 
 export const COMPETITIONS: Competition[] = [
   // ─── Accounting & Finance ────────────────────────────────────────────

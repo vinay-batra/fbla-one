@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
-import { COMPETITIONS, FORMAT_LABEL, getCompetition, officialGuidelinesUrl, FBLA_EVENT_PAGE } from "@/lib/competitions";
+import { COMPETITIONS, FORMAT_LABEL, getCompetition, FBLA_EVENT_PAGE } from "@/lib/competitions";
 import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -130,9 +130,9 @@ export default async function CompetitionDetail({ params }: Props) {
                 )}
                 {c.rubricUrl && (
                   <a
-                    // Direct link to this event's official FBLA guideline PDF
-                    // (rubric + topic outline) on connect.fbla.org.
-                    href={officialGuidelinesUrl(c)}
+                    // FBLA's competitive-events hub - the current guideline links
+                    // for every event live there (deep PDF links break on rename).
+                    href={FBLA_EVENT_PAGE}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-ghost btn-pill"
@@ -275,7 +275,7 @@ export default async function CompetitionDetail({ params }: Props) {
                       <StudyResourcesList
                         resources={c.studyResources.map((r) =>
                           r.url === FBLA_EVENT_PAGE
-                            ? { ...r, title: `${c.name} official guidelines (FBLA)`, url: officialGuidelinesUrl(c) }
+                            ? { ...r, title: `${c.name} official guidelines (FBLA)`, url: FBLA_EVENT_PAGE }
                             : r
                         )}
                         competitionSlug={c.slug}
