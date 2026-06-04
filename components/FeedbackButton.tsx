@@ -20,6 +20,16 @@ export function FeedbackButton() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Watch the global data-theme attribute so the open-state X reads in both themes.
+  const [dark, setDark] = useState(true);
+  useEffect(() => {
+    const sync = () => setDark(document.documentElement.getAttribute("data-theme") !== "light");
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
   const close = useCallback(() => {
     if (submitting) return;
     setOpen(false);
@@ -90,9 +100,9 @@ export function FeedbackButton() {
       <button
         ref={fabRef}
         type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Report a bug or send feedback"
-        title="Report a bug"
+        onClick={() => (open ? close() : setOpen(true))}
+        aria-label={open ? "Close feedback" : "Report a bug or send feedback"}
+        title={open ? "Close" : "Report a bug"}
         className="fbla-feedback-btn"
         style={{
           position: "fixed",
@@ -102,17 +112,22 @@ export function FeedbackButton() {
           width: 44,
           height: 44,
           borderRadius: "50%",
-          background: "var(--card-bg)",
-          border: "0.5px solid var(--border)",
+          // Mirror the AI bubble's open-state look so it clearly reads as a close button.
+          background: open ? "var(--bg3)" : "var(--card-bg)",
+          border: open ? "0.5px solid var(--border2)" : "0.5px solid var(--border)",
           color: "var(--text2)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          boxShadow: "0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)",
+          boxShadow: open
+            ? "0 4px 14px rgba(0,0,0,0.18)"
+            : "0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)",
           transition: "border-color 0.2s, background 0.2s, box-shadow 0.2s, color 0.2s, transform 0.2s",
+          transform: open ? "scale(0.96)" : "scale(1)",
         }}
         onMouseEnter={(e) => {
+          if (open) return;
           e.currentTarget.style.borderColor = "rgba(var(--accent-rgb),0.55)";
           e.currentTarget.style.background = "rgba(var(--accent-rgb),0.08)";
           e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.22), 0 0 0 4px rgba(var(--accent-rgb),0.12)";
@@ -120,6 +135,7 @@ export function FeedbackButton() {
           e.currentTarget.style.transform = "translateY(-1px)";
         }}
         onMouseLeave={(e) => {
+          if (open) return;
           e.currentTarget.style.borderColor = "var(--border)";
           e.currentTarget.style.background = "var(--card-bg)";
           e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08)";
@@ -127,11 +143,18 @@ export function FeedbackButton() {
           e.currentTarget.style.transform = "translateY(0)";
         }}
       >
-        {/* Waving flag on a pole - the classic "report" mark, stroked for a cleaner look */}
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 21V4" />
-          <path d="M5 4c2.5-1.4 5-1.4 7.5 0s5 1.4 7.5 0v9c-2.5 1.4-5 1.4-7.5 0s-5-1.4-7.5 0" />
-        </svg>
+        {open ? (
+          // Close X - white in dark mode so it reads on the dark disc (matches the AI bubble).
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={dark ? "#ffffff" : "#0a1322"} strokeWidth="2.5" strokeLinecap="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        ) : (
+          // Waving flag on a pole - the classic "report" mark, stroked for a cleaner look
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 21V4" />
+            <path d="M5 4c2.5-1.4 5-1.4 7.5 0s5 1.4 7.5 0v9c-2.5 1.4-5 1.4-7.5 0s-5-1.4-7.5 0" />
+          </svg>
+        )}
       </button>
 
       {/* Modal */}

@@ -216,7 +216,7 @@ function PublicAIChatInner() {
         }}
       >
         {open ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a1322" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={dark ? "#ffffff" : "#0a1322"} strokeWidth="2.5" strokeLinecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
