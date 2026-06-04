@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useFocusTrap } from "@/components/useFocusTrap";
 
 type Step = {
   selector?: string; // element to spotlight; omitted = centered card
@@ -113,6 +114,9 @@ export function AppTour() {
     return () => document.removeEventListener("keydown", onKey);
   }, [active, finish]);
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(active, cardRef, finish);
+
   if (!active) return null;
 
   const s = STEPS[step];
@@ -161,6 +165,7 @@ export function AppTour() {
 
       {/* Tooltip card */}
       <div
+        ref={cardRef}
         style={{
           position: "fixed",
           ...tipStyle,

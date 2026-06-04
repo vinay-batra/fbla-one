@@ -215,9 +215,11 @@ export default function Tracker() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  // Wrap the control inside the <label> so the association is implicit - no id
+  // threading, works for every field that uses this helper.
   return (
-    <div>
-      <label
+    <label style={{ display: "block" }}>
+      <span
         className="font-mono"
         style={{
           display: "block",
@@ -230,9 +232,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         }}
       >
         {label}
-      </label>
+      </span>
       {children}
-    </div>
+    </label>
   );
 }
 

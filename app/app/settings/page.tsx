@@ -204,10 +204,10 @@ export default function Settings() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <FieldLabel label="Display name" />
-          <input type="text" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} className="input-field" placeholder="Your name" maxLength={60} />
+          <input type="text" aria-label="Display name" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} className="input-field" placeholder="Your name" maxLength={60} />
 
           <FieldLabel label="Chapter" />
-          <input type="text" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="Council Rock South FBLA" maxLength={80} />
+          <input type="text" aria-label="Chapter" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="Council Rock South FBLA" maxLength={80} />
 
           <button
             type="button"
