@@ -42,6 +42,7 @@ import {
 } from "@/lib/chapter";
 import { FORMAT_LABEL } from "@/lib/competitions";
 import { getPracticeLogs } from "@/lib/storage";
+import { relativeTime, daysUntil, scoreColor, toCsv, downloadCsv } from "@/lib/format";
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -51,25 +52,8 @@ function formatDate(iso: string): string {
   return `${months[m - 1]} ${d}, ${y}`;
 }
 
-function daysUntil(iso: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(iso + "T00:00:00");
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
-
 function memberName(m: MemberRow): string {
   return m.display_name?.trim() || m.email?.split("@")[0] || "Anonymous";
-}
-
-function relativeTime(iso: string): string {
-  const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (sec < 60) return "just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  return `${Math.floor(hr / 24)}d ago`;
 }
 
 function exportSignupsCSV(members: MemberRow[], chapterName: string) {
@@ -90,18 +74,8 @@ function exportSignupsCSV(members: MemberRow[], chapterName: string) {
   if (rows.length === 0) {
     for (const m of members) rows.push([memberName(m), m.email ?? "", "", "", ""]);
   }
-  const csv = [headers, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${chapterName.replace(/\s+/g, "-").toLowerCase()}-signups-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const csv = toCsv([headers, ...rows]);
+  downloadCsv(`${chapterName.replace(/\s+/g, "-").toLowerCase()}-signups-${new Date().toISOString().slice(0, 10)}.csv`, csv);
 }
 
 function exportRosterCSV(members: MemberRow[], chapterName: string) {
@@ -113,30 +87,14 @@ function exportRosterCSV(members: MemberRow[], chapterName: string) {
     String(m.registrations.length),
     m.registrations.map((slug) => getCompetition(slug)?.name ?? slug).join("; "),
   ]);
-  const csv = [headers, ...rows]
-    .map((row) =>
-      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-    )
-    .join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${chapterName.replace(/\s+/g, "-").toLowerCase()}-roster-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const csv = toCsv([headers, ...rows]);
+  downloadCsv(`${chapterName.replace(/\s+/g, "-").toLowerCase()}-roster-${new Date().toISOString().slice(0, 10)}.csv`, csv);
 }
 
 function roleBadgeStyle(role: string): React.CSSProperties {
   if (role === "advisor") return { background: "var(--accent-dim)", color: "var(--accent-text)" };
   if (role === "officer") return { background: "var(--brand-dim)", color: "var(--brand)" };
   return { background: "var(--bg3)", color: "var(--text3)" };
-}
-
-function scoreColor(pct: number): string {
-  return pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--accent)" : "var(--red)";
 }
 
 const LB_TH: React.CSSProperties = {

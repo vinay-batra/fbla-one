@@ -8,23 +8,13 @@ import {
   onStorageChange,
   type MilestoneLevel,
 } from "@/lib/storage";
+import { daysUntil } from "@/lib/format";
 
 const STAGES: { level: MilestoneLevel; label: string; note: string }[] = [
   { level: "regionals", label: "Regionals", note: "Qualify here" },
   { level: "states", label: "States", note: "Place to advance" },
   { level: "nationals", label: "Nationals", note: "The goal" },
 ];
-
-function todayKey() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function daysUntil(iso: string): number {
-  const target = new Date(iso + "T00:00:00");
-  return Math.round((target.getTime() - todayKey().getTime()) / 86400000);
-}
 
 function fmt(iso: string): string {
   const [, m, d] = iso.split("-").map(Number);

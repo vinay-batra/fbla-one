@@ -16,6 +16,7 @@ import {
   onStorageChange,
   type PracticeLog,
 } from "@/lib/storage";
+import { relativeTime } from "@/lib/format";
 import type { Competition } from "@/lib/competitions";
 
 // ── Score trend chart ──────────────────────────────────────────
@@ -501,17 +502,3 @@ function Suggestion({ done, text, href }: { done: boolean; text: string; href: s
   );
 }
 
-function relativeTime(iso: string): string {
-  const date = new Date(iso);
-  const sec = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (sec < 60) return "just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min} min ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const d = Math.floor(hr / 24);
-  if (d < 7) return `${d}d ago`;
-  const w = Math.floor(d / 7);
-  if (w < 5) return `${w}w ago`;
-  return date.toLocaleDateString();
-}
