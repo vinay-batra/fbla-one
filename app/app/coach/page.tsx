@@ -42,6 +42,28 @@ function scoreMeta(pct: number): { label: string; color: string; bg: string } {
   return { label: "Needs work", color: "var(--red)", bg: "rgba(var(--red-rgb), 0.08)" };
 }
 
+// ── Answer-position shuffle ────────────────────────────────────
+
+const OPTION_KEYS: Option[] = ["A", "B", "C", "D"];
+
+// Randomize answer position so the correct letter is evenly spread (defense in
+// depth on top of the prompt's letter-balance rule). Remaps `correct` by the
+// original letter, so it can never end up pointing at the wrong text.
+function shuffleQuestionOptions(q: Question): Question {
+  const entries = OPTION_KEYS.map((L) => ({ orig: L, text: q.options[L] }));
+  for (let i = entries.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [entries[i], entries[j]] = [entries[j], entries[i]];
+  }
+  const options = {} as Record<Option, string>;
+  let correct: Option = q.correct;
+  entries.forEach((e, idx) => {
+    options[OPTION_KEYS[idx]] = e.text;
+    if (e.orig === q.correct) correct = OPTION_KEYS[idx];
+  });
+  return { ...q, options, correct };
+}
+
 // ── Main component (wrapped in Suspense for useSearchParams) ───
 
 function CoachInner() {
@@ -158,7 +180,7 @@ function CoachInner() {
             const optionsOk = !!opts && KEYS.every((k) => typeof opts[k] === "string" && opts[k].trim());
             const correctOk = KEYS.includes(q.correct as string);
             if (q.question && optionsOk && correctOk) {
-              parsed.push({ ...q, id: parsed.length + 1 });
+              parsed.push(shuffleQuestionOptions({ ...q, id: parsed.length + 1 }));
               setGeneratedSoFar(parsed.length);
               setQuestions([...parsed]);
             }

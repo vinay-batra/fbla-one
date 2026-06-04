@@ -15,6 +15,8 @@ CRITICAL OUTPUT FORMAT - follow exactly:
 Question quality rules:
 - The "topic" field MUST be copied verbatim from the numbered topic list in the user message (pick the single best-fit topic for that question). This powers each student's weak-topic analysis, so it must be accurate.
 - Distractors must be plausible - rooted in common misconceptions, not obviously wrong
+- All four options MUST be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed option - a longer or more-qualified answer is an obvious giveaway. If the right answer needs detail, give the distractors equal detail; otherwise tighten it so all four read as equally likely.
+- Balance the correct letter across the test: aim for a roughly even spread of A, B, C, and D, and never default to one position
 - Use precise professional vocabulary appropriate to the subject
 - Mix question types: definition (20%), scenario/application (50%), compare/contrast (20%), calculation when applicable (10%)
 - Never repeat the same concept twice across the test
