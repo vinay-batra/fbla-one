@@ -12,6 +12,8 @@ import {
   onStorageChange,
 } from "@/lib/storage";
 
+const LOG_CAP = 100;
+
 export default function Tracker() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
@@ -26,6 +28,7 @@ export default function Tracker() {
   const [outOf, setOutOf] = useState<string>("100");
   const [duration, setDuration] = useState<string>("60");
   const [notes, setNotes] = useState<string>("");
+  const [showAllLogs, setShowAllLogs] = useState(false);
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -132,6 +135,7 @@ export default function Tracker() {
               <p className="empty-state-msg">Add your first practice test on the left to start tracking.</p>
             </div>
           ) : (
+            <>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginTop: 8 }}>
                 <thead>
@@ -145,7 +149,7 @@ export default function Tracker() {
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((l) => {
+                  {(showAllLogs ? logs : logs.slice(0, LOG_CAP)).map((l) => {
                     const c = getCompetition(l.competitionSlug);
                     const pct = l.score != null && l.outOf != null && l.outOf > 0
                       ? Math.round((l.score / l.outOf) * 100)
@@ -201,6 +205,12 @@ export default function Tracker() {
                 </tbody>
               </table>
             </div>
+            {!showAllLogs && logs.length > LOG_CAP && (
+              <button type="button" onClick={() => setShowAllLogs(true)} className="btn btn-ghost btn-sm" style={{ marginTop: 14 }}>
+                Show all {logs.length} entries
+              </button>
+            )}
+            </>
           )}
         </Card>
       </div>

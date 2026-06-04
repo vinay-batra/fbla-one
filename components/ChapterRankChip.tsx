@@ -16,10 +16,10 @@ export function ChapterRankChip() {
     const supa = getSupabase();
     if (!supa) return;
     let cancelled = false;
-    supa.auth.getUser().then(async ({ data }) => {
-      if (!data.user) return;
-      const lb = await getMyChapterLeaderboard();
-      if (cancelled || lb.length < 2) return; // need at least 2 to be a "leaderboard"
+    // Run the auth check and the leaderboard RPC in parallel (the RPC is scoped
+    // server-side by auth.uid(), so it doesn't depend on the getUser result).
+    Promise.all([supa.auth.getUser(), getMyChapterLeaderboard()]).then(([{ data }, lb]) => {
+      if (cancelled || !data.user || lb.length < 2) return; // need at least 2 to be a "leaderboard"
       const idx = lb.findIndex((r) => r.userId === data.user!.id);
       if (idx < 0) return;
       setInfo({ rank: idx + 1, total: lb.length });
