@@ -7,6 +7,7 @@ import { Avatar } from "@/components/UserMenu";
 import { useTheme } from "@/components/ThemeProvider";
 import { getSupabase } from "@/lib/supabase";
 import { getDisplayName, setDisplayName, getChapterName, setChapterName, onStorageChange } from "@/lib/storage";
+import { useFocusTrap } from "@/components/useFocusTrap";
 
 export default function Settings() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function Settings() {
   const [roleLabel, setRoleLabel] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const delDialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(confirmDelete, delDialogRef, () => setConfirmDelete(false));
 
   // Local preferences (work immediately, no server round-trip).
   const [deadlineAlerts, setDeadlineAlerts] = useState(true);
@@ -330,7 +333,7 @@ export default function Settings() {
           onClick={(e) => { if (e.target === e.currentTarget) setConfirmDelete(false); }}
           style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
         >
-          <div role="dialog" aria-modal="true" aria-labelledby="del-title" style={{ width: "min(400px,100%)", background: "var(--card-bg)", border: "0.5px solid var(--border2)", borderRadius: 16, boxShadow: "var(--shadow-lg)", padding: "24px 24px 20px", animation: "fadeUp 0.18s ease" }}>
+          <div ref={delDialogRef} role="dialog" aria-modal="true" aria-labelledby="del-title" style={{ width: "min(400px,100%)", background: "var(--card-bg)", border: "0.5px solid var(--border2)", borderRadius: 16, boxShadow: "var(--shadow-lg)", padding: "24px 24px 20px", animation: "fadeUp 0.18s ease" }}>
             <h2 id="del-title" style={{ fontSize: 18, letterSpacing: "-0.01em", marginBottom: 6, color: "var(--red)" }}>Delete your account?</h2>
             <p style={{ fontSize: 13.5, color: "var(--text3)", lineHeight: 1.6, marginBottom: 20 }}>
               This permanently deletes your account, your event, practice logs, and saved resources. This cannot be undone.

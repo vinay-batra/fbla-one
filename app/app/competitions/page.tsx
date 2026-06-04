@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { getCompetition, FORMAT_LABEL } from "@/lib/competitions";
@@ -10,12 +10,15 @@ import {
   unregisterCompetition,
   onStorageChange,
 } from "@/lib/storage";
+import { useFocusTrap } from "@/components/useFocusTrap";
 
 export default function MyCompetitions() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
   void tick;
   const [confirmRemove, setConfirmRemove] = useState<{ slug: string; name: string } | null>(null);
+  const removeDialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(!!confirmRemove, removeDialogRef, () => setConfirmRemove(null));
 
   const registered = getRegistered();
   const logs = getPracticeLogs();
@@ -178,6 +181,7 @@ export default function MyCompetitions() {
           }}
         >
           <div
+            ref={removeDialogRef}
             role="dialog" aria-modal="true" aria-labelledby="remove-title"
             style={{
               width: "min(400px, 100%)", background: "var(--card-bg)",
