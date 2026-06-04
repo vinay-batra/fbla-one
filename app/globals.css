@@ -38,6 +38,9 @@ body {
   --accent:      #c8881a;
   --accent-rgb:  200, 136, 26;
   --accent-text: #8b5e0d;
+  --medal-gold:   #a67c00;
+  --medal-silver: #6b7280;
+  --medal-bronze: #8a5a2b;
   --accent-dim:  rgba(200, 136, 26, 0.1);
   --accent-border: rgba(200, 136, 26, 0.32);
   --accent-glow: 0 0 24px rgba(200, 136, 26, 0.28);
@@ -98,6 +101,9 @@ body {
   --accent:      #ffb81c;
   --accent-rgb:  255, 184, 28;
   --accent-text: #ffb81c;
+  --medal-gold:   #d4af37;
+  --medal-silver: #aab4c2;
+  --medal-bronze: #c07f3c;
   --accent-dim:  rgba(255, 184, 28, 0.1);
   --accent-border: rgba(255, 184, 28, 0.32);
   --accent-glow: 0 0 30px rgba(255, 184, 28, 0.32);

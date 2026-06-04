@@ -608,7 +608,7 @@ export default function ChapterPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 12 }}>
             {leaderboard.map((row, i) => {
               const me = row.userId === userId;
-              const rankColor = i === 0 ? "#d4af37" : i === 1 ? "#aab4c2" : i === 2 ? "#c07f3c" : "var(--text3)";
+              const rankColor = i === 0 ? "var(--medal-gold)" : i === 1 ? "var(--medal-silver)" : i === 2 ? "var(--medal-bronze)" : "var(--text3)";
               return (
                 <div key={row.userId} style={{
                   display: "grid", gridTemplateColumns: "32px 1fr auto auto", alignItems: "center", gap: 12,
