@@ -191,9 +191,12 @@ function PublicAIChatInner() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: dark
-            ? "0 8px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)"
-            : "0 8px 24px rgba(11,26,51,0.16), 0 1px 3px rgba(11,26,51,0.1)",
+          // Gold glow so the button has presence (and a hover-amplified ring).
+          boxShadow: open
+            ? "0 4px 14px rgba(0,0,0,0.18)"
+            : dark
+              ? "0 8px 24px rgba(0,0,0,0.5), 0 0 22px rgba(var(--accent-rgb),0.4), 0 0 0 1px rgba(var(--accent-rgb),0.25)"
+              : "0 8px 24px rgba(11,26,51,0.14), 0 0 20px rgba(var(--accent-rgb),0.32)",
           transition: "box-shadow 0.2s, transform 0.2s, background 0.2s",
           transform: open ? "scale(0.96)" : "scale(1)",
         }}
@@ -201,15 +204,15 @@ function PublicAIChatInner() {
           if (open) return;
           e.currentTarget.style.transform = "translateY(-2px)";
           e.currentTarget.style.boxShadow = dark
-            ? "0 12px 30px rgba(0,0,0,0.6), 0 0 0 4px rgba(var(--accent-rgb),0.18)"
-            : "0 12px 30px rgba(11,26,51,0.2), 0 0 0 4px rgba(var(--accent-rgb),0.14)";
+            ? "0 12px 32px rgba(0,0,0,0.6), 0 0 30px rgba(var(--accent-rgb),0.55), 0 0 0 5px rgba(var(--accent-rgb),0.2)"
+            : "0 12px 32px rgba(11,26,51,0.2), 0 0 28px rgba(var(--accent-rgb),0.45), 0 0 0 5px rgba(var(--accent-rgb),0.16)";
         }}
         onMouseLeave={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "scale(1)";
           e.currentTarget.style.boxShadow = dark
-            ? "0 8px 24px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4)"
-            : "0 8px 24px rgba(11,26,51,0.16), 0 1px 3px rgba(11,26,51,0.1)";
+            ? "0 8px 24px rgba(0,0,0,0.5), 0 0 22px rgba(var(--accent-rgb),0.4), 0 0 0 1px rgba(var(--accent-rgb),0.25)"
+            : "0 8px 24px rgba(11,26,51,0.14), 0 0 20px rgba(var(--accent-rgb),0.32)";
         }}
       >
         {open ? (

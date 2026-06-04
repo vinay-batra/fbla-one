@@ -766,3 +766,8 @@ p { color: var(--text2); line-height: 1.62; }
 @media (prefers-reduced-motion: reduce) {
   .fbla-typing span { animation: none; opacity: 0.6; }
 }
+
+/* Center each app page's content column in the main area. Pages set their own
+   max-width; without this they left-align and strand on the left half. This is
+   a no-op for full-width content and centers anything narrower. */
+.app-main-content > * { margin-inline: auto; }

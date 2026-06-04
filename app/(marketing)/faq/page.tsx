@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
 
@@ -131,7 +130,7 @@ export default function FAQ() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p style={{ marginTop: 18, fontSize: 17, color: "var(--text2)", lineHeight: 1.6 }}>
-              Don't see your question? <Link href="mailto:hello@fbla.one" className="animated-link" style={{ color: "var(--accent)" }}>Email us.</Link>
+              Don't see your question? <a href="mailto:hello@fbla.one?subject=FBLA%20One%20question" className="animated-link" style={{ color: "var(--accent)" }}>Email us.</a>
             </p>
           </ScrollReveal>
         </div>

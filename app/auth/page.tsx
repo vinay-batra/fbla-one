@@ -395,20 +395,16 @@ function AuthForm() {
                   width: 56,
                   height: 56,
                   borderRadius: 16,
-                  background: "rgba(var(--accent-rgb),0.08)",
-                  border: "0.5px solid rgba(var(--accent-rgb),0.28)",
+                  background: "#ffffff",
+                  border: "0.5px solid var(--border)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 0 22px rgba(var(--accent-rgb),0.13) inset",
+                  boxShadow: "0 6px 18px rgba(11,26,51,0.18)",
                 }}
               >
-                {/* Shield + torch inline SVG matching the brand mark style */}
-                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                  <path d="M16 3L4 7v9c0 7 5.5 11.6 12 13 6.5-1.4 12-6 12-13V7L16 3z" fill="rgba(var(--accent-rgb),0.15)" stroke="var(--accent)" strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M16 10v7M16 10c0 0-1.5-2-1.5-3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" />
-                  <circle cx="16" cy="8.5" r="1.5" fill="var(--accent)" />
-                </svg>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-mark.png" alt="" width={36} height={36} style={{ objectFit: "contain" }} />
               </div>
               <span
                 className="font-mono"

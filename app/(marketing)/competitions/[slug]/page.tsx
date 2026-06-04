@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
-import { COMPETITIONS, FORMAT_LABEL, getCompetition } from "@/lib/competitions";
+import { COMPETITIONS, FORMAT_LABEL, getCompetition, officialGuidelinesUrl } from "@/lib/competitions";
 import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -130,13 +130,9 @@ export default async function CompetitionDetail({ params }: Props) {
                 )}
                 {c.rubricUrl && (
                   <a
-                    // Per-event official guidelines. FBLA publishes each event's
-                    // rubric as a PDF on connect.fbla.org (and renames events
-                    // year to year), so a name-scoped lookup lands on the exact
-                    // current guidelines instead of one shared generic page.
-                    href={`https://www.google.com/search?q=${encodeURIComponent(
-                      `FBLA ${c.name} competitive event guidelines`
-                    )}`}
+                    // Direct link to this event's official FBLA guideline PDF
+                    // (rubric + topic outline) on connect.fbla.org.
+                    href={officialGuidelinesUrl(c)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-ghost btn-pill"

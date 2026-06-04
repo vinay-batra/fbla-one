@@ -15,6 +15,7 @@ export default function MyCompetitions() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
   void tick;
+  const [confirmRemove, setConfirmRemove] = useState<{ slug: string; name: string } | null>(null);
 
   const registered = getRegistered();
   const logs = getPracticeLogs();
@@ -147,11 +148,7 @@ export default function MyCompetitions() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (confirm(`Remove ${c.name} from your registered events?`)) {
-                        unregisterCompetition(c.slug);
-                      }
-                    }}
+                    onClick={() => setConfirmRemove({ slug: c.slug, name: c.name })}
                     className="btn btn-ghost btn-sm"
                     style={{ color: "var(--red)" }}
                     aria-label={`Remove ${c.name}`}
@@ -169,6 +166,50 @@ export default function MyCompetitions() {
           .mycomp-row { grid-template-columns: 1fr 1fr !important; }
         }
       `}</style>
+
+      {/* Styled remove confirmation (replaces the native browser confirm) */}
+      {confirmRemove && (
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setConfirmRemove(null); }}
+          style={{
+            position: "fixed", inset: 0, zIndex: 300,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+          }}
+        >
+          <div
+            role="dialog" aria-modal="true" aria-labelledby="remove-title"
+            style={{
+              width: "min(400px, 100%)", background: "var(--card-bg)",
+              border: "0.5px solid var(--border2)", borderRadius: 16,
+              boxShadow: "var(--shadow-lg)", padding: "24px 24px 20px", animation: "fadeUp 0.18s ease",
+            }}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(var(--red-rgb),0.12)", border: "1px solid rgba(var(--red-rgb),0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+              </svg>
+            </div>
+            <h2 id="remove-title" style={{ fontSize: 18, letterSpacing: "-0.01em", marginBottom: 6 }}>Remove this event?</h2>
+            <p style={{ fontSize: 13.5, color: "var(--text3)", lineHeight: 1.6, marginBottom: 20 }}>
+              <strong style={{ color: "var(--text2)" }}>{confirmRemove.name}</strong> will be removed from your registered events. Your practice history stays saved.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setConfirmRemove(null)} className="btn btn-ghost btn-pill btn-sm">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { unregisterCompetition(confirmRemove.slug); setConfirmRemove(null); }}
+                className="btn btn-pill btn-sm"
+                style={{ background: "var(--red)", color: "#fff" }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

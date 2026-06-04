@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { SectionHeader } from "@/components/SectionHeader";
 import { HeroBadge } from "@/components/HeroBadge";
+import { HeroCta } from "@/components/HeroCta";
 import { Card } from "@/components/Card";
 import {
   COMPETITION_STATS,
@@ -74,22 +75,7 @@ export default function Landing() {
               </p>
             </ScrollReveal>
             <ScrollReveal delay={0.18}>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  justifyContent: "center",
-                  marginTop: 36,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Link href="/auth?mode=signup" className="btn btn-accent btn-lg cta-shimmer">
-                  Get started
-                </Link>
-                <Link href="/app" className="btn btn-ghost btn-lg">
-                  Go to dashboard
-                </Link>
-              </div>
+              <HeroCta />
             </ScrollReveal>
           </div>
 
@@ -496,13 +482,8 @@ export default function Landing() {
                   Free for every FBLA member. Sign up in under a minute -- no credit card, no setup.
                   AI practice tests, study guides, and chapter management, all in one place.
                 </p>
-                <div style={{ marginTop: 32, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                  <Link href="/auth?mode=signup" className="btn btn-accent btn-lg cta-shimmer">
-                    Get started free
-                  </Link>
-                  <Link href="/app" className="btn btn-ghost btn-lg">
-                    Go to dashboard
-                  </Link>
+                <div style={{ marginTop: 8 }}>
+                  <HeroCta signedOutLabel="Get started free" />
                 </div>
               </div>
             </div>
