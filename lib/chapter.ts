@@ -139,9 +139,13 @@ export async function joinChapter(
   try {
     // Preferred path (migration 0007): validate the invite server-side. The client
     // no longer needs read access to other chapters.
-    const { data: chapterId, error: rpcErr } = await supa.rpc("join_chapter_by_code", { p_code: code });
-    if (!rpcErr && chapterId) {
-      const ch = await getChapterById(chapterId as string);
+    const { data: result, error: rpcErr } = await supa.rpc("join_chapter_by_code", { p_code: code });
+    if (!rpcErr && result) {
+      const row = Array.isArray(result) ? result[0] : result;
+      // 0014+: the RPC returns the full chapter row, so use it directly. Pre-0014
+      // it returns just the id (a string) - fall back to a fetch in that case.
+      if (row && typeof row === "object") return { data: row as ChapterInfo, error: null };
+      const ch = await getChapterById(String(row));
       return ch
         ? { data: ch, error: null }
         : { data: null, error: "Joined, but could not load the chapter." };
