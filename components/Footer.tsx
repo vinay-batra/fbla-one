@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "./Logo";
 
 type FooterCol = {
@@ -134,8 +135,7 @@ export function Footer() {
             overflow: "hidden",
           }}
         >
-          { /* eslint-disable-next-line @next/next/no-img-element */ }
-          <img
+          <Image
             src="/logo-mark.png"
             alt=""
             aria-hidden="true"

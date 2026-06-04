@@ -58,6 +58,8 @@ function rateLimited(key: string, limit: number, windowMs = 10 * 60 * 1000): boo
   const e = RATE_BUCKET.get(key);
   if (!e || now > e.reset) {
     RATE_BUCKET.set(key, { n: 1, reset: now + windowMs });
+    // Bound memory: drop the oldest entry once the bucket grows large.
+    if (RATE_BUCKET.size > 5000) RATE_BUCKET.delete(RATE_BUCKET.keys().next().value as string);
     return false;
   }
   e.n += 1;

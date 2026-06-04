@@ -315,7 +315,7 @@ function CoachInner() {
                 onChange={(e) => setSelectedSlug(e.target.value)}
                 className="input-field"
               >
-                <option value="">-- Select a competition --</option>
+                <option value="">-- Select an event --</option>
                 {ELIGIBLE.map((c) => (
                   <option key={c.slug} value={c.slug}>{c.name}</option>
                 ))}
@@ -821,7 +821,7 @@ function CoachInner() {
           Generate new test
         </button>
         <button type="button" onClick={restart} className="btn btn-ghost btn-pill">
-          Change competition
+          Change event
         </button>
         <Link href="/app/tracker" className="btn btn-ghost btn-pill">
           View tracker

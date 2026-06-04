@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
@@ -43,7 +43,7 @@ function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; re
       <CardHeader
         eyebrow="AI Practice"
         title="Score trends"
-        tagline="Your last 8 scored practice tests per competition."
+        tagline="Your last 8 scored practice tests per event."
         right={
           <Link href="/app/coach" className="btn btn-ghost btn-sm">
             New test
@@ -106,46 +106,50 @@ export default function Dashboard() {
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
 
   const displayName = getDisplayName();
-  const registered = getRegistered();
-  const logs = getPracticeLogs();
-  const saved = getSavedResources();
 
-  // tick is intentionally referenced to keep memos invalidated when storage changes
-  void tick;
+  // Derive everything once per storage change (tick), not on every render.
+  const { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions, lastPracticeBySlug } = useMemo(() => {
+    void tick; // recompute when localStorage changes
+    const registered = getRegistered();
+    const logs = getPracticeLogs();
+    const saved = getSavedResources();
 
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const logsThisWeek = logs.filter((l) => new Date(l.loggedAt).getTime() >= weekAgo).length;
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const logsThisWeek = logs.filter((l) => new Date(l.loggedAt).getTime() >= weekAgo).length;
 
-  // Practice streak: consecutive days (ending today or yesterday) with >=1 log.
-  const streakDays = (() => {
-    const days = new Set(logs.map((l) => new Date(l.loggedAt).toLocaleDateString("en-CA")));
-    if (days.size === 0) return 0;
-    const oneDay = 86400000;
-    const cur = new Date();
-    cur.setHours(0, 0, 0, 0);
-    const todayKey = cur.toLocaleDateString("en-CA");
-    // Allow the streak to count even if today has no log yet (start from yesterday).
-    if (!days.has(todayKey)) cur.setTime(cur.getTime() - oneDay);
-    let n = 0;
-    while (days.has(cur.toLocaleDateString("en-CA"))) {
-      n++;
-      cur.setTime(cur.getTime() - oneDay);
+    // Practice streak: consecutive days (ending today or yesterday) with >=1 log.
+    const streakDays = (() => {
+      const days = new Set(logs.map((l) => new Date(l.loggedAt).toLocaleDateString("en-CA")));
+      if (days.size === 0) return 0;
+      const oneDay = 86400000;
+      const cur = new Date();
+      cur.setHours(0, 0, 0, 0);
+      const todayKey = cur.toLocaleDateString("en-CA");
+      // Count even if today has no log yet (start from yesterday).
+      if (!days.has(todayKey)) cur.setTime(cur.getTime() - oneDay);
+      let n = 0;
+      while (days.has(cur.toLocaleDateString("en-CA"))) {
+        n++;
+        cur.setTime(cur.getTime() - oneDay);
+      }
+      return n;
+    })();
+
+    const upcomingDeadlines = getUpcomingDeadlines(3);
+
+    const registeredCompetitions = registered
+      .map((slug) => getCompetition(slug))
+      .filter((c): c is NonNullable<typeof c> => Boolean(c));
+
+    const lastPracticeBySlug = new Map<string, string>();
+    for (const log of logs) {
+      if (!lastPracticeBySlug.has(log.competitionSlug)) {
+        lastPracticeBySlug.set(log.competitionSlug, log.loggedAt);
+      }
     }
-    return n;
-  })();
 
-  const upcomingDeadlines = getUpcomingDeadlines(3);
-
-  const registeredCompetitions = registered
-    .map((slug) => getCompetition(slug))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c));
-
-  const lastPracticeBySlug = new Map<string, string>();
-  for (const log of logs) {
-    if (!lastPracticeBySlug.has(log.competitionSlug)) {
-      lastPracticeBySlug.set(log.competitionSlug, log.loggedAt);
-    }
-  }
+    return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions, lastPracticeBySlug };
+  }, [tick]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 1240 }}>
@@ -156,7 +160,7 @@ export default function Dashboard() {
         </p>
         <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>
           {registeredCompetitions.length === 0
-            ? "Pick your first competition."
+            ? "Pick your first event."
             : `Keep going. ${registeredCompetitions.length === 1 ? "1 event" : `${registeredCompetitions.length} events`} on your plate.`}
         </h1>
       </div>
