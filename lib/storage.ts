@@ -45,6 +45,8 @@ const KEYS = {
   chapterName: "fbla_chapter_name",
   deadlines: "fbla_deadlines",
   chapterDeadlines: "fbla_chapter_deadlines",
+  topicStats: "fbla_topic_stats",
+  milestones: "fbla_milestones",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -355,6 +357,56 @@ export function removePracticeLog(id: string): void {
 
 export function getPracticeLogsForCompetition(slug: string): PracticeLog[] {
   return getPracticeLogs().filter((l) => l.competitionSlug === slug);
+}
+
+/* ───── Topic mastery (weak-topic analysis) ──────────────────
+   Per event, accumulate correct/total per topic across all tests, so we can
+   surface a student's weakest topics and offer a targeted drill. Device-local
+   (derived data); cheap to recompute as the student practices. */
+export type TopicStat = { correct: number; total: number };
+type TopicStatsMap = Record<string, Record<string, TopicStat>>;
+
+export function getTopicStats(slug: string): Record<string, TopicStat> {
+  return read<TopicStatsMap>(KEYS.topicStats, {})[slug] ?? {};
+}
+
+export function recordTopicResults(slug: string, results: { topic: string; correct: boolean }[]): void {
+  if (!slug || results.length === 0) return;
+  const all = read<TopicStatsMap>(KEYS.topicStats, {});
+  const forSlug = { ...(all[slug] ?? {}) };
+  for (const r of results) {
+    const t = (r.topic || "").trim();
+    if (!t) continue;
+    const cur = forSlug[t] ?? { correct: 0, total: 0 };
+    forSlug[t] = { correct: cur.correct + (r.correct ? 1 : 0), total: cur.total + 1 };
+  }
+  write(KEYS.topicStats, { ...all, [slug]: forSlug });
+}
+
+export type WeakTopic = { topic: string; correct: number; total: number; pct: number };
+
+/** Topics seen at least `minSeen` times, weakest (lowest accuracy) first. */
+export function getWeakTopics(slug: string, minSeen = 2): WeakTopic[] {
+  const stats = getTopicStats(slug);
+  return Object.entries(stats)
+    .filter(([, s]) => s.total >= minSeen)
+    .map(([topic, s]) => ({ topic, correct: s.correct, total: s.total, pct: Math.round((s.correct / s.total) * 100) }))
+    .sort((a, b) => a.pct - b.pct || b.total - a.total);
+}
+
+/* ───── Competition milestones (Regionals -> States -> Nationals) ──── */
+export type MilestoneLevel = "regionals" | "states" | "nationals";
+export type Milestones = Partial<Record<MilestoneLevel, string>>; // ISO date strings
+
+export function getMilestones(): Milestones {
+  return read<Milestones>(KEYS.milestones, {});
+}
+
+export function setMilestone(level: MilestoneLevel, date: string | null): void {
+  const cur = getMilestones();
+  if (date) cur[level] = date;
+  else delete cur[level];
+  write(KEYS.milestones, cur);
 }
 
 /* ───── Saved resources ──────────────────────────────────── */

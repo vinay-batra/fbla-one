@@ -10,9 +10,10 @@ CRITICAL OUTPUT FORMAT - follow exactly:
 - Output ONLY raw NDJSON: one valid JSON object per line, nothing else
 - No markdown, no code fences, no commentary, no blank lines between questions
 - Each line must be a complete, valid JSON object with this exact schema:
-{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"Why A is correct, plus the key reason the most tempting wrong option is wrong."}
+{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"Why A is correct, plus the key reason the most tempting wrong option is wrong.","topic":"Exact topic name from the list"}
 
 Question quality rules:
+- The "topic" field MUST be copied verbatim from the numbered topic list in the user message (pick the single best-fit topic for that question). This powers each student's weak-topic analysis, so it must be accurate.
 - Distractors must be plausible - rooted in common misconceptions, not obviously wrong
 - Use precise professional vocabulary appropriate to the subject
 - Mix question types: definition (20%), scenario/application (50%), compare/contrast (20%), calculation when applicable (10%)
@@ -21,23 +22,29 @@ Question quality rules:
 - Keep each explanation to ONE or TWO sentences: why the correct answer is right and the single biggest reason a student picks the wrong one. Do not walk through all four options. Concise explanations matter - the whole test must stream quickly.
 - Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field. The question and explanation strings are shown verbatim to students.`;
 
-function buildUserPrompt(slug: string, count: number): string {
+function buildUserPrompt(slug: string, count: number, focusTopic?: string): string {
   const c = getCompetition(slug);
   if (!c) throw new Error("Competition not found");
 
   const topicList = (c.topics ?? []).map((t, i) => `${i + 1}. ${t}`).join("\n");
   const durationLine = c.duration ? `Duration: ${c.duration}` : "";
 
+  // Targeted drill: focus every question on one weak topic (still tag it).
+  const validFocus = focusTopic && (c.topics ?? []).includes(focusTopic) ? focusTopic : null;
+  const coverageLine = validFocus
+    ? `FOCUS: every question must test the single topic "${validFocus}" in depth (different angles and difficulties). Set "topic" to "${validFocus}" on every question.`
+    : "Topics to cover (distribute questions proportionally across all topics):";
+
   return `Generate exactly ${count} practice questions for the FBLA ${c.name} event.
 
 Format: ${FORMAT_LABEL[c.format]}${durationLine ? `\n${durationLine}` : ""}
 
-Topics to cover (distribute questions proportionally across all topics):
+${coverageLine}
 ${topicList || "General business knowledge relevant to this event"}
 
 Event overview: ${c.longDescription ?? c.description}
 
-Output exactly ${count} questions as NDJSON (one JSON object per line). Cover every major topic area. Vary difficulty from recall to analysis.`;
+Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis.`;
 }
 
 // Best-effort in-memory rate limiter (per serverless instance). Caps practice
@@ -92,10 +99,12 @@ export async function POST(req: Request): Promise<Response> {
 
   let slug: string;
   let count: number;
+  let focusTopic: string | undefined;
   try {
     const body = await req.json();
     slug = body.slug;
     count = Math.min(Math.max(Number(body.count) || 10, 5), 50);
+    focusTopic = typeof body.focusTopic === "string" ? body.focusTopic.slice(0, 200) : undefined;
   } catch {
     return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
@@ -127,7 +136,7 @@ export async function POST(req: Request): Promise<Response> {
           // Scale with question count; concise explanations keep this modest.
           max_tokens: Math.min(12000, count * 220 + 600),
           system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: buildUserPrompt(slug, count) }],
+          messages: [{ role: "user", content: buildUserPrompt(slug, count, focusTopic) }],
         });
 
         for await (const chunk of anthropicStream) {

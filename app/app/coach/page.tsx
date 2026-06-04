@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
-import { addPracticeLog, getRegistered } from "@/lib/storage";
+import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, type WeakTopic } from "@/lib/storage";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -17,6 +17,7 @@ type Question = {
   options: Record<Option, string>;
   correct: Option;
   explanation: string;
+  topic?: string;
 };
 
 type Phase = "idle" | "generating" | "taking" | "reviewing";
@@ -50,6 +51,8 @@ function CoachInner() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedSlug, setSelectedSlug] = useState(initialSlug);
   const [questionCount, setQuestionCount] = useState(10);
+  const [drillTopic, setDrillTopic] = useState<string | null>(null);
+  const [weakTopics, setWeakTopics] = useState<WeakTopic[]>([]);
   // Honor the user's default length from Settings.
   useEffect(() => {
     try {
@@ -79,6 +82,11 @@ function CoachInner() {
     }
   }, [initialSlug]);
 
+  // Recompute weak topics for the selected event (refreshes after each test).
+  useEffect(() => {
+    setWeakTopics(selectedSlug ? getWeakTopics(selectedSlug) : []);
+  }, [selectedSlug, phase]);
+
   // Keyboard: A/B/C/D and arrow navigation during test
   useEffect(() => {
     if (phase !== "taking") return;
@@ -96,7 +104,7 @@ function CoachInner() {
     return () => window.removeEventListener("keydown", handler);
   }, [phase, currentIdx, questions.length]);
 
-  const generate = useCallback(async () => {
+  const generate = useCallback(async (focusTopic?: string) => {
     if (!selectedSlug) return;
     setGenError("");
     setQuestions([]);
@@ -104,6 +112,7 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    setDrillTopic(focusTopic ?? null);
     setPhase("generating");
 
     const abort = new AbortController();
@@ -113,7 +122,7 @@ function CoachInner() {
       const res = await fetch("/api/practice-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: selectedSlug, count: questionCount }),
+        body: JSON.stringify({ slug: selectedSlug, count: questionCount, focusTopic }),
         signal: abort.signal,
       });
 
@@ -173,6 +182,11 @@ function CoachInner() {
   }, [selectedSlug, questionCount]);
 
   function submitTest() {
+    // Record per-topic results so the student's weak-topic analysis builds up.
+    const results = questions
+      .filter((q) => q.topic)
+      .map((q) => ({ topic: q.topic as string, correct: answers[q.id - 1] === q.correct }));
+    if (results.length) recordTopicResults(selectedSlug, results);
     setPhase("reviewing");
   }
 
@@ -344,7 +358,7 @@ function CoachInner() {
           {/* Generate button */}
           <button
             type="button"
-            onClick={generate}
+            onClick={() => generate()}
             disabled={!selectedSlug}
             className="btn btn-accent btn-pill"
             style={{ fontSize: 15, padding: "14px 28px", width: "100%", gap: 10, opacity: selectedSlug ? 1 : 0.45 }}
@@ -355,6 +369,36 @@ function CoachInner() {
             Generate {questionCount}-question test
           </button>
         </div>
+
+        {selectedSlug && weakTopics.length > 0 && (
+          <div style={{ background: "var(--card-bg)", border: "0.5px solid var(--border2)", borderRadius: 16, padding: "20px 22px" }}>
+            <p className="eyebrow" style={{ marginBottom: 6, color: "var(--accent-text)" }}>Your weak spots</p>
+            <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16, lineHeight: 1.55 }}>
+              Based on your past tests for this event. Drill a topic to get a focused set of questions on just that area.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {weakTopics.slice(0, 4).map((w) => {
+                const color = w.pct < 50 ? "var(--red)" : w.pct < 75 ? "var(--warning)" : "var(--green)";
+                return (
+                  <div key={w.topic} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
+                        <span style={{ fontSize: 13.5, color: "var(--text)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.topic}</span>
+                        <span className="font-mono" style={{ fontSize: 12, color, flexShrink: 0 }}>{w.pct}% · {w.correct}/{w.total}</span>
+                      </div>
+                      <div style={{ height: 6, borderRadius: 999, background: "var(--bg3)", overflow: "hidden" }}>
+                        <div style={{ width: `${w.pct}%`, height: "100%", background: color, borderRadius: 999 }} />
+                      </div>
+                    </div>
+                    <button type="button" onClick={() => generate(w.topic)} className="btn btn-brand btn-sm btn-pill" style={{ flexShrink: 0 }}>
+                      Drill
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <p style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", lineHeight: 1.6 }}>
           Questions are built from each event's official FBLA topic outline. Results are logged to your{" "}
@@ -375,9 +419,10 @@ function CoachInner() {
               <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
             </svg>
           </div>
-          <h2 style={{ fontSize: 22, letterSpacing: "-0.02em" }}>Building your practice test</h2>
+          <h2 style={{ fontSize: 22, letterSpacing: "-0.02em" }}>{drillTopic ? "Building your drill" : "Building your practice test"}</h2>
           <p style={{ color: "var(--text3)", marginTop: 8, fontSize: 14 }}>
             Writing {questionCount} questions for <strong style={{ color: "var(--text)" }}>{comp?.name}</strong>
+            {drillTopic ? <> · focused on <strong style={{ color: "var(--accent-text)" }}>{drillTopic}</strong></> : null}
           </p>
         </div>
 
@@ -655,7 +700,7 @@ function CoachInner() {
                 Retry the {questions.length - correctCount} you missed
               </button>
             )}
-            <button type="button" onClick={generate} className="btn btn-ghost btn-sm btn-pill">
+            <button type="button" onClick={() => generate()} className="btn btn-ghost btn-sm btn-pill">
               New test
             </button>
             <button type="button" onClick={restart} className="btn btn-ghost btn-sm btn-pill">
@@ -749,7 +794,7 @@ function CoachInner() {
         }
       `}</style>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingBottom: 32 }}>
-        <button type="button" onClick={generate} className="btn btn-accent btn-pill">
+        <button type="button" onClick={() => generate()} className="btn btn-accent btn-pill">
           Generate new test
         </button>
         <button type="button" onClick={restart} className="btn btn-ghost btn-pill">

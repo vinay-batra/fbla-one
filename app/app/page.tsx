@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
+import { StudyPlan } from "@/components/StudyPlan";
 import { getCompetition, FORMAT_LABEL } from "@/lib/competitions";
 import {
   getRegistered,
@@ -173,6 +174,9 @@ export default function Dashboard() {
         <Stat label="Total practice" value={String(logs.length)} sub="all-time" href="/app/tracker" />
         <Stat label="Saved resources" value={String(saved.length)} sub="across all events" href="/app/resources" />
       </div>
+
+      {/* Road to Nationals: season milestones + practice pacing */}
+      <StudyPlan />
 
       {/* Upcoming deadlines strip (only shown when deadlines exist) */}
       {upcomingDeadlines.length > 0 && (
