@@ -337,6 +337,132 @@ export type ChapterStats = {
   topEvents: { slug: string; tests: number }[]; // top 5 by test count
 };
 
+// ── Assignments ───────────────────────────────────────────────
+
+export type Assignment = {
+  id: string;
+  chapter_id: string;
+  title: string;
+  event_slug: string | null;
+  target_count: number;
+  due_at: string | null;
+  created_at: string;
+};
+
+export type AssignmentProgress = {
+  assignment: Assignment;
+  perMember: { id: string; name: string; done: number; complete: boolean }[];
+  completedCount: number;
+  totalMembers: number;
+};
+
+export async function getChapterAssignments(chapterId: string): Promise<Assignment[]> {
+  const supa = getSupabase();
+  if (!supa) return [];
+  try {
+    const { data, error } = await supa
+      .from("assignments")
+      .select("id, chapter_id, title, event_slug, target_count, due_at, created_at")
+      .eq("chapter_id", chapterId)
+      .order("created_at", { ascending: false });
+    if (error) { devErr("getChapterAssignments:", error); return []; }
+    return (data ?? []) as Assignment[];
+  } catch (e) {
+    devErr("getChapterAssignments:", e);
+    return [];
+  }
+}
+
+export async function createAssignment(
+  chapterId: string,
+  userId: string,
+  input: { title: string; eventSlug: string | null; targetCount: number; dueAt: string | null }
+): Promise<{ data: Assignment | null; error: string | null }> {
+  const supa = getSupabase();
+  if (!supa) return { data: null, error: "Supabase not configured" };
+  try {
+    const { data, error } = await supa
+      .from("assignments")
+      .insert({
+        chapter_id: chapterId,
+        title: input.title.trim(),
+        event_slug: input.eventSlug || null,
+        target_count: Math.max(1, Math.min(100, Math.round(input.targetCount) || 1)),
+        due_at: input.dueAt || null,
+        created_by: userId,
+      })
+      .select("id, chapter_id, title, event_slug, target_count, due_at, created_at")
+      .single();
+    if (error) { devErr("createAssignment:", error); return { data: null, error: error.message }; }
+    return { data: data as Assignment, error: null };
+  } catch (e) {
+    devErr("createAssignment:", e);
+    return { data: null, error: "Could not create assignment" };
+  }
+}
+
+export async function deleteAssignment(id: string): Promise<boolean> {
+  const supa = getSupabase();
+  if (!supa) return false;
+  try {
+    const { error } = await supa.from("assignments").delete().eq("id", id);
+    if (error) { devErr("deleteAssignment:", error); return false; }
+    return true;
+  } catch (e) {
+    devErr("deleteAssignment:", e);
+    return false;
+  }
+}
+
+/** Advisor view: assignments + each member's completion, computed from logs. */
+export async function getChapterAssignmentBoard(chapterId: string): Promise<AssignmentProgress[]> {
+  const supa = getSupabase();
+  if (!supa) return [];
+  try {
+    const assignments = await getChapterAssignments(chapterId);
+    if (!assignments.length) return [];
+
+    const { data: profiles } = await supa
+      .from("profiles")
+      .select("id, display_name, email")
+      .eq("chapter_id", chapterId);
+    const members = (profiles ?? []).map((p) => ({
+      id: p.id as string,
+      name: (p.display_name as string)?.trim() || (p.email as string)?.split("@")[0] || "Member",
+    }));
+    const memberIds = members.map((m) => m.id);
+
+    const { data: logs } = await supa
+      .from("practice_logs")
+      .select("user_id, competition_slug, logged_at")
+      .in("user_id", memberIds)
+      .limit(5000);
+    const allLogs = (logs ?? []) as Record<string, unknown>[];
+
+    return assignments.map((a) => {
+      const since = new Date(a.created_at).getTime();
+      const perMember = members.map((m) => {
+        const done = allLogs.filter(
+          (l) =>
+            String(l.user_id) === m.id &&
+            new Date(String(l.logged_at)).getTime() >= since &&
+            (!a.event_slug || String(l.competition_slug) === a.event_slug)
+        ).length;
+        return { id: m.id, name: m.name, done: Math.min(done, a.target_count), complete: done >= a.target_count };
+      });
+      return {
+        assignment: a,
+        perMember,
+        completedCount: perMember.filter((p) => p.complete).length,
+        totalMembers: members.length,
+      };
+    });
+  } catch (e) {
+    devErr("getChapterAssignmentBoard:", e);
+    return [];
+  }
+}
+
 function pctOf(score: unknown, outOf: unknown): number | null {
   if (score == null || outOf == null) return null;
   const o = Number(outOf);

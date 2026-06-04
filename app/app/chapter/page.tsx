@@ -27,13 +27,20 @@ import {
   getChapterMembers,
   getChapterActivity,
   getChapterStats,
+  getChapterAssignments,
+  getChapterAssignmentBoard,
+  createAssignment,
+  deleteAssignment,
   type ChapterProfile,
   type ChapterInfo,
   type MemberRow,
   type ActivityItem,
   type ChapterStats,
+  type Assignment,
+  type AssignmentProgress,
 } from "@/lib/chapter";
 import { FORMAT_LABEL } from "@/lib/competitions";
+import { getPracticeLogs } from "@/lib/storage";
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -173,6 +180,8 @@ export default function ChapterPage() {
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [stats, setStats] = useState<ChapterStats | null>(null);
+  const [assignments, setAssignments] = useState<Assignment[]>([]); // member view
+  const [board, setBoard] = useState<AssignmentProgress[]>([]); // advisor view
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -192,8 +201,24 @@ export default function ChapterPage() {
   const [dlSlug, setDlSlug] = useState("");
   const [dlNote, setDlNote] = useState("");
 
+  // Assignment form (advisor)
+  const [showAsgForm, setShowAsgForm] = useState(false);
+  const [asgTitle, setAsgTitle] = useState("");
+  const [asgEvent, setAsgEvent] = useState("");
+  const [asgTarget, setAsgTarget] = useState(3);
+  const [asgDue, setAsgDue] = useState("");
+  const [asgError, setAsgError] = useState("");
+  const [asgLoading, setAsgLoading] = useState(false);
+
   const deadlines = getDeadlines().sort((a, b) => a.dueAt.localeCompare(b.dueAt));
   const registered = getRegistered();
+  const myLogs = getPracticeLogs();
+  const myAssignmentProgress = (a: Assignment): number => {
+    const since = new Date(a.created_at).getTime();
+    return myLogs.filter(
+      (l) => new Date(l.loggedAt).getTime() >= since && (!a.event_slug || l.competitionSlug === a.event_slug)
+    ).length;
+  };
 
   // ── Load Supabase data ──────────────────────────────────────
   const loadChapterData = useCallback(async (uid: string) => {
@@ -206,14 +231,18 @@ export default function ChapterPage() {
       const ch = await getChapterById(prof.chapter_id);
       setChapter(ch);
       if (prof.role === "advisor" && ch) {
-        const [m, act, st] = await Promise.all([
+        const [m, act, st, bd] = await Promise.all([
           getChapterMembers(ch.id),
           getChapterActivity(ch.id),
           getChapterStats(ch.id),
+          getChapterAssignmentBoard(ch.id),
         ]);
         setMembers(m);
         setActivity(act);
         setStats(st);
+        setBoard(bd);
+      } else if (ch) {
+        setAssignments(await getChapterAssignments(ch.id));
       }
     }
     return prof;
@@ -292,6 +321,31 @@ export default function ChapterPage() {
     const data = { title: `Join ${chapter?.name ?? "our chapter"} on FBLA One`, text: "Tap to join our FBLA chapter:", url: joinLink };
     if (typeof navigator !== "undefined" && navigator.share) navigator.share(data).catch(() => {});
     else copyJoinLink();
+  }
+
+  async function handleCreateAssignment(e: React.FormEvent) {
+    e.preventDefault();
+    if (!chapter || !userId || !asgTitle.trim()) return;
+    setAsgLoading(true);
+    setAsgError("");
+    const r = await createAssignment(chapter.id, userId, {
+      title: asgTitle.trim(),
+      eventSlug: asgEvent || null,
+      targetCount: asgTarget,
+      dueAt: asgDue || null,
+    });
+    setAsgLoading(false);
+    if (r.error) { setAsgError(r.error); return; }
+    setShowAsgForm(false);
+    setAsgTitle(""); setAsgEvent(""); setAsgTarget(3); setAsgDue("");
+    setBoard(await getChapterAssignmentBoard(chapter.id));
+  }
+
+  async function handleDeleteAssignment(id: string) {
+    if (!chapter) return;
+    setBoard((b) => b.filter((x) => x.assignment.id !== id));
+    await deleteAssignment(id);
+    setBoard(await getChapterAssignmentBoard(chapter.id));
   }
 
   function submitDeadline(e: React.FormEvent) {
@@ -483,6 +537,45 @@ export default function ChapterPage() {
         </Card>
       )}
 
+      {/* ── ASSIGNMENTS (member) ── */}
+      {hasChapter && !isAdvisor && assignments.length > 0 && (
+        <Card>
+          <CardHeader eyebrow="From your advisor" title="Your assignments" tagline="Practice targets your advisor set for the chapter." />
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+            {assignments.map((a) => {
+              const done = Math.min(myAssignmentProgress(a), a.target_count);
+              const complete = done >= a.target_count;
+              const ev = a.event_slug ? (COMPETITIONS.find((c) => c.slug === a.event_slug)?.name ?? a.event_slug) : "Any event";
+              const pct = Math.round((done / a.target_count) * 100);
+              return (
+                <div key={a.id} style={{ padding: "14px 16px", border: `0.5px solid ${complete ? "rgba(var(--green-rgb),0.35)" : "var(--border)"}`, borderRadius: 12, background: complete ? "rgba(var(--green-rgb),0.06)" : "var(--bg2)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                    <div>
+                      <p style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text)" }}>{a.title}</p>
+                      <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>{ev} · {a.target_count} test{a.target_count !== 1 ? "s" : ""}{a.due_at ? ` · due ${formatDate(a.due_at)}` : ""}</p>
+                    </div>
+                    {complete && (
+                      <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: "rgba(var(--green-rgb),0.14)", color: "var(--green)", whiteSpace: "nowrap" }}>DONE</span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+                    <div style={{ flex: 1, height: 6, borderRadius: 999, background: "var(--bg3)", overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: complete ? "var(--green)" : "var(--accent)", borderRadius: 999 }} />
+                    </div>
+                    <span className="font-mono" style={{ fontSize: 11, color: "var(--text2)", whiteSpace: "nowrap" }}>{done}/{a.target_count}</span>
+                  </div>
+                  {!complete && (
+                    <a href={a.event_slug ? `/app/coach?slug=${a.event_slug}` : "/app/coach"} className="btn btn-ghost btn-sm btn-pill" style={{ marginTop: 12 }}>
+                      Practice now
+                    </a>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* ── SHARE / INVITE (advisor) ── */}
       {isAdvisor && hasChapter && chapter && (
         <Card>
@@ -520,6 +613,82 @@ export default function ChapterPage() {
             </div>
           </div>
           <style>{`@media (max-width:640px){ .invite-share { flex-direction: column; align-items: stretch; } }`}</style>
+        </Card>
+      )}
+
+      {/* ── ASSIGNMENTS (advisor) ── */}
+      {isAdvisor && hasChapter && (
+        <Card>
+          <CardHeader
+            eyebrow="Assignments"
+            title="Set goals for your chapter"
+            tagline="Assign practice targets and watch completion update as members practice."
+            right={
+              <button type="button" onClick={() => setShowAsgForm((v) => !v)} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+                {showAsgForm ? "Close" : "New assignment"}
+              </button>
+            }
+          />
+
+          {showAsgForm && (
+            <form onSubmit={handleCreateAssignment} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14, marginBottom: 18, padding: 16, background: "var(--bg2)", border: "0.5px solid var(--border)", borderRadius: 12 }}>
+              <input className="input-field" placeholder="Title, e.g. Warm up for Accounting" value={asgTitle} onChange={(e) => setAsgTitle(e.target.value)} maxLength={80} />
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <select className="input-field" value={asgEvent} onChange={(e) => setAsgEvent(e.target.value)} style={{ flex: "1 1 200px", cursor: "pointer" }}>
+                  <option value="">Any event</option>
+                  {[...COMPETITIONS].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+                    <option key={c.slug} value={c.slug}>{c.name}</option>
+                  ))}
+                </select>
+                <input className="input-field" type="number" min={1} max={100} value={asgTarget} onChange={(e) => setAsgTarget(Number(e.target.value))} style={{ width: 110 }} aria-label="Target practice tests" />
+                <input className="input-field" type="date" value={asgDue} onChange={(e) => setAsgDue(e.target.value)} style={{ width: 160 }} aria-label="Due date" />
+              </div>
+              <p style={{ fontSize: 12, color: "var(--text3)" }}>Target = number of practice tests each member should log{asgEvent ? " for this event" : ""}.</p>
+              {asgError && <p style={{ fontSize: 12, color: "var(--red)" }}>{asgError}</p>}
+              <button type="submit" disabled={asgLoading || !asgTitle.trim()} className="btn btn-accent btn-sm btn-pill" style={{ alignSelf: "flex-start" }}>
+                {asgLoading ? "Creating..." : "Assign to chapter"}
+              </button>
+            </form>
+          )}
+
+          {board.length === 0 ? (
+            !showAsgForm && <p style={{ fontSize: 13.5, color: "var(--text3)", marginTop: 12 }}>No assignments yet. Create one to give your chapter a concrete weekly target.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+              {board.map((b) => {
+                const ev = b.assignment.event_slug ? (COMPETITIONS.find((c) => c.slug === b.assignment.event_slug)?.name ?? b.assignment.event_slug) : "Any event";
+                const pct = b.totalMembers ? Math.round((b.completedCount / b.totalMembers) * 100) : 0;
+                return (
+                  <div key={b.assignment.id} style={{ padding: "14px 16px", border: "0.5px solid var(--border)", borderRadius: 12, background: "var(--bg2)" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text)" }}>{b.assignment.title}</p>
+                        <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>
+                          {ev} · {b.assignment.target_count} test{b.assignment.target_count !== 1 ? "s" : ""}{b.assignment.due_at ? ` · due ${formatDate(b.assignment.due_at)}` : ""}
+                        </p>
+                      </div>
+                      <button type="button" onClick={() => handleDeleteAssignment(b.assignment.id)} aria-label="Delete assignment" style={{ fontSize: 12, color: "var(--text3)", cursor: "pointer", flexShrink: 0 }}>Remove</button>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+                      <div style={{ flex: 1, height: 6, borderRadius: 999, background: "var(--bg3)", overflow: "hidden" }}>
+                        <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)", borderRadius: 999 }} />
+                      </div>
+                      <span className="font-mono" style={{ fontSize: 11, color: "var(--text2)", whiteSpace: "nowrap" }}>{b.completedCount}/{b.totalMembers} done</span>
+                    </div>
+                    {b.perMember.length > 0 && (
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
+                        {b.perMember.map((m) => (
+                          <span key={m.id} className="font-mono" style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 6, fontWeight: 600, background: m.complete ? "rgba(var(--green-rgb),0.12)" : "var(--bg3)", color: m.complete ? "var(--green)" : "var(--text3)", border: `0.5px solid ${m.complete ? "rgba(var(--green-rgb),0.3)" : "var(--border)"}` }}>
+                            {m.name} {m.done}/{b.assignment.target_count}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 
