@@ -358,10 +358,11 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
             top: 0; left: 0; bottom: 0;
             z-index: 100;
             transform: translateX(-100%);
-            transition: transform 0.25s ease;
+            visibility: hidden;
+            transition: transform 0.25s ease, visibility 0.25s ease;
             box-shadow: var(--shadow-lg);
           }
-          .app-sidebar.open { transform: translateX(0); }
+          .app-sidebar.open { transform: translateX(0); visibility: visible; }
           .app-burger { display: inline-flex !important; }
           .app-backdrop {
             display: block;

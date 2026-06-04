@@ -155,9 +155,15 @@ export default function Settings() {
       <Card>
         <CardHeader eyebrow="Profile" title="Your identity" />
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
-          <div style={{ position: "relative", cursor: "pointer" }} onClick={() => fileRef.current?.click()}>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading || !userId}
+            aria-label="Change profile photo"
+            style={{ position: "relative", cursor: "pointer", border: "none", background: "none", padding: 0, borderRadius: "50%", display: "inline-flex" }}
+          >
             <Avatar url={avatarUrl} initials={initials} size={64} />
-            <div style={{
+            <div aria-hidden="true" style={{
               position: "absolute", inset: 0, borderRadius: "50%", background: "rgba(0,0,0,0.4)",
               display: "flex", alignItems: "center", justifyContent: "center",
               opacity: 0, transition: "opacity 0.15s ease",
@@ -170,7 +176,7 @@ export default function Settings() {
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-          </div>
+          </button>
           <div>
             <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{dbName || nameDraft || "No name set"}</p>
             <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>{email || "Preview mode"}</p>

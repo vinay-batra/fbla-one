@@ -23,6 +23,12 @@ export function ScrollReveal({ children, delay = 0, y = 24, threshold = 0.12 }: 
     const el = ref.current;
     if (!el) return;
 
+    // Respect reduced-motion: reveal immediately, skip the fade/transform.
+    if (typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(true);
+      return;
+    }
+
     if (typeof IntersectionObserver === "undefined") {
       setShown(true);
       return;

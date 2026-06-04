@@ -225,8 +225,9 @@ function Accordion({ item, divider }: { item: QA; divider?: boolean }) {
         style={{
           maxHeight: open ? 500 : 0,
           opacity: open ? 1 : 0,
+          visibility: open ? "visible" : "hidden",
           overflow: "hidden",
-          transition: "max-height 0.3s ease, opacity 0.25s ease",
+          transition: "max-height 0.3s ease, opacity 0.25s ease, visibility 0.3s ease",
         }}
       >
         <p
