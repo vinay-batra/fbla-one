@@ -237,7 +237,7 @@ export default function Settings() {
             value={
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 6, background: "var(--accent-dim)", color: "var(--accent-text)", border: "0.5px solid var(--accent-border)" }}>
-                  {roleLabel === "advisor" ? "Advisor" : roleLabel ? "Student" : "Student"}
+                  {roleLabel === "advisor" ? "Advisor" : "Student"}
                 </span>
               </span>
             }

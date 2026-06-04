@@ -152,6 +152,11 @@ const LB_TH: React.CSSProperties = {
 
 const LB_TD: React.CSSProperties = { padding: "10px 12px", verticalAlign: "top" };
 
+// Derived once at module load: full event option list + name-sorted list, so we
+// don't rebuild/sort all 55 events on every render tick.
+const ALL_COMP_OPTIONS: { slug: string; name: string }[] = COMPETITIONS.map((c) => ({ slug: c.slug, name: c.name }));
+const SORTED_COMPETITIONS = [...COMPETITIONS].sort((a, b) => a.name.localeCompare(b.name));
+
 function MiniStat({ label, value, sub, small }: { label: string; value: string; sub?: string; small?: boolean }) {
   return (
     <div style={{ padding: "14px 14px", borderRadius: 10, border: "0.5px solid var(--border)", background: "var(--bg2)" }}>
@@ -382,7 +387,7 @@ export default function ChapterPage() {
   const inChapter = isInChapter();
   const canManage = canManageDeadlines();
   const compOptions: { slug: string; name: string }[] = inChapter
-    ? COMPETITIONS.map((c) => ({ slug: c.slug, name: c.name }))
+    ? ALL_COMP_OPTIONS
     : registered.map((slug) => ({ slug, name: getCompetition(slug)?.name ?? slug }));
   const deadlineTagline = inChapter
     ? canManage
@@ -691,7 +696,7 @@ export default function ChapterPage() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <select className="input-field" value={asgEvent} onChange={(e) => setAsgEvent(e.target.value)} style={{ flex: "1 1 200px", cursor: "pointer" }}>
                   <option value="">Any event</option>
-                  {[...COMPETITIONS].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+                  {SORTED_COMPETITIONS.map((c) => (
                     <option key={c.slug} value={c.slug}>{c.name}</option>
                   ))}
                 </select>

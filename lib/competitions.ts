@@ -1487,16 +1487,8 @@ export function getCompetition(slug: string): Competition | undefined {
   return COMPETITIONS.find((c) => c.slug === slug);
 }
 
-export function getCompetitionsByCategory(category: CompetitionCategory): Competition[] {
-  return COMPETITIONS.filter((c) => c.category === category);
-}
-
 export function getPopularCompetitions(): Competition[] {
   return COMPETITIONS.filter((c) => c.popular);
-}
-
-export function getAvailableCompetitions(): Competition[] {
-  return COMPETITIONS.filter((c) => c.contentStatus !== "coming-soon");
 }
 
 /** Quick stats for the marketing site. */
