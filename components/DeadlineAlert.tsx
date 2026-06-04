@@ -28,15 +28,17 @@ function persistDismiss(id: string) {
 export function DeadlineAlert() {
   const [tick, setTick] = useState(0);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
     setDismissed(getDismissedIds());
+    try { setEnabled(localStorage.getItem("fbla_deadline_alerts") !== "0"); } catch {}
     return onStorageChange(() => setTick((t) => t + 1));
   }, []);
 
   void tick;
 
-  const alerts = getUpcomingDeadlines(10).filter((dl) => {
+  const alerts = (enabled ? getUpcomingDeadlines(10) : []).filter((dl) => {
     if (dismissed.has(dl.id)) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);

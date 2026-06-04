@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 
 const KEY = "fbla_onboarded";
@@ -48,10 +49,14 @@ const STEPS = [
 ];
 
 export function OnboardingModal() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // The /app area uses the spotlight tour (AppTour) instead of this modal,
+    // and it must never cover the /auth form. Marketing pages only.
+    if (pathname?.startsWith("/app") || pathname?.startsWith("/auth")) return;
     try {
       if (!localStorage.getItem(KEY)) {
         const t = setTimeout(() => setShow(true), 700);
@@ -60,7 +65,7 @@ export function OnboardingModal() {
     } catch {
       // localStorage unavailable — skip onboarding
     }
-  }, []);
+  }, [pathname]);
 
   const dismiss = useCallback(() => {
     try { localStorage.setItem(KEY, "1"); } catch {}

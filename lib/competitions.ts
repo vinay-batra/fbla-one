@@ -82,7 +82,7 @@ export type Competition = {
   popular?: boolean;
 };
 
-const FBLA_EVENT_PAGE = "https://www.fbla.org/high-school/competitive-events/";
+export const FBLA_EVENT_PAGE = "https://www.fbla.org/high-school/competitive-events/";
 
 // FBLA publishes each event's official guidelines (with the rubric/topic
 // outline) as a PDF on connect.fbla.org, foldered by event type. There are no

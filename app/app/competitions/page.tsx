@@ -27,17 +27,17 @@ export default function MyCompetitions() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 1240 }}>
       <div>
-        <p className="eyebrow" style={{ marginBottom: 8 }}>Your registered events</p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>My competitions</h1>
+        <p className="eyebrow" style={{ marginBottom: 8 }}>Your event</p>
+        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>My event</h1>
       </div>
 
       <Card>
         <CardHeader
-          title="Registered"
-          tagline={`${comps.length} ${comps.length === 1 ? "event" : "events"} on your plate`}
+          title="Your event"
+          tagline={comps.length ? "The event you're competing in this year" : "Pick the one event you're competing in"}
           right={
             <Link href="/competitions" className="btn btn-accent btn-sm btn-pill cta-shimmer">
-              Browse more
+              {comps.length ? "Change event" : "Pick event"}
             </Link>
           }
         />
@@ -45,8 +45,8 @@ export default function MyCompetitions() {
         {comps.length === 0 ? (
           <div className="empty-state" style={{ marginTop: 8 }}>
             <div className="empty-state-icon">+</div>
-            <p className="empty-state-title">No competitions registered</p>
-            <p className="empty-state-msg">Add events you plan to compete in. We'll track your prep progress.</p>
+            <p className="empty-state-title">No event picked yet</p>
+            <p className="empty-state-msg">Choose the event you're competing in. We'll track your prep for it.</p>
             <Link href="/competitions" className="btn btn-accent btn-sm btn-pill" style={{ marginTop: 8 }}>
               Browse competitions
             </Link>

@@ -188,10 +188,21 @@ export async function pullFromSupabase(userId: string): Promise<void> {
 export async function ensureProfile(userId: string, email: string | null, name: string | null): Promise<void> {
   const supa = getSupabase();
   if (!supa) return;
+  // The signup form stashes the chosen role here. It's only applied on the
+  // first insert (ignoreDuplicates), so it sets the role exactly once at
+  // account creation and never clobbers an existing profile.
+  let role: "advisor" | "member" | undefined;
   try {
-    await supa
-      .from("profiles")
-      .upsert({ id: userId, email, display_name: name }, { onConflict: "id", ignoreDuplicates: true });
+    const r = localStorage.getItem("fbla_pending_role");
+    if (r === "advisor" || r === "member") role = r;
+  } catch {}
+  try {
+    const row: Record<string, unknown> = { id: userId, email, display_name: name };
+    if (role) row.role = role;
+    await supa.from("profiles").upsert(row, { onConflict: "id", ignoreDuplicates: true });
+    try {
+      localStorage.removeItem("fbla_pending_role");
+    } catch {}
   } catch (e) {
     devError("ensureProfile:", e);
   }
@@ -271,10 +282,20 @@ export function isRegistered(slug: string): boolean {
 
 export function registerCompetition(slug: string): void {
   const cur = getRegistered();
-  if (cur.includes(slug)) return;
-  write(KEYS.registered, [...cur, slug]);
+  if (cur.length === 1 && cur[0] === slug) return;
+  // Single event: registering a new one REPLACES the current pick (people
+  // compete in one event), so we keep exactly [slug].
+  write(KEYS.registered, [slug]);
   if (syncUserId) {
     const supa = getSupabase();
+    const others = cur.filter((s) => s !== slug);
+    if (others.length) {
+      supa?.from("registrations")
+        .delete()
+        .eq("user_id", syncUserId)
+        .in("competition_slug", others)
+        .then(({ error }) => error && devError("register replace sync:", error));
+    }
     supa?.from("registrations")
       .upsert({ user_id: syncUserId, competition_slug: slug }, { onConflict: "user_id,competition_slug" })
       .then(({ error }) => error && devError("register sync:", error));

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { DeadlineAlert } from "./DeadlineAlert";
+import { AppTour } from "./AppTour";
 import { getSupabase } from "@/lib/supabase";
 
 type NavItem = {
@@ -29,7 +30,7 @@ const NAV: NavItem[] = [
   },
   {
     href: "/app/competitions",
-    label: "My competitions",
+    label: "My event",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M7 4h10l-1 7-4 5-4-5L7 4z" />
@@ -168,6 +169,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
               <Link
                 key={item.href}
                 href={item.href}
+                data-tour={item.href === "/app" ? "dashboard" : item.href.split("/").pop()}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -343,6 +345,10 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           {children}
         </main>
       </div>
+
+      <Suspense fallback={null}>
+        <AppTour />
+      </Suspense>
 
       <style>{`
         .app-backdrop { display: none; }

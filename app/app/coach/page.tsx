@@ -50,6 +50,13 @@ function CoachInner() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedSlug, setSelectedSlug] = useState(initialSlug);
   const [questionCount, setQuestionCount] = useState(10);
+  // Honor the user's default length from Settings.
+  useEffect(() => {
+    try {
+      const n = Number(localStorage.getItem("fbla_default_test_len"));
+      if ([10, 25, 50].includes(n)) setQuestionCount(n);
+    } catch {}
+  }, []);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [generatedSoFar, setGeneratedSoFar] = useState(0);
   const [genError, setGenError] = useState("");
@@ -223,7 +230,7 @@ function CoachInner() {
 
             {registeredComps.length > 0 && (
               <div>
-                <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>Your registered events</p>
+                <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>Your event</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                   {registeredComps.map((c) => (
                     <button

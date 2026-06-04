@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
-import { COMPETITIONS, FORMAT_LABEL, getCompetition, officialGuidelinesUrl } from "@/lib/competitions";
+import { COMPETITIONS, FORMAT_LABEL, getCompetition, officialGuidelinesUrl, FBLA_EVENT_PAGE } from "@/lib/competitions";
 import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -272,7 +272,14 @@ export default async function CompetitionDetail({ params }: Props) {
                       <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 18 }}>
                         Curated by FBLA One. Free unless noted. External links open in a new tab.
                       </p>
-                      <StudyResourcesList resources={c.studyResources} competitionSlug={c.slug} />
+                      <StudyResourcesList
+                        resources={c.studyResources.map((r) =>
+                          r.url === FBLA_EVENT_PAGE
+                            ? { ...r, title: `${c.name} official guidelines (FBLA)`, url: officialGuidelinesUrl(c) }
+                            : r
+                        )}
+                        competitionSlug={c.slug}
+                      />
                     </Card>
                   )}
                 </>

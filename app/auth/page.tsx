@@ -84,6 +84,7 @@ function AuthForm() {
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"member" | "advisor">("member");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -149,6 +150,8 @@ function AuthForm() {
         // session cookie on the very next request and renders the dashboard.
         window.location.href = nextPath;
       } else if (mode === "signup") {
+        // Stash the chosen role so ensureProfile() sets it on the new profile.
+        try { localStorage.setItem("fbla_pending_role", role); } catch {}
         const { data, error } = await supa.auth.signUp({
           email,
           password,
@@ -159,10 +162,11 @@ function AuthForm() {
         });
         if (error) throw error;
         // Email confirmation is disabled, so signUp returns a live session.
-        // Go straight to the dashboard. If a project ever turns confirmation
+        // Advisors land on the Chapter page to create their chapter + invite
+        // code; students go to the dashboard. If confirmation is ever turned
         // back on, there's no session and we fall back to the inbox message.
         if (data.session) {
-          window.location.href = nextPath;
+          window.location.href = role === "advisor" ? "/app/chapter" : nextPath;
         } else {
           setSuccess("Account created. Check your inbox to confirm, then sign in.");
         }
@@ -602,6 +606,41 @@ function AuthForm() {
               />
             )}
           </div>
+
+          {/* Role picker on signup */}
+          {mode === "signup" && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: "0.02em" }}>I am a</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {([
+                  { key: "member", label: "Student", sub: "Prep and compete" },
+                  { key: "advisor", label: "Advisor", sub: "Run a chapter" },
+                ] as const).map((opt) => {
+                  const active = role === opt.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setRole(opt.key)}
+                      aria-pressed={active}
+                      style={{
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: 11,
+                        border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: active ? "var(--accent-dim)" : "var(--bg2)",
+                        cursor: "pointer",
+                        transition: "border-color 0.15s, background 0.15s",
+                      }}
+                    >
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: active ? "var(--accent-text)" : "var(--text)" }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Trust strip on signup */}
           {mode === "signup" && (
