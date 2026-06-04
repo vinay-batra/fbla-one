@@ -587,22 +587,29 @@ export async function getChapterStats(chapterId: string): Promise<ChapterStats |
     const activeThisWeek = members.filter((m) => m.last7 > 0).length;
 
     // Weekly trend: 8 rolling 7-day buckets ending today, oldest -> newest.
+    // One pass over the logs (was 8 filter passes, each re-parsing every timestamp).
     const todayMid = new Date();
     todayMid.setHours(0, 0, 0, 0);
     const endExclusive = todayMid.getTime() + dayMs; // include all of today
+    const oldestStart = endExclusive - 8 * weekMs;
+    const bTests = new Array(8).fill(0);
+    const bSum = new Array(8).fill(0);
+    const bCount = new Array(8).fill(0);
+    for (const l of allLogs) {
+      const t = new Date(String(l.logged_at)).getTime();
+      if (t < oldestStart || t >= endExclusive) continue;
+      const idx = Math.floor((t - oldestStart) / weekMs); // 0 = oldest bucket, 7 = newest
+      if (idx < 0 || idx > 7) continue;
+      bTests[idx] += 1;
+      const pct = pctOf(l.score, l.out_of);
+      if (pct != null) { bSum[idx] += pct; bCount[idx] += 1; }
+    }
     const weekly: WeeklyPoint[] = [];
-    for (let i = 7; i >= 0; i--) {
-      const bucketEnd = endExclusive - i * weekMs;
-      const bucketStart = bucketEnd - weekMs;
-      const inBucket = allLogs.filter((l) => {
-        const t = new Date(String(l.logged_at)).getTime();
-        return t >= bucketStart && t < bucketEnd;
-      });
-      const pcts = inBucket.map((l) => pctOf(l.score, l.out_of)).filter((p): p is number => p != null);
+    for (let idx = 0; idx < 8; idx++) {
       weekly.push({
-        weekStart: new Date(bucketStart).toISOString().slice(0, 10),
-        tests: inBucket.length,
-        avgPct: pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : null,
+        weekStart: new Date(oldestStart + idx * weekMs).toISOString().slice(0, 10),
+        tests: bTests[idx],
+        avgPct: bCount[idx] ? Math.round(bSum[idx] / bCount[idx]) : null,
       });
     }
 
