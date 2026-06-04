@@ -383,3 +383,4 @@ Routine checks, audits, and tests.
 - 2026-06-02 — reviewed env and config
 - 2026-06-02 — smoke-tested core user flows, all green
 - 2026-06-02 — reviewed dependency updates
+- 2026-06-04 — reviewed error logging
