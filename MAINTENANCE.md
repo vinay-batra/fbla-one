@@ -386,3 +386,4 @@ Routine checks, audits, and tests.
 - 2026-06-04 — reviewed error logging
 - 2026-06-04 — reviewed env and config
 - 2026-06-04 — e2e sanity check passed
+- 2026-06-06 — accessibility pass, minor notes
