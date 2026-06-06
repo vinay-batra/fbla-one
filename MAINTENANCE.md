@@ -390,3 +390,4 @@ Routine checks, audits, and tests.
 - 2026-06-06 — general housekeeping
 - 2026-06-06 — ran regression pass, no regressions
 - 2026-06-06 — checked auth and session handling
+- 2026-06-06 — e2e sanity check passed
