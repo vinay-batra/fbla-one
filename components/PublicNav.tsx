@@ -133,11 +133,21 @@ export function PublicNav() {
             {loggedIn === null ? (
               <div aria-hidden style={{ width: 110, height: 36, opacity: 0 }} />
             ) : loggedIn ? (
-              <UserMenu />
+              <>
+                <Link href="/app" className="btn btn-accent btn-pill btn-sm cta-shimmer nav-hide-mobile" style={{ paddingLeft: 16, paddingRight: 16 }}>
+                  Go to dashboard
+                </Link>
+                <UserMenu />
+              </>
             ) : (
-              <Link href="/auth" className="btn btn-accent btn-pill btn-sm cta-shimmer" style={{ paddingLeft: 18, paddingRight: 18 }}>
-                Get started
-              </Link>
+              <>
+                <Link href="/auth" className="btn btn-ghost btn-pill btn-sm nav-hide-mobile" style={{ paddingLeft: 16, paddingRight: 16 }}>
+                  Log in
+                </Link>
+                <Link href="/auth?mode=signup" className="btn btn-accent btn-pill btn-sm cta-shimmer" style={{ paddingLeft: 18, paddingRight: 18 }}>
+                  Sign up
+                </Link>
+              </>
             )}
             <button
               ref={burgerRef}
@@ -206,6 +216,18 @@ export function PublicNav() {
                 </Link>
               ))}
             </div>
+            {/* Auth actions hidden from the top bar on mobile live here instead */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12, paddingTop: 12, borderTop: "0.5px solid var(--border)" }}>
+              {loggedIn ? (
+                <Link href="/app" className="btn btn-accent btn-pill cta-shimmer" style={{ width: "100%" }}>
+                  Go to dashboard
+                </Link>
+              ) : (
+                <Link href="/auth" className="btn btn-ghost btn-pill" style={{ width: "100%" }}>
+                  Log in
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </nav>
@@ -217,6 +239,7 @@ export function PublicNav() {
         @media (max-width: 768px) {
           .nav-links-desktop { display: none !important; }
           .nav-burger { display: inline-flex !important; }
+          .nav-hide-mobile { display: none !important; }
         }
         @media (min-width: 769px) {
           .nav-drawer { display: none !important; }

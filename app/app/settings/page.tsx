@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
 import { Avatar } from "@/components/UserMenu";
 import { useTheme } from "@/components/ThemeProvider";
 import { getSupabase } from "@/lib/supabase";
 import { getDisplayName, setDisplayName, getChapterName, setChapterName, onStorageChange } from "@/lib/storage";
+import { getChapterById } from "@/lib/chapter";
 import { useFocusTrap } from "@/components/useFocusTrap";
 
 export default function Settings() {
@@ -33,6 +35,9 @@ export default function Settings() {
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [roleLabel, setRoleLabel] = useState<string | null>(null);
+  // When the user belongs to a chapter, the chapter name is authoritative and
+  // synced from the chapters table (not free-text). inChapter gates the input.
+  const [inChapter, setInChapter] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const delDialogRef = useRef<HTMLDivElement>(null);
@@ -74,7 +79,7 @@ export default function Settings() {
       if (!data.user) return;
       setEmail(data.user.email ?? null);
       setUserId(data.user.id);
-      const { data: p } = await supa.from("profiles").select("display_name,avatar_url,role").eq("id", data.user.id).single();
+      const { data: p } = await supa.from("profiles").select("display_name,avatar_url,role,chapter_id").eq("id", data.user.id).single();
       if (p) {
         setAvatarUrl(p.avatar_url ?? null);
         setDbName(p.display_name ?? null);
@@ -82,6 +87,16 @@ export default function Settings() {
         if (p.display_name && !getDisplayName()) {
           setDisplayName(p.display_name);
           setNameDraft(p.display_name);
+        }
+        // Sync the chapter field from the chapter the user created/joined, so
+        // Settings reflects (and persists) their real chapter automatically.
+        if (p.chapter_id) {
+          const ch = await getChapterById(p.chapter_id);
+          if (ch?.name) {
+            setInChapter(true);
+            setChapDraft(ch.name);
+            if (getChapterName() !== ch.name) setChapterName(ch.name);
+          }
         }
       }
     });
@@ -207,7 +222,13 @@ export default function Settings() {
           <input type="text" aria-label="Display name" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} className="input-field" placeholder="Your name" maxLength={60} />
 
           <FieldLabel label="Chapter" />
-          <input type="text" aria-label="Chapter" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="Council Rock South FBLA" maxLength={80} />
+          <input type="text" aria-label="Chapter" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="Council Rock South FBLA" maxLength={80} disabled={inChapter} style={inChapter ? { opacity: 0.7, cursor: "not-allowed" } : undefined} />
+          {inChapter && (
+            <p style={{ fontSize: 11.5, color: "var(--text3)", marginTop: -4 }}>
+              Synced from your chapter. Manage it on the{" "}
+              <Link href="/app/chapter" style={{ color: "var(--accent-text)" }}>Chapter page</Link>.
+            </p>
+          )}
 
           <button
             type="button"
