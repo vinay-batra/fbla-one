@@ -4,6 +4,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { SectionHeader } from "@/components/SectionHeader";
 import { HeroBadge } from "@/components/HeroBadge";
 import { HeroCta } from "@/components/HeroCta";
+import { EmailCta } from "@/components/EmailCta";
 import { Card } from "@/components/Card";
 import {
   COMPETITION_STATS,
@@ -481,10 +482,9 @@ export default function Landing() {
                 <p style={{ maxWidth: 560, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
                   Free for every FBLA member. Sign up in under a minute -- no credit card, no setup.
                   AI practice tests, study guides, and chapter management, all in one place.
+                  Drop your email to get launch updates and prep tips.
                 </p>
-                <div style={{ marginTop: 8 }}>
-                  <HeroCta signedOutLabel="Get started free" />
-                </div>
+                <EmailCta />
               </div>
             </div>
           </ScrollReveal>
