@@ -229,7 +229,8 @@ export async function getChapterMembers(chapterId: string): Promise<MemberRow[]>
     const { data: profiles, error: profErr } = await supa
       .from("profiles")
       .select("id, display_name, email, role")
-      .eq("chapter_id", chapterId);
+      .eq("chapter_id", chapterId)
+      .neq("role", "advisor"); // advisors run the chapter, they are not competing members
 
     if (profErr || !profiles?.length) {
       devErr("getChapterMembers profiles:", profErr);
@@ -453,7 +454,8 @@ export async function getChapterAssignmentBoard(chapterId: string): Promise<Assi
     const { data: profiles } = await supa
       .from("profiles")
       .select("id, display_name, email")
-      .eq("chapter_id", chapterId);
+      .eq("chapter_id", chapterId)
+      .neq("role", "advisor"); // assignment progress is for members only
     const members = (profiles ?? []).map((p) => ({
       id: p.id as string,
       name: (p.display_name as string)?.trim() || (p.email as string)?.split("@")[0] || "Member",
@@ -510,7 +512,8 @@ export async function getChapterStats(chapterId: string): Promise<ChapterStats |
     const { data: profiles, error: pErr } = await supa
       .from("profiles")
       .select("id, display_name, email, role")
-      .eq("chapter_id", chapterId);
+      .eq("chapter_id", chapterId)
+      .neq("role", "advisor"); // advisors run the chapter, they are not competing members
 
     if (pErr || !profiles?.length) {
       if (pErr) devErr("getChapterStats profiles:", pErr);

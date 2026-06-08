@@ -509,7 +509,9 @@ export default function ChapterPage() {
                   const body = encodeURIComponent(
                     `Hi!\n\nJoin our FBLA chapter on FBLA One to track your competition prep, access study guides for all 55 events, and generate AI practice tests.\n\nInvite code: ${chapter?.invite_code}\n\nGo to https://fbla.one/app, click "Chapter" in the sidebar, and enter the code under "Join a chapter."\n\nSee you there!`
                   );
-                  window.open(`mailto:?subject=${subj}&body=${body}`, "_blank");
+                  // Navigate the current tab to the mailto: handler. window.open(.., "_blank")
+                  // just spawns a blank tab the OS mail client can't take over.
+                  window.location.href = `mailto:?subject=${subj}&body=${body}`;
                 }}
                 className="btn btn-ghost btn-sm"
                 style={{ gap: 6, display: "flex", alignItems: "center" }}

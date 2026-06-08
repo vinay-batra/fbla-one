@@ -16,9 +16,9 @@ const STEPS: Step[] = [
     body: "Here is a 30-second tour of everything you can do. Use the arrows to move along, or skip anytime.",
   },
   {
-    selector: '[data-tour="competitions"]',
+    selector: '.tour-event',
     title: "Pick your event",
-    body: "Choose the one event you are competing in. Everything in the app is geared toward it.",
+    body: "Choose the one event you are competing in. Everything in the app is geared toward it. You can change it anytime.",
   },
   {
     selector: '[data-tour="coach"]',

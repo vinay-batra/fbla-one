@@ -131,7 +131,7 @@ export function UserMenu() {
             {/* Nav items */}
             <div style={{ padding: "6px" }}>
               <MenuItem href="/app" icon="grid" label="Dashboard" onClick={() => setOpen(false)} />
-              <MenuItem href="/app/competitions" icon="trophy" label="My competitions" onClick={() => setOpen(false)} />
+              <MenuItem href="/app/coach" icon="trophy" label="AI Practice" onClick={() => setOpen(false)} />
               <MenuItem href="/app/settings" icon="settings" label="Settings" onClick={() => setOpen(false)} />
             </div>
 

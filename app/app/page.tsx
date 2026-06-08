@@ -152,6 +152,15 @@ export default function Dashboard() {
     return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions, lastPracticeBySlug };
   }, [tick]);
 
+  // Single-event model: you compete in ONE event. Surface it here on the
+  // dashboard (there is no separate "My event" tab anymore).
+  const myEvent = registeredCompetitions[0] ?? null;
+  const myEventLogs = myEvent ? logs.filter((l) => l.competitionSlug === myEvent.slug) : [];
+  const myEventScored = myEventLogs.filter((l) => l.score != null && l.outOf != null && l.outOf > 0);
+  const myEventAvg = myEventScored.length
+    ? Math.round(myEventScored.reduce((sum, l) => sum + (l.score! / l.outOf!) * 100, 0) / myEventScored.length)
+    : null;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 1240 }}>
       {/* Greeting */}
@@ -254,66 +263,67 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Active competitions */}
-      <Card>
+      {/* Your event (single-event model) */}
+      <Card className="tour-event">
         <CardHeader
-          eyebrow="Your queue"
-          title="Active competitions"
-          tagline="Click any event to jump to its prep page."
+          eyebrow="Your event"
+          title="Your event"
+          tagline={myEvent ? "The one event you're competing in this year." : "Pick the one event you're competing in."}
           right={
             <Link href="/competitions" className="btn btn-ghost btn-sm">
-              Add more
+              {myEvent ? "Change event" : "Pick event"}
             </Link>
           }
         />
 
-        {registeredCompetitions.length === 0 ? (
+        {!myEvent ? (
           <div className="empty-state" style={{ marginTop: 8 }}>
             <div className="empty-state-icon">+</div>
-            <p className="empty-state-title">No competitions yet</p>
-            <p className="empty-state-msg">Browse the full registry and add the events you're competing in.</p>
+            <p className="empty-state-title">No event picked yet</p>
+            <p className="empty-state-msg">Choose the one event you're competing in. We'll track your prep for it.</p>
             <Link href="/competitions" className="btn btn-accent btn-sm btn-pill" style={{ marginTop: 8 }}>
               Browse competitions
             </Link>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12, marginTop: 14 }}>
-            {registeredCompetitions.map((c) => {
-              const last = lastPracticeBySlug.get(c.slug);
-              const compLogs = logs.filter((l) => l.competitionSlug === c.slug);
-              return (
-                <Link key={c.slug} href={`/competitions/${c.slug}`} style={{ textDecoration: "none" }}>
-                  <div
-                    style={{
-                      padding: 18,
-                      borderRadius: 12,
-                      border: "0.5px solid var(--border)",
-                      background: "var(--bg2)",
-                      transition: "all 0.2s ease",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 10,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "var(--accent-border)";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "var(--border)";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                  >
-                    <span className="chip chip-brand">{c.category}</span>
-                    <h3 style={{ fontSize: 15, fontWeight: 700 }}>{c.name}</h3>
-                    <p style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5 }}>
-                      {FORMAT_LABEL[c.format]} · {compLogs.length} {compLogs.length === 1 ? "log" : "logs"}
-                      {last && ` · last ${relativeTime(last)}`}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+          <div
+            className="dash-event-row"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto auto auto auto",
+              gap: 14,
+              alignItems: "center",
+              padding: "16px 18px",
+              border: "0.5px solid var(--border)",
+              borderRadius: 12,
+              background: "var(--bg2)",
+              marginTop: 14,
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <Link
+                href={`/competitions/${myEvent.slug}`}
+                style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", transition: "color 0.15s ease" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text)")}
+              >
+                {myEvent.name}
+              </Link>
+              <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>
+                {myEvent.category} · {FORMAT_LABEL[myEvent.format]}
+                {(() => { const last = lastPracticeBySlug.get(myEvent.slug); return last ? ` · last ${relativeTime(last)}` : ""; })()}
+              </p>
+            </div>
+
+            <EventStat label="LOGS" value={String(myEventLogs.length)} />
+            <EventStat label="AVG" value={myEventAvg != null ? `${myEventAvg}%` : "-"} accent={myEventAvg != null} />
+
+            <Link href={`/competitions/${myEvent.slug}`} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+              Prep
+            </Link>
+            <Link href="/competitions" className="btn btn-ghost btn-sm">
+              Change
+            </Link>
           </div>
         )}
       </Card>
@@ -394,7 +404,23 @@ export default function Dashboard() {
           .dash-stats { grid-template-columns: 1fr 1fr !important; }
           .dash-2col { grid-template-columns: 1fr !important; }
         }
+        @media (max-width: 600px) {
+          .dash-event-row { grid-template-columns: 1fr 1fr !important; }
+        }
       `}</style>
+    </div>
+  );
+}
+
+function EventStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div style={{ textAlign: "right", minWidth: 56 }}>
+      <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+        {label}
+      </p>
+      <p className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: accent ? "var(--accent)" : "var(--text)" }}>
+        {value}
+      </p>
     </div>
   );
 }
