@@ -8,7 +8,7 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0014, all applied + verified live; RLS 18/18, role-insert guard + feedback caps verified) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0016; 0001-0015 applied + verified live, 0016 is an idempotent RPC replace; RLS 18/18, role-insert guard + feedback caps verified) |
 | Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
 | AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
 
@@ -173,7 +173,7 @@ fbla-one/
     supabase.ts                  <- browser client
     supabase-server.ts           <- server component client
   proxy.ts                       <- Next.js 16 middleware
-  supabase/migrations/           <- 0001-0004 (0005 inline in README)
+  supabase/migrations/           <- 0001-0016
 ```
 
 ---

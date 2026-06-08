@@ -2,6 +2,28 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.6 - June 8, 2026 - Growth CTA, single-event UX, advisor/member split
+
+Feature release on top of the v1.5 audit pass. Email capture on the landing page, a cleaner auth nav, the single-event model finished end to end, and a proper separation between advisors and members inside a chapter.
+
+### Email-capture landing CTA (migration 0015)
+- The bottom "Get your chapter on FBLA One" CTA now has a real email capture next to the primary button (mirrors Corvo). Signed out it pairs "Get started free" with an email field; signed in it shows "Go to dashboard." Emails write to a new write-only `email_signups` table (anon insert, no read from the browser), de-duplicated on a unique email, with client-side validation. The hero "Get started" button is unchanged.
+
+### Auth nav split
+- Signed out, the top-right now shows both "Log in" and "Sign up" (was a single "Get started"). Signed in it shows "Go to dashboard" plus the profile menu (avatar, name, dropdown). On mobile the secondary action folds into the menu drawer.
+
+### One event, one place (no more "My event" tab)
+- You compete in one event, so the standalone "My event" page is gone (its URL now redirects to the dashboard). The dashboard's old "Active competitions" card is now a single "Your event" card: pick it, see your logs and average, jump to prep, or change it. The first-run tour points there now.
+
+### Settings: chapter syncs automatically
+- The Chapter field in Settings now fills in from the chapter you created or joined and saves automatically, instead of being a blank box you had to retype. While you are in a chapter the field is locked with a link to the Chapter page.
+
+### Advisors are not members (migration 0016)
+- An advisor who creates a chapter no longer shows up as a member inside it: they are excluded from the assignment completion grid, the leaderboard (both the advisor view and the student-visible one), and the roster. All of that is members-only now.
+
+### Fixes
+- The Chapter "Email invite" button opened a blank tab instead of your email app. It now opens a proper draft (switched from a new-tab open to a mailto navigation).
+
 ## v1.5 - June 4, 2026 - Audit hardening pass
 
 A full multi-dimension audit (UI, UX, accessibility, security, performance, copy, completeness) plus two fixes flagged in testing. No new features - a correctness, trust, and accessibility pass across the whole app.
