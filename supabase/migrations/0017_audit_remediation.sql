@@ -54,9 +54,10 @@ create trigger guard_profile_privilege_trg
   before update on public.profiles
   for each row execute function public.guard_profile_privilege();
 
--- ── SEC-CRYPTO-01 (server): widen the invite code to 8 chars. Generation is
---    already CSPRNG-based (gen_random_uuid), so the only gap was length; this
---    recreates create_chapter identically except for a longer code. ──
+-- ── SEC-CRYPTO-01 (server): widen the invite code to 8 chars. Use gen_random_uuid
+--    (core, in pg_catalog, CSPRNG) NOT gen_random_bytes (pgcrypto lives in the
+--    `extensions` schema, off this function's search_path = public, so it would
+--    raise "function gen_random_bytes does not exist" at call time). ──
 create or replace function public.create_chapter(p_name text)
 returns public.chapters
 language plpgsql security definer set search_path = public as $$
@@ -69,7 +70,7 @@ begin
   if v_name is null then raise exception 'chapter name is required'; end if;
 
   for i in 1..5 loop
-    v_code := upper(substr(encode(gen_random_bytes(8), 'hex'), 1, 8)); -- 8 hex chars, CSPRNG
+    v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)); -- 8 hex chars, CSPRNG, no pgcrypto
     begin
       insert into public.chapters (name, invite_code, advisor_user_id)
         values (v_name, v_code, auth.uid())
