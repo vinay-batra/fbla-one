@@ -44,9 +44,20 @@ export function EmailCta() {
     setStatus("loading");
     setErrorMsg("");
     try {
-      const { error: dbErr } = await supa.from("email_signups").insert({ email: value, source: "landing" });
-      // 23505 = unique violation -> already on the list, treat as success.
-      if (dbErr && dbErr.code !== "23505") throw dbErr;
+      // Prefer the RPC (migration 0017): it inserts-or-ignores and always
+      // succeeds, so a 23505 unique violation can't be observed to probe whether
+      // an email is already on the list (subscription-existence oracle).
+      const { error: rpcErr } = await supa.rpc("join_email_list", { p_email: value, p_source: "landing" });
+      if (rpcErr) {
+        const msg = (rpcErr.message ?? "").toLowerCase();
+        const rpcMissing =
+          rpcErr.code === "PGRST202" || rpcErr.code === "404" || rpcErr.code === "42883" ||
+          msg.includes("could not find the function") || msg.includes("does not exist") || msg.includes("schema cache");
+        if (!rpcMissing) throw rpcErr;
+        // Fallback for before 0017 is applied: direct insert (the 23505 path).
+        const { error: dbErr } = await supa.from("email_signups").insert({ email: value, source: "landing" });
+        if (dbErr && dbErr.code !== "23505") throw dbErr; // 23505 = already on list -> success
+      }
       setStatus("done");
       setEmail("");
     } catch (e) {
@@ -104,22 +115,24 @@ export function EmailCta() {
               aria-label="Email address"
               style={{
                 padding: "13px 16px", background: "transparent", border: "none",
-                color: "var(--text)", fontSize: 13, outline: "none", width: 200,
+                color: "var(--text)", fontSize: 16, outline: "none", width: 200,
               }}
             />
             <button
               type="button"
               onClick={submit}
               disabled={status === "loading"}
+              aria-busy={status === "loading"}
               className="font-mono"
               style={{
                 padding: "13px 18px", background: "var(--bg3)", border: "none",
                 borderLeft: "0.5px solid var(--border2)", color: "var(--text2)",
                 fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
                 cursor: status === "loading" ? "wait" : "pointer", whiteSpace: "nowrap",
+                opacity: status === "loading" ? 0.7 : 1,
               }}
             >
-              {status === "loading" ? "..." : "Notify me"}
+              {status === "loading" ? "Adding..." : "Notify me"}
             </button>
           </div>
         )}

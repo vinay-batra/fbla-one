@@ -8,6 +8,14 @@
 
 import { getSupabase } from "./supabase";
 
+/**
+ * Marker prefix the coach writes into a practice_logs note for AI-generated
+ * tests ("AI practice test - X/Y"). Assignment completion counts ONLY logs with
+ * this prefix, so manually-entered tracker rows can't game an assignment. Single
+ * source of truth shared by the coach, the advisor board, and the member view.
+ */
+export const AI_LOG_PREFIX = "AI practice test";
+
 // ── Types ──────────────────────────────────────────────────────
 
 export type ChapterProfile = {
@@ -42,7 +50,17 @@ function devErr(label: string, e: unknown) {
 }
 
 function randomInviteCode(): string {
-  return Math.random().toString(36).slice(2, 7).toUpperCase();
+  // CSPRNG-backed, Crockford-ish base32 (drops I/O/0/1 to avoid confusion), 8
+  // chars (~30^8 space) - a chapter invite is a bearer secret, so it must not be
+  // a guessable / reconstructable Math.random value. (Primary path is the
+  // server-side create_chapter RPC; this is the pre-0007 fallback.)
+  const ALPHABET = "ABCDEFGHJKMNPQRSTVWXYZ23456789";
+  const LEN = 8;
+  const bytes = new Uint8Array(LEN);
+  crypto.getRandomValues(bytes);
+  let out = "";
+  for (let i = 0; i < LEN; i++) out += ALPHABET[bytes[i] % ALPHABET.length];
+  return out;
 }
 
 /** True when an RPC failed because the function is not in the DB yet (pre-migration 0007). */
@@ -118,7 +136,14 @@ export async function createChapter(
       .update({ chapter_id: chapter.id, role: "advisor" })
       .eq("id", userId);
 
-    if (profErr) devErr("createChapter profile update:", profErr);
+    if (profErr) {
+      // The two writes are not transactional. If the profile link fails the user
+      // would be left advisor-less with an orphaned chapter, so roll the chapter
+      // back and surface the failure instead of returning a false success.
+      devErr("createChapter profile update:", profErr);
+      await supa.from("chapters").delete().eq("id", chapter.id);
+      return { data: null, error: "Could not finish creating your chapter. Please try again." };
+    }
 
     return { data: chapter as ChapterInfo, error: null };
   } catch (e) {
@@ -161,7 +186,7 @@ export async function joinChapter(
     // Fallback for before 0007 is applied: look up the chapter + direct profile update.
     const { data: chapter, error: lookupErr } = await supa
       .from("chapters")
-      .select("*")
+      .select("id, name, invite_code, advisor_user_id, school, state")
       .eq("invite_code", code)
       .single();
 
@@ -193,7 +218,7 @@ export async function getChapterById(id: string): Promise<ChapterInfo | null> {
   try {
     const { data, error } = await supa
       .from("chapters")
-      .select("*")
+      .select("id, name, invite_code, advisor_user_id, school, state")
       .eq("id", id)
       .single();
     if (error) { devErr("getChapterById:", error); return null; }
@@ -278,7 +303,8 @@ export async function getChapterActivity(chapterId: string, limit = 25): Promise
     const { data: profiles } = await supa
       .from("profiles")
       .select("id, display_name, email")
-      .eq("chapter_id", chapterId);
+      .eq("chapter_id", chapterId)
+      .neq("role", "advisor"); // advisors are not competing members (matches roster/leaderboard/stats)
 
     if (!profiles?.length) return [];
 
@@ -464,20 +490,30 @@ export async function getChapterAssignmentBoard(chapterId: string): Promise<Assi
 
     const { data: logs } = await supa
       .from("practice_logs")
-      .select("user_id, competition_slug, logged_at")
+      .select("user_id, competition_slug, logged_at, notes")
       .in("user_id", memberIds)
       .limit(5000);
-    const allLogs = (logs ?? []) as Record<string, unknown>[];
+
+    // Only AI-generated practice tests count toward an assignment (the coach
+    // writes a recognizable "AI practice test - X/Y" note). Otherwise a member
+    // could mark "log 3 Accounting tests" done by typing blank rows in the
+    // manual tracker. Pre-bucket each member's AI logs once, parsing each
+    // timestamp a single time, so the per-assignment x per-member loop does O(1)
+    // lookups instead of re-scanning every log (was O(A x M x L)).
+    const byUser = new Map<string, { t: number; slug: string }[]>();
+    for (const l of (logs ?? []) as Record<string, unknown>[]) {
+      if (!String(l.notes ?? "").startsWith(AI_LOG_PREFIX)) continue;
+      const uid = String(l.user_id);
+      const arr = byUser.get(uid) ?? [];
+      arr.push({ t: new Date(String(l.logged_at)).getTime(), slug: String(l.competition_slug) });
+      byUser.set(uid, arr);
+    }
 
     return assignments.map((a) => {
       const since = new Date(a.created_at).getTime();
       const perMember = members.map((m) => {
-        const done = allLogs.filter(
-          (l) =>
-            String(l.user_id) === m.id &&
-            new Date(String(l.logged_at)).getTime() >= since &&
-            (!a.event_slug || String(l.competition_slug) === a.event_slug)
-        ).length;
+        const mlogs = byUser.get(m.id) ?? [];
+        const done = mlogs.filter((l) => l.t >= since && (!a.event_slug || l.slug === a.event_slug)).length;
         return { id: m.id, name: m.name, done: Math.min(done, a.target_count), complete: done >= a.target_count };
       });
       return {

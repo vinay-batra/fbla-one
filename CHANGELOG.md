@@ -2,6 +2,39 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.6.2 - June 8, 2026 - Audit remediation (all 59 findings)
+
+Fixed every finding from the v1.6 audit (0 Critical, 0 High, 19 Medium, 35 Low, 5 Info). Verified: tsc + lint + build clean, `npm audit` 0 vulnerabilities, and a full live regression (advisor + member chapter flows, auth, tracker, email capture, coach generation) with no console errors.
+
+**ACTION REQUIRED to fully activate the DB-side fixes:** apply `supabase/migrations/0017_audit_remediation.sql` in the Supabase SQL editor (idempotent). The app is written to tolerate it being unapplied, so deploy order doesn't matter.
+
+### Security
+- **Open redirect (SEC-RED-01):** new `lib/url.ts` `safeNextPath()` resolves redirects against our origin and rejects backslashes (the WHATWG parser treats `\` as `/`). Wired into `/api/preview`, `/auth`, and `/auth/callback`.
+- **Invite codes (SEC-CRYPTO-01):** client fallback now uses `crypto.getRandomValues` (8-char base32); migration 0017 widens the server `create_chapter` code to 8 hex chars.
+- **Rate limiting (SEC-RL-01/02):** AI-chat limiter now fails closed on an unidentifiable IP (no shared "unknown" bucket) and rejects >64KB bodies. (True cross-instance limiting still needs KV - #20.)
+- **CSP (SEC-HDR-01/SEC-SESS-01):** added a Content-Security-Policy in **report-only** mode (enforcing needs nonce wiring for Next's inline scripts).
+- **delete-account (SEC-AUTHZ-03, LOG-DELACCT-01, SRE-5C-01):** Origin/Host fallback when Sec-Fetch-Site is absent; prod logs a non-PII message; retries once.
+- **Role guard (SEC-AUTHZ-01), feedback throttle (SEC-AUTHZ-04), email-list oracle (SEC-AUTHZ-02):** migration 0017 (officer/admin no longer self-assignable; per-window feedback insert cap; email signup moved behind an insert-or-ignore RPC, client falls back to a direct insert pre-migration).
+
+### Compliance (minors' data)
+- Privacy policy now discloses feedback, the email list, IP logging, and Anthropic as a sub-processor; COPPA wording corrected to "not directed to under-13" (COMP-NOTICE-01, COMP-COPPA-01). FAQ deletion claim softened (UX-COPY-01). Account deletion best-effort purges the marketing email + writes an audit row (COMP-ERASURE-01, AUDIT-LOG-01; needs 0017 grant + table).
+
+### Correctness
+- **Single-event sync (BUG-SYNC-01):** sign-in no longer UNIONs registrations (which resurrected deleted events); the server pick wins. Log/resource re-sync uses idempotent upsert (SRE-5B-02/03/04, DOM-IDEM-03/04).
+- **Assignment completion (DOM-RULE-02):** counts only AI-generated tests (shared `AI_LOG_PREFIX`), not hand-typed tracker rows.
+- **Weak-topic stats (DOM-CALC-01, BUG-MEM-04):** recorded once per test (never on retry), topic keys canonicalized; dismissed-deadline set pruned.
+- Advisor excluded from the activity feed (BUG-CHAP-03); createChapter rolls back on a failed profile link (SRE-5B-01); coach cancel resets state (UX-FLOW-01).
+
+### Performance & reliability
+- Migration 0017 adds indexes on `profiles(chapter_id)` and `saved_resources(user_id)` (PERF-4B-01/02); assignment board pre-buckets logs (PERF-4A-01); leaderboard RPC shared via a 60s cache (PERF-4C-01); explicit column selects (PERF-4B-03).
+- Streaming practice-test route sets `maxDuration` (SRE-5A-01); new `/api/health` endpoint (SRE-5D-01); DR runbook + nightly backup workflow (SRE-5F-01, needs a `SUPABASE_DB_URL` secret).
+
+### UX & a11y
+- 16px inputs to stop iOS zoom (UX-MOB-01); 44px mobile touch targets (UX-MOB-02); `/auth` is a real `<form>` with visible labels (UX-FORM-01); tracker save confirmation (UX-FORM-02); EmailCta accessible busy state (UX-STATE-01); QR lazy-loaded (PERF-4D-01); "Exit preview" actually clears the cookie (FLAG-PREVIEW-01).
+
+### Dependencies
+- Bumped next 16.2.7 / react 19.2.7 / supabase-js 2.108 / anthropic-sdk 0.102, plus a `postcss` override to clear the transitive CVE (SC-CVE-01, SC-STALE-01). Added `NOTICE.md` for transitive LGPL/MPL/CC-BY attribution (SC-LIC-01).
+
 ## v1.6.1 - June 8, 2026 - Chapter page refactor (#47) + full audit
 
 Maintenance release. No user-facing behavior change.

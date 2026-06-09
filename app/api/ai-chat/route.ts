@@ -51,6 +51,12 @@ function sanitizeMessages(raw: unknown): ChatMsg[] | null {
 }
 
 function isRateLimited(ip: string): boolean {
+  // Fail CLOSED when we can't identify the caller, instead of bucketing every
+  // header-less request into one shared "unknown" key that anyone can exhaust /
+  // ride past the cap. NOTE: this Map is per serverless instance and resets on
+  // cold start - a true global limit needs a shared store (Vercel KV / Upstash);
+  // tracked as issue #20.
+  if (!ip || ip === "unknown") return true;
   const now = Date.now();
   const cutoff = now - WINDOW_MS;
   const hits = (_store.get(ip) || []).filter((t) => t > cutoff);
@@ -80,6 +86,13 @@ async function isSignedIn(): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest) {
+  // Reject oversized bodies before we parse them into memory (the array is
+  // trimmed by sanitizeMessages afterwards, but cap the raw payload first).
+  const len = Number(req.headers.get("content-length") || 0);
+  if (len > 64 * 1024) {
+    return Response.json({ content: "Message too large." }, { status: 413 });
+  }
+
   // Signed-in users are unlimited on public AI chat.
   const signedIn = await isSignedIn();
 

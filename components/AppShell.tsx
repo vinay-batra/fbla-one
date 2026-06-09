@@ -324,9 +324,18 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
                 <Link href="/auth" className="btn btn-accent btn-sm btn-pill">
                   Sign up free
                 </Link>
-                <Link href="/" className="btn btn-ghost btn-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Actually clear the cookie (a plain link left preview active
+                    // for the full 1h maxAge), then leave the app.
+                    document.cookie = "fbla_preview=; path=/; max-age=0";
+                    window.location.href = "/";
+                  }}
+                  className="btn btn-ghost btn-sm"
+                >
                   Exit preview
-                </Link>
+                </button>
               </div>
             </div>
           )}

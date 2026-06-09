@@ -88,7 +88,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I delete my account?",
-        a: "Yes, from Settings. Account deletion is immediate and permanent - it removes all your data right away.",
+        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, email hello@fbla.one to be removed from it.",
       },
     ],
   },

@@ -30,7 +30,7 @@ import {
   getChapterAssignmentBoard,
   createAssignment,
   deleteAssignment,
-  getMyChapterLeaderboard,
+  AI_LOG_PREFIX,
   type LeaderboardRow,
   type ChapterProfile,
   type ChapterInfo,
@@ -40,6 +40,7 @@ import {
   type Assignment,
   type AssignmentProgress,
 } from "@/lib/chapter";
+import { getLeaderboardCached, invalidateLeaderboard } from "@/lib/leaderboard-cache";
 import { ALL_COMP_OPTIONS } from "./chapterHelpers";
 
 export function useChapterData() {
@@ -92,8 +93,13 @@ export function useChapterData() {
   const myLogs = getPracticeLogs();
   const myAssignmentProgress = (a: Assignment): number => {
     const since = new Date(a.created_at).getTime();
+    // Count only AI-generated practice tests (same rule as the advisor board) so
+    // manual tracker entries don't complete an assignment.
     return myLogs.filter(
-      (l) => new Date(l.loggedAt).getTime() >= since && (!a.event_slug || l.competitionSlug === a.event_slug)
+      (l) =>
+        l.notes?.startsWith(AI_LOG_PREFIX) &&
+        new Date(l.loggedAt).getTime() >= since &&
+        (!a.event_slug || l.competitionSlug === a.event_slug)
     ).length;
   };
 
@@ -119,7 +125,7 @@ export function useChapterData() {
         setStats(st);
         setBoard(bd);
       } else if (ch) {
-        const [asg, lb] = await Promise.all([getChapterAssignments(ch.id), getMyChapterLeaderboard()]);
+        const [asg, lb] = await Promise.all([getChapterAssignments(ch.id), getLeaderboardCached()]);
         setAssignments(asg);
         setLeaderboard(lb);
       }
@@ -190,6 +196,7 @@ export function useChapterData() {
     } else if (result.data) {
       setChapter(result.data);
       setProfile((p) => p ? { ...p, chapter_id: result.data!.id, role: "member" } : p);
+      invalidateLeaderboard(); // standings changed - drop the dashboard chip's cache
     }
   }
 

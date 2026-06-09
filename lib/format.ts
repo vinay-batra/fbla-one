@@ -14,7 +14,18 @@ export function relativeTime(iso: string): string {
   if (d < 7) return `${d}d ago`;
   const w = Math.floor(d / 7);
   if (w < 5) return `${w}w ago`;
-  return date.toLocaleDateString();
+  // Explicit, unambiguous options (matches the rest of the app) so the fallback
+  // isn't an all-numeric, locale-ambiguous date (6/8/2026 vs 08/06/2026).
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+/**
+ * Sortable YYYY-MM-DD day key in a fixed US timezone (America/New_York) so day
+ * boundaries are consistent across features (streaks, the public-chat daily cap)
+ * regardless of the user's local timezone. FBLA is a US-national org.
+ */
+export function dayKeyET(d: Date): string {
+  return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 }
 
 /** Whole days from local midnight today to a YYYY-MM-DD date (negative = past). */

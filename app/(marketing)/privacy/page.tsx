@@ -10,27 +10,31 @@ export default function Privacy() {
   return (
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
-        <HeroBadge>Last updated May 27, 2026</HeroBadge>
+        <HeroBadge>Last updated June 8, 2026</HeroBadge>
         <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Privacy Policy</h1>
 
         <Section title="What we collect">
-          <p>When you sign up for FBLA One, we collect your email address, display name, and (optionally) your school or chapter affiliation. When you use the platform, we collect data you create: practice test logs, saved resources, competition registrations, and progress.</p>
+          <p>When you sign up we collect your email address, display name, and (optionally) your school or chapter affiliation. As you use the platform we collect data you create: practice test logs, saved resources, competition registrations, progress, and any feedback you send through the in-app feedback form. If you enter your email in our landing-page sign-up form, we store it on a notification list. We also automatically log your IP address to rate-limit our AI features and prevent abuse.</p>
+        </Section>
+
+        <Section title="How AI features work">
+          <p>The AI practice tests and the in-app assistant are powered by Anthropic (Claude). When you generate a test or chat with the assistant, the prompt and your message are sent to Anthropic to produce a response. Anthropic processes this on our behalf as a sub-processor and, under our API terms, does not use it to train its models.</p>
         </Section>
 
         <Section title="What we don't do">
-          <p>We do not sell your data. We do not share it with advertisers. We do not use it to train AI models. We do not transfer it outside the platform without your explicit consent.</p>
+          <p>We do not sell your data. We do not share it with advertisers. We do not use it to train AI models. We do not transfer it to third parties other than the service providers below who process it on our behalf.</p>
         </Section>
 
         <Section title="Where it lives">
-          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Authentication emails are sent through Supabase Auth. Hosting is on Vercel. Logs that include personal data are retained for 30 days.</p>
+          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Authentication emails are sent through Supabase Auth. Hosting is on Vercel. AI requests are processed by Anthropic. Logs that include personal data (such as IP addresses) are retained for 30 days.</p>
         </Section>
 
         <Section title="Your rights">
-          <p>You can delete your data anytime from Settings, and email privacy@fbla.one to request a copy of your data. We honor GDPR and CCPA requests within 30 days.</p>
+          <p>You can delete your account anytime from Settings, which removes your profile, registrations, practice logs, and saved resources. To also be removed from our email notification list, or to request a copy of your data, email privacy@fbla.one. We honor GDPR and CCPA requests within 30 days.</p>
         </Section>
 
         <Section title="Children">
-          <p>FBLA is a high-school activity, so most users are 13-18. We comply with COPPA: users under 13 require verifiable parental consent before creating an account. School-managed deployments handle consent at the district level.</p>
+          <p>FBLA is primarily a high-school activity, so most users are 13-18. FBLA One is not directed to children under 13, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has created an account, email privacy@fbla.one and we will delete it. For school-managed deployments, the school or district is responsible for obtaining any consent required for its students.</p>
         </Section>
 
         <Section title="Changes">

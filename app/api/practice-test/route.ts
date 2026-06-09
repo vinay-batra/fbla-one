@@ -4,6 +4,13 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
 
+// A 50-question Haiku generation can run well past Vercel's plan default
+// function timeout (~10-15s), which would sever the stream mid-test. Pin the
+// runtime and raise the limit so large tests finish. (Raise further on a plan
+// that allows it.)
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `You are an expert question writer for FBLA (Future Business Leaders of America) competitive events. You create realistic practice questions that exactly match the style, vocabulary, and difficulty of actual FBLA national-level objective tests.
 
 CRITICAL OUTPUT FORMAT - follow exactly:

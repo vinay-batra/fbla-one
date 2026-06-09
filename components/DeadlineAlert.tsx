@@ -31,7 +31,12 @@ export function DeadlineAlert() {
   const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
-    setDismissed(getDismissedIds());
+    // Prune dismissed ids down to deadlines that still exist + are upcoming, so
+    // the set can't grow unbounded as deadlines are deleted / pass.
+    const live = new Set(getUpcomingDeadlines(50).map((d) => d.id));
+    const pruned = new Set([...getDismissedIds()].filter((id) => live.has(id)));
+    try { localStorage.setItem(DISMISSED_KEY, JSON.stringify([...pruned])); } catch {}
+    setDismissed(pruned);
     try { setEnabled(localStorage.getItem("fbla_deadline_alerts") !== "0"); } catch {}
     return onStorageChange(() => setTick((t) => t + 1));
   }, []);

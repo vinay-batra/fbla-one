@@ -29,6 +29,7 @@ export default function Tracker() {
   const [duration, setDuration] = useState<string>("60");
   const [notes, setNotes] = useState<string>("");
   const [showAllLogs, setShowAllLogs] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -42,6 +43,10 @@ export default function Tracker() {
     });
     setScore("");
     setNotes("");
+    // Acknowledge the save (the new row may be off-screen below the form on
+    // mobile), so it never reads as if nothing happened and invites a re-submit.
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 2000);
   };
 
   return (
@@ -118,8 +123,11 @@ export default function Tracker() {
             </Field>
 
             <button type="submit" className="btn btn-accent btn-lg cta-shimmer">
-              Save log
+              {justSaved ? "Saved" : "Save log"}
             </button>
+            <p role="status" aria-live="polite" style={{ fontSize: 12, color: "var(--green)", minHeight: 16, margin: 0 }}>
+              {justSaved ? "Practice log saved to your history." : ""}
+            </p>
           </form>
         </Card>
 

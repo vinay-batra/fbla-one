@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { safeNextPath } from "@/lib/url";
 
 // ---------------------------------------------------------------------------
 // Cloudflare Turnstile (lightweight inline — no npm package needed)
@@ -56,7 +57,12 @@ function useTurnstile(onToken: (t: string | null) => void) {
     }
 
     return () => {
-      // cleanup: reset is safe to call even if widget is gone
+      // Tear down the widget so a remount (e.g. switching auth modes) doesn't
+      // leave a stale Turnstile iframe behind.
+      if (widgetId.current && window.turnstile) {
+        try { window.turnstile.reset(widgetId.current); } catch {}
+        widgetId.current = null;
+      }
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -73,10 +79,9 @@ type Mode = "login" | "signup" | "magic" | "reset";
 // ---------------------------------------------------------------------------
 function AuthForm() {
   const searchParams = useSearchParams();
-  // Same-origin only: a crafted ?next=//evil.com would otherwise redirect
-  // off-site after the user signs in.
-  const rawNext = searchParams.get("next") ?? "/app";
-  const nextPath = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
+  // Origin-validated, backslash-safe same-origin redirect (a crafted
+  // ?next=//evil.com or ?next=/\evil.com would otherwise redirect off-site).
+  const nextPath = safeNextPath(searchParams.get("next"), "/app");
 
   const [sessionChecked, setSessionChecked] = useState(false);
   const [mode, setMode] = useState<Mode>(
@@ -225,7 +230,7 @@ function AuthForm() {
     border: `1px solid ${focused === field ? "var(--accent)" : "var(--border)"}`,
     borderRadius: 11,
     color: "var(--text)",
-    fontSize: 14,
+    fontSize: 16, // 16px avoids iOS Safari zoom-on-focus
     outline: "none",
     transition: "border-color 0.18s, box-shadow 0.18s",
     boxShadow:
@@ -572,40 +577,42 @@ function AuthForm() {
             </>
           )}
 
-          {/* Email + Password inputs */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+          {/* Email + Password - a real <form> so password managers can tie the
+              fields together (save/fill) and Enter submits from any field. */}
+          <form onSubmit={(e) => { e.preventDefault(); if (canSubmit) handle(); }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+            <label htmlFor="auth-email" style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500 }}>Email</label>
             <input
+              id="auth-email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocused("email")}
               onBlur={() => setFocused(null)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (mode === "magic" || mode === "reset")) handle();
-              }}
               placeholder="you@school.edu"
               autoComplete="email"
               aria-label="Email address"
               style={inputStyle("email")}
             />
             {(mode === "login" || mode === "signup") && (
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setFocused("password")}
-                onBlur={() => setFocused(null)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handle();
-                }}
-                placeholder="Password"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
-                aria-label="Password"
-                minLength={8}
-                style={inputStyle("password")}
-              />
+              <>
+                <label htmlFor="auth-password" style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500, marginTop: 4 }}>Password</label>
+                <input
+                  id="auth-password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocused("password")}
+                  onBlur={() => setFocused(null)}
+                  placeholder="Password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  aria-label="Password"
+                  minLength={8}
+                  style={inputStyle("password")}
+                />
+              </>
             )}
           </div>
 
@@ -790,10 +797,9 @@ function AuthForm() {
             </div>
           )}
 
-          {/* Primary CTA */}
+          {/* Primary CTA - submits the form (free Enter-to-submit from any field) */}
           <button
-            type="button"
-            onClick={handle}
+            type="submit"
             disabled={!canSubmit}
             style={{
               width: "100%",
@@ -847,6 +853,7 @@ function AuthForm() {
               ctaLabel
             )}
           </button>
+          </form>
 
           {/* Magic link button (secondary, login mode only, before magic sent) */}
           {mode === "login" && !magicSent && isSupabaseConfigured && (

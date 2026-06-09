@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
+import { safeNextPath } from "@/lib/url";
 
 /**
  * OAuth callback route - required for PKCE flow (Supabase default).
@@ -10,9 +11,8 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const rawNext = searchParams.get("next") ?? "/app";
-  // Only allow same-origin app paths to prevent an open redirect via ?next=.
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/app";
+  // Origin-validated, backslash-safe same-origin redirect (no open redirect).
+  const next = safeNextPath(searchParams.get("next"), "/app");
 
   if (code) {
     const supabase = await getSupabaseServer();

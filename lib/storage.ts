@@ -8,6 +8,7 @@
  */
 
 import { getSupabase } from "./supabase";
+import { getCompetition } from "./competitions";
 
 export type PracticeLog = {
   id: string;
@@ -139,21 +140,27 @@ export async function pullFromSupabase(userId: string): Promise<void> {
   try {
     const [{ data: regs }, { data: logs }, { data: saved }] = await Promise.all([
       supa.from("registrations").select("competition_slug").eq("user_id", userId),
-      supa.from("practice_logs").select("*").eq("user_id", userId).order("logged_at", { ascending: false }),
-      supa.from("saved_resources").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+      supa.from("practice_logs").select("id, competition_slug, score, out_of, duration_min, notes, logged_at").eq("user_id", userId).order("logged_at", { ascending: false }),
+      supa.from("saved_resources").select("id, competition_slug, title, url, note, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
     ]);
 
-    // ── Registrations: union, push local-only up ──
+    // ── Registrations: single-event model. The server is the source of truth
+    // when it has a pick; otherwise migrate the one local pick up. NEVER union -
+    // a union resurrects a replaced/deleted event and breaks "one event".
     const remoteSlugs = (regs ?? []).map((r) => r.competition_slug as string);
     const localSlugs = getRegistered();
-    const onlyLocalSlugs = localSlugs.filter((s) => !remoteSlugs.includes(s));
-    if (onlyLocalSlugs.length) {
+    if (remoteSlugs.length > 0) {
+      write(KEYS.registered, [remoteSlugs[0]]);
+    } else if (localSlugs.length > 0) {
+      const slug = localSlugs[0];
       await supa.from("registrations").upsert(
-        onlyLocalSlugs.map((slug) => ({ user_id: userId, competition_slug: slug })),
+        { user_id: userId, competition_slug: slug },
         { onConflict: "user_id,competition_slug" }
       );
+      write(KEYS.registered, [slug]);
+    } else {
+      write(KEYS.registered, []);
     }
-    write(KEYS.registered, Array.from(new Set([...remoteSlugs, ...localSlugs])));
 
     // ── Practice logs: union by id, push local-only up ──
     const remoteLogs: PracticeLog[] = (logs ?? []).map(dbToLog);
@@ -161,7 +168,14 @@ export async function pullFromSupabase(userId: string): Promise<void> {
     const localLogs = getPracticeLogs();
     const onlyLocalLogs = localLogs.filter((l) => !remoteLogIds.has(l.id));
     if (onlyLocalLogs.length) {
-      await supa.from("practice_logs").insert(onlyLocalLogs.map((l) => logToDb(l, userId)));
+      // upsert (not insert) so an id already present remotely - e.g. a just-added
+      // log whose async insert raced this pull, or a concurrent DataSync run -
+      // is a no-op instead of failing the whole batch (23505) and dropping the
+      // genuinely-new rows with it.
+      await supa.from("practice_logs").upsert(
+        onlyLocalLogs.map((l) => logToDb(l, userId)),
+        { onConflict: "id", ignoreDuplicates: true }
+      );
     }
     const mergedLogs = [...remoteLogs, ...onlyLocalLogs].sort(
       (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
@@ -174,7 +188,10 @@ export async function pullFromSupabase(userId: string): Promise<void> {
     const localSaved = getSavedResources();
     const onlyLocalSaved = localSaved.filter((r) => !remoteSavedIds.has(r.id));
     if (onlyLocalSaved.length) {
-      await supa.from("saved_resources").insert(onlyLocalSaved.map((r) => savedToDb(r, userId)));
+      await supa.from("saved_resources").upsert(
+        onlyLocalSaved.map((r) => savedToDb(r, userId)),
+        { onConflict: "id", ignoreDuplicates: true }
+      );
     }
     write(KEYS.saved, [...remoteSaved, ...onlyLocalSaved]);
   } catch (e) {
@@ -355,10 +372,6 @@ export function removePracticeLog(id: string): void {
   }
 }
 
-export function getPracticeLogsForCompetition(slug: string): PracticeLog[] {
-  return getPracticeLogs().filter((l) => l.competitionSlug === slug);
-}
-
 /* ───── Topic mastery (weak-topic analysis) ──────────────────
    Per event, accumulate correct/total per topic across all tests, so we can
    surface a student's weakest topics and offer a targeted drill. Device-local
@@ -374,8 +387,13 @@ export function recordTopicResults(slug: string, results: { topic: string; corre
   if (!slug || results.length === 0) return;
   const all = read<TopicStatsMap>(KEYS.topicStats, {});
   const forSlug = { ...(all[slug] ?? {}) };
+  // Canonicalize each topic against the event's known topic list so model drift
+  // (trailing punctuation, rephrasing) can't spawn permanent near-duplicate keys
+  // that grow the map unbounded and fragment the weak-topic analysis.
+  const known = getCompetition(slug)?.topics ?? [];
+  const canon = (t: string) => known.find((k) => k.toLowerCase() === t.trim().toLowerCase()) ?? t.trim();
   for (const r of results) {
-    const t = (r.topic || "").trim();
+    const t = canon(r.topic || "");
     if (!t) continue;
     const cur = forSlug[t] ?? { correct: 0, total: 0 };
     forSlug[t] = { correct: cur.correct + (r.correct ? 1 : 0), total: cur.total + 1 };
@@ -462,7 +480,7 @@ export async function syncChapterDeadlines(): Promise<void> {
   try {
     const { data, error } = await supa
       .from("deadlines")
-      .select("*")
+      .select("id, title, competition_slug, due_at, description, created_at")
       .eq("chapter_id", chapterCtx.chapterId)
       .order("due_at", { ascending: true });
     if (error) { devError("syncChapterDeadlines:", error); return; }

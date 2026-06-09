@@ -89,10 +89,17 @@ export function AppTour() {
   useLayoutEffect(() => {
     if (!active) return;
     measure();
-    const on = () => measure();
+    // Throttle to one measure per frame: the capture-phase scroll listener fires
+    // for every scroll container, and each measure calls getBoundingClientRect.
+    let raf = 0;
+    const on = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; measure(); });
+    };
     window.addEventListener("resize", on);
     window.addEventListener("scroll", on, true);
     return () => {
+      if (raf) cancelAnimationFrame(raf);
       window.removeEventListener("resize", on);
       window.removeEventListener("scroll", on, true);
     };

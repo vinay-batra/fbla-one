@@ -1,0 +1,49 @@
+name: DB backup
+
+# Nightly off-platform logical backup of the Supabase Postgres database, kept as a
+# 90-day GitHub artifact so a copy survives a Supabase-side incident (audit
+# SRE-5F-01). No-op until the SUPABASE_DB_URL repo secret is set
+# (Settings -> Secrets and variables -> Actions). See docs/DISASTER-RECOVERY.md.
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 07:00 UTC daily (~02:00-03:00 ET)
+  workflow_dispatch: {}
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard - require the DB URL secret
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "SUPABASE_DB_URL secret not set - skipping backup. See docs/DISASTER-RECOVERY.md."
+            exit 0
+          fi
+
+      - name: Install postgres client (pg_dump 16)
+        if: ${{ env.HAVE_URL == 'true' || secrets.SUPABASE_DB_URL != '' }}
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+
+      - name: Dump
+        if: ${{ secrets.SUPABASE_DB_URL != '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          STAMP="$(date -u +%F)"
+          pg_dump "$SUPABASE_DB_URL" -Fc -f "backup-$STAMP.dump"
+          echo "Wrote backup-$STAMP.dump ($(du -h "backup-$STAMP.dump" | cut -f1))"
+
+      - name: Upload artifact (90-day retention)
+        if: ${{ secrets.SUPABASE_DB_URL != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backup-*.dump
+          retention-days: 90

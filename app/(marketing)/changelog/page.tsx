@@ -307,8 +307,8 @@ export default function ChangelogPage() {
                   <span style={{ color: "var(--accent)" }}>way.</span>
                 </h2>
                 <p style={{ maxWidth: 520, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
-                  FBLA One is free for every member and shipping new features every
-                  week. Get your chapter on it today.
+                  FBLA One is free for every member, and we are always adding to
+                  it. Get your chapter on it today.
                 </p>
                 <div style={{ marginTop: 30, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <Link href="/auth" className="btn btn-accent btn-lg cta-shimmer">

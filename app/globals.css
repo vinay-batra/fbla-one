@@ -437,12 +437,13 @@ p { color: var(--text2); line-height: 1.62; }
   border-radius: var(--radius);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 16px; /* 16px avoids iOS Safari zoom-on-focus; desktop tightens below */
   padding: 11px 14px;
   outline: none;
   width: 100%;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+@media (min-width: 769px) { .input-field { font-size: 14px; } } /* tighter desktop input text */
 .input-field::placeholder { color: var(--text3); }
 .input-field:focus {
   border-color: var(--accent) !important;
@@ -668,7 +669,8 @@ p { color: var(--text2); line-height: 1.62; }
 
   .card { padding: 18px; }
 
-  button, a[role="button"] { min-height: 36px; }
+  /* WCAG 2.5.5: comfortable touch targets on mobile (was 36px). */
+  button, a[role="button"], .btn { min-height: 44px; }
 }
 
 /* ─── Hover utilities for server-rendered pages ──────────── */

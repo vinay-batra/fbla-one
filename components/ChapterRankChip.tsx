@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSupabase } from "@/lib/supabase";
-import { getMyChapterLeaderboard } from "@/lib/chapter";
+import { getLeaderboardCached } from "@/lib/leaderboard-cache";
 
 /**
  * Compact "you're #X of Y in your chapter" nudge for the dashboard. Renders
@@ -16,11 +16,12 @@ export function ChapterRankChip() {
     const supa = getSupabase();
     if (!supa) return;
     let cancelled = false;
-    // Run the auth check and the leaderboard RPC in parallel (the RPC is scoped
-    // server-side by auth.uid(), so it doesn't depend on the getUser result).
-    Promise.all([supa.auth.getUser(), getMyChapterLeaderboard()]).then(([{ data }, lb]) => {
-      if (cancelled || !data.user || lb.length < 2) return; // need at least 2 to be a "leaderboard"
-      const idx = lb.findIndex((r) => r.userId === data.user!.id);
+    // getSession() reads the stored session (no network round-trip), and the
+    // cached leaderboard is shared with the chapter page so the RPC fires once.
+    Promise.all([supa.auth.getSession(), getLeaderboardCached()]).then(([{ data }, lb]) => {
+      const uid = data.session?.user?.id;
+      if (cancelled || !uid || lb.length < 2) return; // need at least 2 to be a "leaderboard"
+      const idx = lb.findIndex((r) => r.userId === uid);
       if (idx < 0) return;
       setInfo({ rank: idx + 1, total: lb.length });
     });

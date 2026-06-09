@@ -16,7 +16,7 @@ import {
   onStorageChange,
   type PracticeLog,
 } from "@/lib/storage";
-import { relativeTime } from "@/lib/format";
+import { relativeTime, dayKeyET } from "@/lib/format";
 import type { Competition } from "@/lib/competitions";
 
 // ── Score trend chart ──────────────────────────────────────────
@@ -120,16 +120,18 @@ export default function Dashboard() {
 
     // Practice streak: consecutive days (ending today or yesterday) with >=1 log.
     const streakDays = (() => {
-      const days = new Set(logs.map((l) => new Date(l.loggedAt).toLocaleDateString("en-CA")));
+      // Use one fixed day-boundary basis (America/New_York) everywhere so the
+      // streak and the public-chat daily cap agree on when a day rolls over.
+      const days = new Set(logs.map((l) => dayKeyET(new Date(l.loggedAt))));
       if (days.size === 0) return 0;
       const oneDay = 86400000;
       const cur = new Date();
       cur.setHours(0, 0, 0, 0);
-      const todayKey = cur.toLocaleDateString("en-CA");
+      const todayKey = dayKeyET(cur);
       // Count even if today has no log yet (start from yesterday).
       if (!days.has(todayKey)) cur.setTime(cur.getTime() - oneDay);
       let n = 0;
-      while (days.has(cur.toLocaleDateString("en-CA"))) {
+      while (days.has(dayKeyET(cur))) {
         n++;
         cur.setTime(cur.getTime() - oneDay);
       }

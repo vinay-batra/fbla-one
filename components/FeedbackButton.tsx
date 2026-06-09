@@ -70,6 +70,7 @@ export function FeedbackButton() {
   }, [open, close]);
 
   const submit = async () => {
+    if (submitting) return; // in-flight guard: a fast double-activation must not double-insert
     if (!message.trim()) { setError("Please enter a message."); return; }
     const supa = getSupabase();
     if (!supa) { setError("Feedback is temporarily unavailable."); return; }

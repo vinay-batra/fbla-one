@@ -23,7 +23,12 @@ type SendArgs = {
   replyTo?: string;
 };
 
-export const isEmailConfigured = Boolean(process.env.RESEND_API_KEY);
+// NOTE: this module is intentionally unused scaffolding until RESEND_API_KEY
+// exists (Resend is blocked on an external account). isEmailConfigured is a
+// function (not a module-load constant) so importing it has no side effect.
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY);
+}
 
 export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; error?: string }> {
   const key = process.env.RESEND_API_KEY;

@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
-import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, type WeakTopic } from "@/lib/storage";
+import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, onStorageChange, type WeakTopic } from "@/lib/storage";
+import { AI_LOG_PREFIX } from "@/lib/chapter";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -89,6 +90,13 @@ function CoachInner() {
   const [answers, setAnswers] = useState<Record<number, Option>>({});
   const [logged, setLogged] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  // Topic stats must be recorded exactly once per generated test, and never for
+  // an in-session retry of missed questions (which would double-count topics).
+  const recordedRef = useRef(false);
+  const isRetryRef = useRef(false);
+  // Cross-tab storage tick so weak-topics reflects writes from another tab.
+  const [storeTick, setStoreTick] = useState(0);
+  useEffect(() => onStorageChange(() => setStoreTick((t) => t + 1)), []);
 
   const registered = getRegistered();
   const registeredComps = registered
@@ -107,7 +115,7 @@ function CoachInner() {
   // Recompute weak topics for the selected event (refreshes after each test).
   useEffect(() => {
     setWeakTopics(selectedSlug ? getWeakTopics(selectedSlug) : []);
-  }, [selectedSlug, phase]);
+  }, [selectedSlug, phase, storeTick]);
 
   // Keyboard: A/B/C/D and arrow navigation during test
   useEffect(() => {
@@ -134,6 +142,8 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    recordedRef.current = false;
+    isRetryRef.current = false;
     setDrillTopic(focusTopic ?? null);
     setPhase("generating");
 
@@ -205,23 +215,31 @@ function CoachInner() {
 
   function submitTest() {
     // Record per-topic results so the student's weak-topic analysis builds up.
-    const results = questions
-      .filter((q) => q.topic)
-      .map((q) => ({ topic: q.topic as string, correct: answers[q.id - 1] === q.correct }));
-    if (results.length) recordTopicResults(selectedSlug, results);
+    // Once per generated test only, and never for a retry-misses run (it would
+    // re-accumulate the same topics and skew the weak-spot analysis).
+    if (!recordedRef.current && !isRetryRef.current) {
+      const results = questions
+        .filter((q) => q.topic)
+        .map((q) => ({ topic: q.topic as string, correct: answers[q.id - 1] === q.correct }));
+      if (results.length) recordTopicResults(selectedSlug, results);
+      recordedRef.current = true;
+    }
     setPhase("reviewing");
   }
 
   function logScore() {
+    // Idempotent: a fast double-click (before `logged` re-renders the button out)
+    // must not write two practice_logs rows for the same test.
+    if (logged) return;
+    setLogged(true);
     const correct = questions.filter((q) => answers[q.id - 1] === q.correct).length;
     addPracticeLog({
       competitionSlug: selectedSlug,
       score: correct,
       outOf: questions.length,
       durationMin: null,
-      notes: `AI practice test - ${correct}/${questions.length}`,
+      notes: `${AI_LOG_PREFIX} - ${correct}/${questions.length}`,
     });
-    setLogged(true);
   }
 
   function restart() {
@@ -239,6 +257,7 @@ function CoachInner() {
       .filter((q) => answers[q.id - 1] !== q.correct)
       .map((q, i) => ({ ...q, id: i + 1 }));
     if (missed.length === 0) return;
+    isRetryRef.current = true; // don't re-record topic stats for the retry set
     setQuestions(missed);
     setAnswers({});
     setCurrentIdx(0);
@@ -487,7 +506,17 @@ function CoachInner() {
 
         <button
           type="button"
-          onClick={() => { abortRef.current?.abort(); setPhase("idle"); }}
+          onClick={() => {
+            // Symmetric with restart(): clear any partially-streamed test so no
+            // stale questions linger after an aborted generation.
+            abortRef.current?.abort();
+            setQuestions([]);
+            setGeneratedSoFar(0);
+            setAnswers({});
+            setCurrentIdx(0);
+            setDrillTopic(null);
+            setPhase("idle");
+          }}
           className="btn btn-ghost btn-sm btn-pill"
         >
           Cancel
@@ -704,7 +733,7 @@ function CoachInner() {
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
             {!logged ? (
-              <button type="button" onClick={logScore} className="btn btn-accent btn-sm btn-pill">
+              <button type="button" onClick={logScore} disabled={logged} className="btn btn-accent btn-sm btn-pill">
                 Log score to tracker
               </button>
             ) : (

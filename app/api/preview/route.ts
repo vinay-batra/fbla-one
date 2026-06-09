@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeNextPath } from "@/lib/url";
 
 /**
  * GET /api/preview?redirect=/app/coach
@@ -10,9 +11,8 @@ import { NextResponse } from "next/server";
  */
 export function GET(req: Request): Response {
   const url = new URL(req.url);
-  const raw = url.searchParams.get("redirect") ?? "/app";
-  // Only allow same-origin app paths to prevent an open redirect via ?redirect=.
-  const redirectTo = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/app";
+  // Origin-validated, backslash-safe same-origin redirect (no open redirect).
+  const redirectTo = safeNextPath(url.searchParams.get("redirect"), "/app");
 
   const response = NextResponse.redirect(new URL(redirectTo, url.origin));
 

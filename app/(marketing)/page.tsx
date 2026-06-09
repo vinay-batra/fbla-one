@@ -144,7 +144,7 @@ export default function Landing() {
             >
               <StatBlock value="55" label="Competitions tracked" />
               <StatBlock value="34" label="AI practice test events" />
-              <StatBlock value="50" label="Questions per test" />
+              <StatBlock value="50" label="Questions max per test" />
               <StatBlock value="Free" label="Always, forever" />
             </div>
           </ScrollReveal>
