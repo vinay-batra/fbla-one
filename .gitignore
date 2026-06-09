@@ -45,5 +45,8 @@ next-env.d.ts
 # one-off local verification scripts (kept locally, not committed)
 _*.mjs
 
+# local audit reports (contain unfixed security findings - keep out of the public repo)
+AUDIT-*.md
+
 # supabase CLI local temp
 supabase/.temp

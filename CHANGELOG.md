@@ -2,6 +2,17 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.6.1 - June 8, 2026 - Chapter page refactor (#47) + full audit
+
+Maintenance release. No user-facing behavior change.
+
+### Chapter page split (#47)
+- The ~1220-line `app/app/chapter/page.tsx` god component is now a 59-line orchestrator over a focused `components/chapter/` module: a `useChapterData` controller hook (all state, the Supabase load/auto-join effect, every handler, derived flags), a `chapterHelpers` file (formatting, CSV exports, table styles, `MiniStat`), and six presentational sections - `ChapterSetup`, `ChapterInfo`, `MemberView`, `AdvisorView`, `ChapterDeadlines`, `MyEvents`. Pure structure: the JSX was transcribed verbatim and the logic lifted unchanged, so the advisor and member experiences are identical.
+- Verified clean: `tsc --noEmit`, lint, and `next build` (80 routes), plus a live end-to-end regression of both the advisor view (create a chapter) and the member view (join by invite code) with zero console errors.
+
+### Codebase audit
+- Ran a full multi-domain audit (architecture, security, performance, reliability, business logic, UX, accessibility, compliance, docs, data, testing). Result: 0 Critical, 0 High, 19 Medium, 35 Low, 5 Informational, plus 137 explicitly cleared items. The report is kept local (gitignored `AUDIT-*.md`) since it details unfixed findings and the repo is public.
+
 ## v1.6 - June 8, 2026 - Growth CTA, single-event UX, advisor/member split
 
 Feature release on top of the v1.5 audit pass. Email capture on the landing page, a cleaner auth nav, the single-event model finished end to end, and a proper separation between advisors and members inside a chapter.
