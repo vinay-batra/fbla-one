@@ -23,15 +23,16 @@ export async function GET() {
   if (base && anon) {
     try {
       const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 3000);
-      const r = await fetch(`${base}/rest/v1/`, {
-        method: "HEAD",
+      const t = setTimeout(() => ctrl.abort(), 4000);
+      // GoTrue's health endpoint returns 200 (with the apikey) when Supabase is
+      // up. Any thrown error (DNS/timeout/paused project) -> unreachable.
+      const r = await fetch(`${base}/auth/v1/health`, {
         headers: { apikey: anon },
         signal: ctrl.signal,
         cache: "no-store",
       });
       clearTimeout(t);
-      supabaseReachable = r.ok || r.status === 400 || r.status === 404; // any HTTP answer = reachable
+      supabaseReachable = r.ok;
     } catch {
       supabaseReachable = false;
     }

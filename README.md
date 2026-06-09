@@ -8,7 +8,7 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `fbla.one` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0016; 0001-0015 applied + verified live, 0016 is an idempotent RPC replace; RLS 18/18, role-insert guard + feedback caps verified) |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0017, all applied + verified live: RLS 18/18, leaderboard 8/8, audit-remediation 0017 verified). |
 | Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
 | AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
 
@@ -77,6 +77,12 @@ Project `osxoygndwazbygiqyjhu` is connected. Env vars set locally and on Vercel:
 | `0003_grants_and_trigger_fix.sql` | **Critical** - grants SELECT/INSERT/UPDATE/DELETE to `authenticated` role. Without this every signed-in write fails. |
 | `0004_chapter_advisor_rls.sql` | Advisors can read member profiles; any auth user can look up chapters by invite code |
 | `0005` (inline below) | Advisors can read chapter member practice logs |
+| `0006`-`0014` | RLS recursion fix, invite-validated join RPC, feedback table + caps, assignments, leaderboard RPC, profile-role insert guard |
+| `0015_email_signups.sql` | landing-page email capture list |
+| `0016_leaderboard_exclude_advisor.sql` | leaderboard excludes advisors |
+| `0017_audit_remediation.sql` | audit fixes: indexes, role/feedback/email-list guards, audit_log, email_signups delete grant, 8-char invite codes |
+
+All migration files live in `supabase/migrations/`; run any unapplied ones in order. 0016 + 0017 are idempotent.
 
 **Migration 0005** - run in Supabase SQL Editor:
 ```sql
@@ -125,6 +131,9 @@ fbla-one/
     globals.css                  <- full token system, button/input/card library (~600 lines)
     api/
       practice-test/route.ts     <- streaming AI practice test generation (POST)
+      ai-chat/route.ts           <- public AI assistant (POST, rate-limited)
+      delete-account/route.ts    <- account deletion (DELETE, service role + erasure)
+      health/route.ts            <- /api/health readiness probe (GET)
       preview/route.ts           <- sets fbla_preview cookie for demo mode (GET)
     (marketing)/
       layout.tsx                 <- PublicNav + Footer
@@ -150,12 +159,18 @@ fbla-one/
     PublicNav.tsx                <- scroll-aware sticky nav + Cmd+K trigger
     Footer.tsx
     AppShell.tsx                 <- sidebar + topbar + preview banner + deadline alert
-    GlobalShell.tsx              <- mounts CommandPalette + FeedbackButton + OnboardingModal
-    CommandPalette.tsx           <- Cmd+K palette (competition search + nav)
-    FeedbackButton.tsx           <- fixed FAB -> mailto feedback
+    AppTour.tsx                  <- first-visit spotlight guided tour
+    GlobalShell.tsx              <- mounts PublicAIChat + FeedbackButton + OnboardingModal
+    PublicAIChat.tsx             <- floating AI assistant FAB (-> /api/ai-chat)
+    FeedbackButton.tsx           <- fixed FAB -> feedback modal (writes to public.feedback)
+    EmailCta.tsx                 <- landing email capture (-> join_email_list RPC)
     OnboardingModal.tsx          <- first-visit welcome modal
     DeadlineAlert.tsx            <- in-app alert for deadlines within 3 days
+    ChapterRankChip.tsx          <- dashboard chapter-rank nudge (shared leaderboard cache)
     StudyResourcesList.tsx       <- client component with bookmark save buttons
+    chapter/                     <- chapter page module (#47): useChapterData hook +
+                                    ChapterSetup/ChapterInfo/MemberView/AdvisorView/
+                                    ChapterDeadlines/MyEvents + chapterHelpers
     ThemeProvider.tsx
     ThemeToggle.tsx
     Logo.tsx                     <- inline SVG shield+torch mark + wordmark
@@ -170,10 +185,15 @@ fbla-one/
     competitions.ts              <- 55-event FBLA registry (all complete)
     storage.ts                   <- localStorage-first state + Supabase sync
     chapter.ts                   <- chapter Supabase ops (create, join, roster, activity)
+    url.ts                       <- safeNextPath() same-origin redirect guard
+    leaderboard-cache.ts         <- 60s single-flight cache for the leaderboard RPC
+    format.ts                    <- shared date/score/CSV helpers + dayKeyET
     supabase.ts                  <- browser client
     supabase-server.ts           <- server component client
   proxy.ts                       <- Next.js 16 middleware
-  supabase/migrations/           <- 0001-0016
+  supabase/migrations/           <- 0001-0017
+  docs/DISASTER-RECOVERY.md      <- backup/restore runbook (RPO/RTO)
+  .github/workflows/db-backup.yml<- nightly logical backup (needs SUPABASE_DB_URL secret)
 ```
 
 ---

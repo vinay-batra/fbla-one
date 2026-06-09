@@ -35,6 +35,11 @@ Fixed every finding from the v1.6 audit (0 Critical, 0 High, 19 Medium, 35 Low, 
 ### Dependencies
 - Bumped next 16.2.7 / react 19.2.7 / supabase-js 2.108 / anthropic-sdk 0.102, plus a `postcss` override to clear the transitive CVE (SC-CVE-01, SC-STALE-01). Added `NOTICE.md` for transitive LGPL/MPL/CC-BY attribution (SC-LIC-01).
 
+### Rollout fixes (caught in live verification)
+- Migration 0017's `create_chapter` used `gen_random_bytes` (pgcrypto, which Supabase keeps in the `extensions` schema, off a `search_path = public` SECURITY DEFINER function) - it threw "function gen_random_bytes does not exist" and broke chapter creation. Switched to `gen_random_uuid()` (core). Verified: `_rls_test.mjs` 18/18.
+- `/api/health` falsely reported Supabase unreachable (a healthy Supabase answers an unkeyed probe with 401). Now probes `/auth/v1/health` with the apikey and checks `r.ok`.
+- Migrations 0016 + 0017 applied to prod and verified live (RLS 18/18, leaderboard 8/8, 0017 behaviors 4/4).
+
 ## v1.6.1 - June 8, 2026 - Chapter page refactor (#47) + full audit
 
 Maintenance release. No user-facing behavior change.
