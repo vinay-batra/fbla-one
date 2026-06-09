@@ -118,7 +118,7 @@ function AuthForm() {
     supa.auth.getSession().then(({ data: { session } }) => {
       if (session) { window.location.replace(nextPath); return; }
       setSessionChecked(true);
-    });
+    }).catch(() => setSessionChecked(true));
   }, [nextPath]);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;

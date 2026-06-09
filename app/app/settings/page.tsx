@@ -99,7 +99,7 @@ export default function Settings() {
           }
         }
       }
-    });
+    }).catch(() => {});
   }, []);
 
   const uploadAvatar = async (file: File) => {

@@ -27,7 +27,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           style={{
             fontSize: 11,
             letterSpacing: "0.22em",
-            color: "#ffb81c",
+            color: "var(--accent)",
             textTransform: "uppercase",
             fontWeight: 700,
             fontFamily: "var(--font-mono)",

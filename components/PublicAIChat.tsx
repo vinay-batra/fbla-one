@@ -254,7 +254,7 @@ function PublicAIChatInner() {
           <div
             style={{
               padding: "16px 18px",
-              borderBottom: "1px solid var(--border)",
+              borderBottom: "0.5px solid var(--border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -271,7 +271,7 @@ function PublicAIChatInner() {
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                style={{ width: 30, height: 30, borderRadius: 8, background: "var(--bg3)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text3)", transition: "color 0.15s" }}
+                style={{ width: 30, height: 30, borderRadius: 8, background: "var(--bg3)", border: "0.5px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text3)", transition: "color 0.15s" }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "var(--text)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text3)"; }}
               >
@@ -318,7 +318,7 @@ function PublicAIChatInner() {
                         textAlign: "left",
                         padding: "13px 16px",
                         background: "var(--bg3)",
-                        border: "1px solid var(--border)",
+                        border: "0.5px solid var(--border)",
                         borderRadius: 12,
                         color: "var(--text2)",
                         fontSize: 14,
@@ -343,7 +343,7 @@ function PublicAIChatInner() {
                       padding: "10px 14px",
                       borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
                       background: msg.role === "user" ? "var(--accent)" : "var(--bg3)",
-                      border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
+                      border: msg.role === "assistant" ? "0.5px solid var(--border)" : "none",
                       fontSize: 13.5,
                       lineHeight: 1.6,
                       color: msg.role === "user" ? "#0a1322" : "var(--text)",
@@ -359,7 +359,7 @@ function PublicAIChatInner() {
             )}
             {loading && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "13px 16px", borderRadius: "14px 14px 14px 4px", background: "var(--bg3)", border: "1px solid var(--border)" }}>
+                <div style={{ padding: "13px 16px", borderRadius: "14px 14px 14px 4px", background: "var(--bg3)", border: "0.5px solid var(--border)" }}>
                   <span className="fbla-typing" role="status" aria-label="Thinking">
                     <span /><span /><span />
                   </span>
@@ -370,10 +370,11 @@ function PublicAIChatInner() {
           </div>
 
           {/* Input */}
-          <div style={{ padding: "12px 14px 14px", borderTop: "1px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ padding: "12px 14px 14px", borderTop: "0.5px solid var(--border)", display: "flex", gap: 10, alignItems: "center" }}>
             <input
               ref={inputRef}
               type="text"
+              aria-label="Ask an FBLA question"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendCurrent()}

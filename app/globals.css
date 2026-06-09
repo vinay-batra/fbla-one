@@ -160,6 +160,13 @@ button { font-family: var(--font-body); background: none; border: none; color: i
 input, select, textarea { font-family: var(--font-body); color: var(--text); background: var(--input-bg); }
 input::placeholder, textarea::placeholder { color: var(--text3); }
 
+/* iOS Safari zooms the viewport when a control with font-size below 16px is
+   focused. Force 16px on every form control on mobile (this also overrides inline
+   14px/12px styles); desktop keeps its tighter sizes since this rule is mobile-only. */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb), 0.35); border-radius: 99px; }

@@ -165,7 +165,7 @@ export function useChapterData() {
         }
       }
       setSupaLoading(false);
-    });
+    }).catch(() => setSupaLoading(false));
   }, [loadChapterData]);
 
   // ── Handlers ────────────────────────────────────────────────

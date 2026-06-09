@@ -31,7 +31,7 @@ export function UserMenu() {
         .eq("id", data.user.id)
         .single();
       if (p) setProfile(p);
-    });
+    }).catch(() => {});
   }, []);
 
   // Close on outside click + Escape key

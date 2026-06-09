@@ -97,7 +97,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How do advisors set up a chapter?",
-        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get a 6-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
+        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get an 8-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
       },
       {
         q: "What can advisors see?",

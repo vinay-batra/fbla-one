@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "./Logo";
+import { APP_VERSION } from "@/lib/version";
 
 type FooterCol = {
   title: string;
@@ -116,7 +117,7 @@ export function Footer() {
         >
           <span>© {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.</span>
           <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
-            v1.3 · fbla.one
+            v{APP_VERSION} · fbla.one
           </span>
         </div>
 

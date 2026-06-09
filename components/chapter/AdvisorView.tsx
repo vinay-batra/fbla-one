@@ -56,7 +56,9 @@ export function AdvisorView({ c }: { c: ChapterController }) {
               </p>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ padding: 10, background: "#fff", borderRadius: 12, border: "0.5px solid var(--border)", display: "inline-block" }}>
+              {/* White plate is intentional and theme-independent: a QR code needs a
+                light quiet zone to scan reliably (dark mode would break scanning). */}
+            <div style={{ padding: 10, background: "#fff", borderRadius: 12, border: "0.5px solid var(--border)", display: "inline-block" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={qrSrc}

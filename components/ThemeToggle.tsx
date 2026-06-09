@@ -17,7 +17,7 @@ export function ThemeToggle() {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        border: "1px solid var(--border2)",
+        border: "0.5px solid var(--border2)",
         color: "var(--text)",
         background: "transparent",
         transition: "color 0.2s ease, border-color 0.2s ease",

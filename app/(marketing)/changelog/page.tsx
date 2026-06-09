@@ -125,6 +125,23 @@ const ERAS: Era[] = [
     ],
     tags: ["AI", "Redesign", "Polish"],
   },
+  {
+    num: "07",
+    name: "Chapter Learning Platform",
+    versions: "v1.4 - v1.6.2",
+    dateRange: "Jun 4 - Jun 8, 2026",
+    intro:
+      "FBLA One grew into a full chapter learning platform, then a deep trust and accessibility pass hardened every corner.",
+    highlights: [
+      "Chapter assignments with a per-member completion grid and one-tap practice",
+      "Student leaderboard plus a Road to Nationals study plan with stage countdowns",
+      "Weak-topic drills that retarget the exact skills each practice test reveals",
+      "Single-event focus, advisor and member views split cleanly, roles set at sign-up",
+      "Email-capture landing CTA and a chapter field that auto-syncs in settings",
+      "A full multi-domain audit: 59 findings fixed across security, a11y, and perf",
+    ],
+    tags: ["Chapter", "Learning", "Audit"],
+  },
 ];
 
 export default function ChangelogPage() {
@@ -193,7 +210,7 @@ export default function ChangelogPage() {
                 fontWeight: 700,
               }}
             >
-              Six chapters · scroll
+              Seven chapters · scroll
             </span>
             <svg width="22" height="10" viewBox="0 0 22 10" fill="none">
               <path

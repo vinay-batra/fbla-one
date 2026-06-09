@@ -138,11 +138,16 @@ export async function pullFromSupabase(userId: string): Promise<void> {
   }
 
   try {
-    const [{ data: regs }, { data: logs }, { data: saved }] = await Promise.all([
+    const [
+      { data: regs, error: regsErr },
+      { data: logs, error: logsErr },
+      { data: saved, error: savedErr },
+    ] = await Promise.all([
       supa.from("registrations").select("competition_slug").eq("user_id", userId),
       supa.from("practice_logs").select("id, competition_slug, score, out_of, duration_min, notes, logged_at").eq("user_id", userId).order("logged_at", { ascending: false }),
       supa.from("saved_resources").select("id, competition_slug, title, url, note, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
     ]);
+    if (regsErr || logsErr || savedErr) devError("pullFromSupabase queries:", regsErr || logsErr || savedErr);
 
     // ── Registrations: single-event model. The server is the source of truth
     // when it has a pick; otherwise migrate the one local pick up. NEVER union -

@@ -17,10 +17,11 @@ export function ChapterSetup({ c }: { c: ChapterController }) {
           <Card>
             <CardHeader eyebrow="Start fresh" title="Create a chapter" tagline="You'll be the advisor. Share the invite code with your members." />
             <form onSubmit={c.handleCreateChapter} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+              <label htmlFor="create-chapter-name" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
                 Chapter name
               </label>
               <input
+                id="create-chapter-name"
                 type="text"
                 value={c.createName}
                 onChange={(e) => c.setCreateName(e.target.value)}
@@ -39,14 +40,15 @@ export function ChapterSetup({ c }: { c: ChapterController }) {
           <Card>
             <CardHeader eyebrow="Already have one" title="Join a chapter" tagline="Ask your advisor for the invite code, then enter it below." />
             <form onSubmit={c.handleJoinChapter} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
-              <label className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+              <label htmlFor="join-invite-code" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
                 Invite code
               </label>
               <input
+                id="join-invite-code"
                 type="text"
                 value={c.joinCode}
                 onChange={(e) => c.setJoinCode(e.target.value.toUpperCase())}
-                placeholder="e.g. A4K9P"
+                placeholder="e.g. A4K9P2X7"
                 className="input-field"
                 style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.12em" }}
                 required
