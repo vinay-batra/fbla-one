@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
+import { rateLimit } from "@/lib/rate-limit";
 
 // A 50-question Haiku generation can run well past Vercel's plan default
 // function timeout (~10-15s), which would sever the stream mid-test. Pin the
@@ -56,23 +57,6 @@ Event overview: ${c.longDescription ?? c.description}
 Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis.`;
 }
 
-// Best-effort in-memory rate limiter (per serverless instance). Caps practice
-// test generations per identity within a rolling window. Durable cross-instance
-// protection would need a shared store (e.g. Upstash) - tracked as a follow-up.
-const RATE_BUCKET = new Map<string, { n: number; reset: number }>();
-function rateLimited(key: string, limit: number, windowMs = 10 * 60 * 1000): boolean {
-  const now = Date.now();
-  const e = RATE_BUCKET.get(key);
-  if (!e || now > e.reset) {
-    RATE_BUCKET.set(key, { n: 1, reset: now + windowMs });
-    // Bound memory: drop the oldest entry once the bucket grows large.
-    if (RATE_BUCKET.size > 5000) RATE_BUCKET.delete(RATE_BUCKET.keys().next().value as string);
-    return false;
-  }
-  e.n += 1;
-  return e.n > limit;
-}
-
 export async function POST(req: Request): Promise<Response> {
   // Gate: require an authenticated session OR an active preview cookie before
   // spending Anthropic tokens. Preview mode is intentionally open (advisors try
@@ -98,7 +82,11 @@ export async function POST(req: Request): Promise<Response> {
     }
     rateKey = `user:${user.id}`;
   }
-  if (rateLimited(rateKey, inPreview ? 12 : 40)) {
+  // Caps practice-test generations per identity in a 10-minute window. Enforced
+  // cross-instance when Upstash/Vercel KV is configured (lib/rate-limit), else
+  // per serverless instance - issue #20.
+  const { allowed } = await rateLimit(rateKey, inPreview ? 12 : 40, 10 * 60 * 1000);
+  if (!allowed) {
     return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a few minutes." }), {
       status: 429,
       headers: { "Content-Type": "application/json" },

@@ -40,6 +40,35 @@ export function exportSignupsCSV(members: MemberRow[], chapterName: string) {
   downloadCsv(`${chapterName.replace(/\s+/g, "-").toLowerCase()}-signups-${new Date().toISOString().slice(0, 10)}.csv`, csv);
 }
 
+// Regional registration export: grouped BY EVENT (the unit you submit at
+// regionals), sorted by event then last name, with the member name split into
+// Last / First (best effort: the last whitespace-separated token is the surname).
+export function exportRegionalCSV(members: MemberRow[], chapterName: string) {
+  const headers = ["Event", "Category", "Format", "Last Name", "First Name", "Email"];
+  type Entry = { event: string; category: string; format: string; last: string; first: string; email: string };
+  const entries: Entry[] = [];
+  for (const m of members) {
+    const parts = memberName(m).trim().split(/\s+/);
+    const last = parts.length > 1 ? parts[parts.length - 1] : "";
+    const first = parts.length > 1 ? parts.slice(0, -1).join(" ") : parts[0] ?? "";
+    for (const slug of m.registrations) {
+      const comp = getCompetition(slug);
+      entries.push({
+        event: comp?.name ?? slug,
+        category: comp?.category ?? "",
+        format: comp ? FORMAT_LABEL[comp.format] : "",
+        last,
+        first,
+        email: m.email ?? "",
+      });
+    }
+  }
+  entries.sort((a, b) => a.event.localeCompare(b.event) || a.last.localeCompare(b.last) || a.first.localeCompare(b.first));
+  const rows = entries.map((e) => [e.event, e.category, e.format, e.last, e.first, e.email]);
+  const csv = toCsv([headers, ...rows]);
+  downloadCsv(`${chapterName.replace(/\s+/g, "-").toLowerCase()}-regional-registration-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+}
+
 export function exportRosterCSV(members: MemberRow[], chapterName: string) {
   const headers = ["Name", "Email", "Role", "Events Count", "Registered Events"];
   const rows = members.map((m) => [

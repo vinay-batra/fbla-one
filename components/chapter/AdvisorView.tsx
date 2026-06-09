@@ -14,6 +14,7 @@ import {
   memberName,
   roleBadgeStyle,
   exportSignupsCSV,
+  exportRegionalCSV,
   exportRosterCSV,
 } from "./chapterHelpers";
 import type { ChapterController } from "./useChapterData";
@@ -277,13 +278,27 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           tagline="Every member in your chapter and the events they are prepping for."
           right={
             members.length > 0 ? (
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => exportRegionalCSV(members, chapter?.name ?? "chapter")}
+                  className="btn btn-ghost btn-sm"
+                  style={{ gap: 6, display: "flex", alignItems: "center" }}
+                  title="Grouped by event, Last/First names - matches regional registration forms"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <path d="M7 10l5 5 5-5" />
+                    <path d="M12 15V3" />
+                  </svg>
+                  Regional CSV
+                </button>
                 <button
                   type="button"
                   onClick={() => exportSignupsCSV(members, chapter?.name ?? "chapter")}
                   className="btn btn-ghost btn-sm"
                   style={{ gap: 6, display: "flex", alignItems: "center" }}
-                  title="One row per member per event - for regional sign-up forms"
+                  title="One row per member per event, sorted by member"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

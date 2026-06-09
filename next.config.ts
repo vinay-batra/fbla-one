@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 
-// Content-Security-Policy. Shipped in REPORT-ONLY mode first: enforcing a strict
-// script-src would block Next's inline hydration/bootstrap scripts and the
-// inline theme-init script in app/layout.tsx, which needs nonce wiring to do
-// safely. Report-only surfaces violations (browser console / report-uri)
-// without breaking the live site; once the console is clean, switch the key to
-// "Content-Security-Policy" to enforce.
+// Content-Security-Policy, ENFORCED. script-src/style-src keep 'unsafe-inline' so
+// Next's inline hydration/bootstrap and the inline theme-init script in
+// app/layout.tsx are allowed without nonce wiring; everything else is locked to
+// 'self' plus the explicit third parties below (Supabase, Anthropic, Google
+// Fonts/avatars, Cloudflare Turnstile, the QR image host). Was shipped in
+// report-only first and validated clean - to re-observe, change the header key
+// back to "Content-Security-Policy-Report-Only".
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
@@ -32,7 +33,7 @@ const SECURITY_HEADERS = [
     key: "Permissions-Policy",
     value: "microphone=(), camera=(), geolocation=()",
   },
-  { key: "Content-Security-Policy-Report-Only", value: CSP },
+  { key: "Content-Security-Policy", value: CSP },
 ];
 
 const nextConfig: NextConfig = {
