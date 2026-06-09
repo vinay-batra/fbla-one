@@ -1,27 +1,17 @@
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 const SYSTEM = `You are a helpful assistant for FBLA One, a free all-in-one prep platform for FBLA (Future Business Leaders of America) chapters at fbla.one. Answer questions about FBLA competitive events, how to prepare, study strategies, the 55 competition guides, AI practice tests, deadlines, chapter management, and general business concepts that show up on FBLA objective tests (accounting, business law, economics, marketing, etc).
 
 Keep every reply short: 2 to 4 sentences, under 70 words. Lead with the answer, skip preamble and filler. Be encouraging and practical. No em dashes. No asterisks. No emojis.`;
 
 // Per-IP cap for unauthenticated public AI chat: 5 messages / IP / 24h
-// (signed-in users are unlimited). Enforced cross-instance when Upstash/Vercel KV
-// is configured (lib/rate-limit), else per serverless instance - issue #20.
+// (signed-in users are unlimited). Simple in-memory sliding window - the same
+// limiter Corvo and Lark use (lib/rate-limit). Per serverless instance, which is
+// enough for Vercel's single region to stop runaway abuse.
 const IP_LIMIT = 5;
 const WINDOW_MS = 24 * 60 * 60 * 1000;
-
-function getIp(req: NextRequest): string {
-  // Prefer Vercel's own header (set at the edge, not client-controllable) over
-  // the spoofable x-real-ip / x-forwarded-for a caller can inject.
-  return (
-    (req.headers.get("x-vercel-forwarded-for") || "").split(",")[0].trim() ||
-    (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
 
 // Keep the conversation we forward to Anthropic small and well-formed: a public
 // endpoint must not let a caller POST a giant array or inject arbitrary roles.
@@ -74,11 +64,7 @@ export async function POST(req: NextRequest) {
   const signedIn = await isSignedIn();
 
   if (!signedIn) {
-    const ip = getIp(req);
-    // Fail closed for unidentifiable callers so they cannot share one "unknown"
-    // bucket and ride past the cap; otherwise enforce the per-IP window.
-    const overLimit = !ip || ip === "unknown" || !(await rateLimit(`aichat:${ip}`, IP_LIMIT, WINDOW_MS)).allowed;
-    if (overLimit) {
+    if (!rateLimit(`aichat:${getClientIP(req)}`, IP_LIMIT, WINDOW_MS)) {
       return Response.json(
         { content: "You've used all 5 free messages for today. Sign up for free to keep going." },
         { status: 429 }

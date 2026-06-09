@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getClientIP } from "@/lib/rate-limit";
 
 // A 50-question Haiku generation can run well past Vercel's plan default
 // function timeout (~10-15s), which would sever the stream mid-test. Pin the
@@ -65,12 +65,7 @@ export async function POST(req: Request): Promise<Response> {
   const inPreview = cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
   if (inPreview) {
-    // Prefer Vercel's edge header (not client-controllable) over the spoofable
-    // x-forwarded-for, so an anon caller cannot dodge the limit by faking the IP.
-    const ip = (req.headers.get("x-vercel-forwarded-for") || "").split(",")[0].trim()
-      || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim()
-      || "anon";
-    rateKey = `preview:${ip}`;
+    rateKey = `preview:${getClientIP(req)}`;
   } else {
     const supabase = await getSupabaseServer();
     const user = supabase ? (await supabase.auth.getUser()).data.user : null;
@@ -82,11 +77,10 @@ export async function POST(req: Request): Promise<Response> {
     }
     rateKey = `user:${user.id}`;
   }
-  // Caps practice-test generations per identity in a 10-minute window. Enforced
-  // cross-instance when Upstash/Vercel KV is configured (lib/rate-limit), else
-  // per serverless instance - issue #20.
-  const { allowed } = await rateLimit(rateKey, inPreview ? 12 : 40, 10 * 60 * 1000);
-  if (!allowed) {
+  // Caps practice-test generations per identity in a 10-minute window. Simple
+  // in-memory sliding window (lib/rate-limit) - the same limiter Corvo and Lark
+  // use, per serverless instance, sufficient for Vercel's single region.
+  if (!rateLimit(rateKey, inPreview ? 12 : 40, 10 * 60 * 1000)) {
     return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a few minutes." }), {
       status: 429,
       headers: { "Content-Type": "application/json" },
