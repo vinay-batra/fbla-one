@@ -420,3 +420,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — accessibility pass, minor notes
 - 2026-06-10 — reviewed env and config
 - 2026-06-10 — lint + format clean
+- 2026-06-10 — e2e sanity check passed
