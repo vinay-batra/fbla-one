@@ -433,3 +433,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — ran regression pass, no regressions
 - 2026-06-10 — reviewed error logging
 - 2026-06-10 — audited dependencies, no advisories
+- 2026-06-10 — lint + format clean
