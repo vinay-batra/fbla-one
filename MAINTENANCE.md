@@ -431,3 +431,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — general housekeeping
 - 2026-06-10 — smoke-tested core user flows, all green
 - 2026-06-10 — ran regression pass, no regressions
+- 2026-06-10 — reviewed error logging
