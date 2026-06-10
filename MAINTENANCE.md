@@ -428,3 +428,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — checked auth and session handling
 - 2026-06-10 — ran regression pass, no regressions
 - 2026-06-10 — lint + format clean
+- 2026-06-10 — general housekeeping
