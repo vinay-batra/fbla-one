@@ -411,3 +411,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — general housekeeping
 - 2026-06-10 — checked mobile layouts
 - 2026-06-10 — reviewed dependency updates
+- 2026-06-10 — reviewed env and config
