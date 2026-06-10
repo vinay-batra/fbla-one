@@ -426,3 +426,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — reviewed dependency updates
 - 2026-06-10 — smoke-tested core user flows, all green
 - 2026-06-10 — checked auth and session handling
+- 2026-06-10 — ran regression pass, no regressions
