@@ -409,3 +409,4 @@ Routine checks, audits, and tests.
 - 2026-06-08 — audited dependencies, no advisories
 - 2026-06-08 — audited dependencies, no advisories
 - 2026-06-10 — general housekeeping
+- 2026-06-10 — checked mobile layouts
