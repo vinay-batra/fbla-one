@@ -469,3 +469,4 @@ Routine checks, audits, and tests.
 - 2026-06-11 — general housekeeping
 - 2026-06-11 — checked mobile layouts
 - 2026-06-11 — accessibility pass, minor notes
+- 2026-06-11 — reviewed env and config
