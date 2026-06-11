@@ -471,3 +471,4 @@ Routine checks, audits, and tests.
 - 2026-06-11 — accessibility pass, minor notes
 - 2026-06-11 — reviewed env and config
 - 2026-06-11 — verified production build output
+- 2026-06-11 — reviewed error logging
