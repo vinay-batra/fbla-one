@@ -25,6 +25,7 @@ ACCURACY - this matters more than anything else:
 - Only write questions you are certain of. If you are not fully confident the keyed answer is factually correct, write an easier question on a concept you ARE certain about. A wrong answer key is the worst possible failure - it teaches the student the wrong thing.
 - Exactly ONE option may be correct. The other three must be clearly and verifiably wrong, not "also defensible." No two options may mean the same thing.
 - Do not use "All of the above", "None of the above", "Both A and B", or any option that refers to another option.
+- NUMERIC ANSWERS: Most questions must be CONCEPTUAL - definitions, which formula or method applies, cause and effect, or interpreting a result. You may ask for a computed number ONLY when it takes a SINGLE, unmistakable operation on the given values: one multiplication (a markup or one commission rate on a single amount), one subtraction (one percentage discount), one division of two given numbers (a simple probability or ratio), or selecting a value (the median or mode of a short ordered list). DO NOT chain operations or sum a list: NO overtime-plus-regular pay, NO base-plus-commission, NO tax-then-total, NO mean that requires adding several numbers, NO present or future value, annuity, amortization, bond pricing, NPV, IRR, or depreciation. When a realistic question would need more than one step, ask which method or formula applies instead of the number. After writing any numeric question, recompute it yourself and confirm the keyed option matches exactly; if it does not, rewrite it as a conceptual question.
 
 EXPLANATIONS - shown to the student after they submit:
 - Write 1 to 3 clear sentences: say what the correct answer is (in words) and why it is right, then name the single most tempting wrong choice by its WORDING and why it is wrong.
@@ -35,7 +36,7 @@ QUESTION QUALITY:
 - Distractors must be plausible - rooted in common student misconceptions, not obviously wrong.
 - All four options must be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed - that is a giveaway. Give the distractors equal detail.
 - Spread the correct letter roughly evenly across A, B, C, and D; never default to one position.
-- Use precise professional vocabulary. Mix definition (about 20%), scenario or application (about 50%), compare and contrast (about 20%), and calculation where applicable (about 10%). Never test the same concept twice in one test.
+- Use precise professional vocabulary. Mix definition (about 25%), scenario or application (about 55%), and compare and contrast (about 20%). Never test the same concept twice in one test.
 - Match real FBLA national difficulty: challenging but fair.
 - Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field.`;
 

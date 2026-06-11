@@ -35,6 +35,12 @@ const ELIGIBLE = COMPETITIONS.filter(
 
 // ── Score helpers ──────────────────────────────────────────────
 
+// MM:SS stopwatch formatter for the in-test timer.
+function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
 function scoreMeta(pct: number): { label: string; color: string; bg: string } {
   if (pct >= 90) return { label: "Outstanding", color: "var(--green)", bg: "rgba(var(--green-rgb), 0.1)" };
   if (pct >= 80) return { label: "Strong", color: "var(--green)", bg: "rgba(var(--green-rgb), 0.08)" };
@@ -89,6 +95,9 @@ function CoachInner() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Option>>({});
   const [logged, setLogged] = useState(false);
+  // Test stopwatch: starts when the generated test enters the taking phase.
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const testStartRef = useRef<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   // Topic stats must be recorded exactly once per generated test, and never for
   // an in-session retry of missed questions (which would double-count topics).
@@ -134,6 +143,19 @@ function CoachInner() {
     return () => window.removeEventListener("keydown", handler);
   }, [phase, currentIdx, questions.length]);
 
+  // Stopwatch: starts the moment the generated test enters the taking phase and
+  // ticks each second until submit. testStartRef is reset by generate/retry/restart.
+  useEffect(() => {
+    if (phase !== "taking") return;
+    if (testStartRef.current === null) testStartRef.current = Date.now();
+    const tick = () => {
+      if (testStartRef.current !== null) setElapsedMs(Date.now() - testStartRef.current);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [phase]);
+
   const generate = useCallback(async (focusTopic?: string) => {
     if (!selectedSlug) return;
     setGenError("");
@@ -142,6 +164,8 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    testStartRef.current = null;
+    setElapsedMs(0);
     recordedRef.current = false;
     isRetryRef.current = false;
     setDrillTopic(focusTopic ?? null);
@@ -224,6 +248,8 @@ function CoachInner() {
       if (results.length) recordTopicResults(selectedSlug, results);
       recordedRef.current = true;
     }
+    // Freeze the precise final time (the 1s interval can be slightly stale).
+    if (testStartRef.current !== null) setElapsedMs(Date.now() - testStartRef.current);
     setPhase("reviewing");
   }
 
@@ -237,7 +263,7 @@ function CoachInner() {
       competitionSlug: selectedSlug,
       score: correct,
       outOf: questions.length,
-      durationMin: null,
+      durationMin: elapsedMs > 0 ? Math.max(1, Math.round(elapsedMs / 60000)) : null,
       notes: `${AI_LOG_PREFIX} - ${correct}/${questions.length}`,
     });
   }
@@ -249,6 +275,8 @@ function CoachInner() {
     setCurrentIdx(0);
     setLogged(false);
     setGenError("");
+    testStartRef.current = null;
+    setElapsedMs(0);
   }
 
   // Re-quiz only the questions you got wrong - the highest-leverage way to study.
@@ -263,6 +291,8 @@ function CoachInner() {
     setCurrentIdx(0);
     setLogged(false);
     setGenError("");
+    testStartRef.current = null;
+    setElapsedMs(0);
     setPhase("taking");
   }
 
@@ -541,9 +571,22 @@ function CoachInner() {
               {Object.keys(answers).length} of {questions.length} answered
             </p>
           </div>
-          <button type="button" onClick={restart} className="btn btn-ghost btn-sm">
-            Exit test
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              className="font-mono"
+              role="timer"
+              aria-label="Time elapsed"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--text2)", background: "var(--bg3)", border: "0.5px solid var(--border)", padding: "5px 12px", borderRadius: 999 }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2 2M9 2h6" />
+              </svg>
+              {formatClock(elapsedMs)}
+            </span>
+            <button type="button" onClick={restart} className="btn btn-ghost btn-sm">
+              Exit test
+            </button>
+          </div>
         </div>
 
         {/* Progress dots */}
