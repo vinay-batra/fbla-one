@@ -691,6 +691,10 @@ function CoachInner() {
           )}
         </div>
 
+        <p style={{ fontSize: 11, color: "var(--text3)", textAlign: "center" }}>
+          The correct answer and a full explanation for every question appear after you submit.
+        </p>
+
         {!allAnswered && (
           <p style={{ fontSize: 11, color: "var(--text3)", textAlign: "center" }}>
             Answer all questions to submit. Use the dots above to jump to unanswered questions.

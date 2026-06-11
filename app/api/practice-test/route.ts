@@ -12,25 +12,32 @@ import { rateLimit, getClientIP } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const SYSTEM_PROMPT = `You are an expert question writer for FBLA (Future Business Leaders of America) competitive events. You create realistic practice questions that exactly match the style, vocabulary, and difficulty of actual FBLA national-level objective tests.
+const SYSTEM_PROMPT = `You are an expert question writer for FBLA (Future Business Leaders of America) competitive events. You write realistic objective questions that match the style, vocabulary, and difficulty of actual FBLA national-level tests, and every keyed answer is factually correct.
 
 CRITICAL OUTPUT FORMAT - follow exactly:
 - Output ONLY raw NDJSON: one valid JSON object per line, nothing else
 - No markdown, no code fences, no commentary, no blank lines between questions
 - Each line must be a complete, valid JSON object with this exact schema:
-{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"Why A is correct, plus the key reason the most tempting wrong option is wrong.","topic":"Exact topic name from the list"}
+{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"States the correct answer in words and why it is right, then names the most tempting wrong choice by its wording and why it is wrong. Never mentions option letters.","topic":"Exact topic name from the list"}
 
-Question quality rules:
-- The "topic" field MUST be copied verbatim from the numbered topic list in the user message (pick the single best-fit topic for that question). This powers each student's weak-topic analysis, so it must be accurate.
-- Distractors must be plausible - rooted in common misconceptions, not obviously wrong
-- All four options MUST be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed option - a longer or more-qualified answer is an obvious giveaway. If the right answer needs detail, give the distractors equal detail; otherwise tighten it so all four read as equally likely.
-- Balance the correct letter across the test: aim for a roughly even spread of A, B, C, and D, and never default to one position
-- Use precise professional vocabulary appropriate to the subject
-- Mix question types: definition (20%), scenario/application (50%), compare/contrast (20%), calculation when applicable (10%)
-- Never repeat the same concept twice across the test
-- Difficulty should match actual FBLA national competition level - challenging but fair
-- Keep each explanation to ONE or TWO sentences: why the correct answer is right and the single biggest reason a student picks the wrong one. Do not walk through all four options. Concise explanations matter - the whole test must stream quickly.
-- Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field. The question and explanation strings are shown verbatim to students.`;
+ACCURACY - this matters more than anything else:
+- Before writing a question, work out its single correct answer yourself. Put that exact answer as the text of one option and set "correct" to that option's letter. Re-read the question and confirm the keyed option genuinely answers it before you emit the line.
+- Only write questions you are certain of. If you are not fully confident the keyed answer is factually correct, write an easier question on a concept you ARE certain about. A wrong answer key is the worst possible failure - it teaches the student the wrong thing.
+- Exactly ONE option may be correct. The other three must be clearly and verifiably wrong, not "also defensible." No two options may mean the same thing.
+- Do not use "All of the above", "None of the above", "Both A and B", or any option that refers to another option.
+
+EXPLANATIONS - shown to the student after they submit:
+- Write 1 to 3 clear sentences: say what the correct answer is (in words) and why it is right, then name the single most tempting wrong choice by its WORDING and why it is wrong.
+- NEVER reference option letters (A, B, C, D) or positions like "the first option." The options are randomly reordered before display, so a letter reference would point at the wrong choice. Refer to each choice by its content. Good: "Net income is revenue minus all expenses, so the 4,200 figure is correct; the 9,000 distractor is gross profit, which ignores operating expenses." Bad: "A is correct because..."
+
+QUESTION QUALITY:
+- The "topic" field MUST be copied verbatim from the numbered topic list in the user message (the single best fit). It powers each student's weak-topic analysis, so it must be accurate.
+- Distractors must be plausible - rooted in common student misconceptions, not obviously wrong.
+- All four options must be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed - that is a giveaway. Give the distractors equal detail.
+- Spread the correct letter roughly evenly across A, B, C, and D; never default to one position.
+- Use precise professional vocabulary. Mix definition (about 20%), scenario or application (about 50%), compare and contrast (about 20%), and calculation where applicable (about 10%). Never test the same concept twice in one test.
+- Match real FBLA national difficulty: challenging but fair.
+- Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field.`;
 
 function buildUserPrompt(slug: string, count: number, focusTopic?: string): string {
   const c = getCompetition(slug);
@@ -54,7 +61,7 @@ ${topicList || "General business knowledge relevant to this event"}
 
 Event overview: ${c.longDescription ?? c.description}
 
-Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis.`;
+Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis. Verify every keyed answer is factually correct before emitting it, and write each explanation referring to choices by their wording, never by letter.`;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -130,6 +137,10 @@ export async function POST(req: Request): Promise<Response> {
           // the now-concise one-line explanations, a 25-question test streams
           // in a fraction of the previous time.
           model: "claude-haiku-4-5-20251001",
+          // Lower than the default temperature on purpose: this is a correctness-
+          // critical task, and a high temperature is the main driver of wrong answer
+          // keys and implausible options. Topic spread still keeps tests varied.
+          temperature: 0.5,
           // Scale with question count; concise explanations keep this modest.
           max_tokens: Math.min(12000, count * 220 + 600),
           system: SYSTEM_PROMPT,
