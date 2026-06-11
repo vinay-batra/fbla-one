@@ -473,3 +473,4 @@ Routine checks, audits, and tests.
 - 2026-06-11 — verified production build output
 - 2026-06-11 — reviewed error logging
 - 2026-06-11 — smoke-tested core user flows, all green
+- 2026-06-11 — accessibility pass, minor notes
