@@ -2,6 +2,29 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## v1.7.0 - June 11, 2026 - Hardening, correct AI math, live captcha
+
+A large session: bot protection went live, the CSP is enforced, the AI practice tests are now arithmetically correct, and an owner admin view shipped.
+
+### Security
+- **Turnstile captcha is LIVE on `/auth`.** Cloudflare widget + `NEXT_PUBLIC_TURNSTILE_SITE_KEY` on Vercel + Supabase Attack Protection captcha enabled with the Turnstile secret. Fixed a `useTurnstile` mount bug (the widget effect ran behind the session-check loader and never mounted) - it now keys off `sessionChecked`.
+- **CSP is now ENFORCED** (`next.config.ts`, flipped from report-only). `'unsafe-eval'` is added in development only so `next dev`'s React Refresh works while production stays strict.
+- **Rate limiting** rewritten to the Corvo/Lark in-memory sliding window (`lib/rate-limit.ts`, rightmost-XFF `getClientIP`); Upstash dropped. Resolves #20 by decision (per-instance).
+
+### AI practice tests - numeric answers now guaranteed correct
+- **Calculator tool** (`lib/calc.ts`): a real recursive-descent evaluator with correct precedence, parentheses, and `^` exponentiation (not `eval`, which treats `^` as XOR). The generator runs an Anthropic tool-use loop so the model computes via the tool, not mental math.
+- **Answer verification** (coach): every computed-number question carries a `calc` expression; the client evaluates it and re-keys to the matching option, or drops the question when the right answer is absent. A student can no longer be shown a wrong numeric answer.
+- **Letter-free explanations** - the option shuffle had made "A is correct"-style explanations point at the wrong choice.
+- **In-test stopwatch** (starts at generation, ticks to submit, saved to the practice log).
+
+### Admin & advisor
+- **Owner-only `/app/admin`** email-signups view (`/api/admin/signups`, service-role read, gated by `NEXT_PUBLIC_ADMIN_EMAIL`).
+- **Regional registration CSV** export in the advisor view (event-grouped, Last/First split).
+
+### CI & housekeeping
+- **db-backup workflow fixed** - it referenced `secrets.*` inside `if:` (not allowed), causing a startup-failure red X on every push. Rewritten to gate on a step output; modernized the apt-key step. Nightly only; green no-op until `SUPABASE_DB_URL` is set.
+- **`lib/version.ts`** is now the single version source (the footer was hardcoded at v1.3); public changelog page caught up to a v1.4-v1.6.2 era card; a11y label associations; mobile 16px-on-all-inputs rule; `.catch` on the auth promise chains.
+
 ## v1.6.2 - June 8, 2026 - Audit remediation (all 59 findings)
 
 Fixed every finding from the v1.6 audit (0 Critical, 0 High, 19 Medium, 35 Low, 5 Info). Verified: tsc + lint + build clean, `npm audit` 0 vulnerabilities, and a full live regression (advisor + member chapter flows, auth, tracker, email capture, coach generation) with no console errors.

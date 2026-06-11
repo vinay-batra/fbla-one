@@ -22,7 +22,7 @@ Sign up (as a student or advisor), pick your event, then everything lives in the
 
 **For students**
 - **55 competition guides** -- every FBLA event with test format, topic list, curated study resources, and a link to its official FBLA guidelines
-- **AI practice tests** -- 10/25/50-question tests calibrated to your event's exact topic outline, streamed live, with an explanation on every wrong answer. Each question is topic-tagged.
+- **AI practice tests** -- 10/25/50-question tests calibrated to your event's exact topic outline, streamed live, with a plain-language explanation on every question and an in-test stopwatch. Every numeric answer is computed and verified by a calculator tool (not the model's mental math), so the answer keys are correct. Each question is topic-tagged.
 - **Weak-topic drills** -- the coach learns your lowest-accuracy topics and a "Drill" button generates a test focused on just that topic
 - **Retry your misses** -- re-quiz only the questions you got wrong
 - **Day streak + score tracker** -- consecutive-practice streak and per-event score trends on the dashboard
