@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
 import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, onStorageChange, type WeakTopic } from "@/lib/storage";
+import { evaluateExpression } from "@/lib/calc";
 import { AI_LOG_PREFIX } from "@/lib/chapter";
 
 // ── Types ──────────────────────────────────────────────────────
@@ -19,6 +20,9 @@ type Question = {
   correct: Option;
   explanation: string;
   topic?: string;
+  // Arithmetic expression the model used for a computed numeric answer (lib/calc
+  // evaluates it to re-key or drop the question). Absent for conceptual questions.
+  calc?: string;
 };
 
 type Phase = "idle" | "generating" | "taking" | "reviewing";
@@ -52,6 +56,34 @@ function scoreMeta(pct: number): { label: string; color: string; bg: string } {
 // ── Answer-position shuffle ────────────────────────────────────
 
 const OPTION_KEYS: Option[] = ["A", "B", "C", "D"];
+
+// Pull the first number out of an option label like "$9,533.08" or "12 items".
+function optionNumber(text: string): number | null {
+  const m = text.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+// For a question whose answer is a computed number, the model sends a `calc`
+// expression. Evaluate it exactly (lib/calc) and reconcile with the options:
+//   - exactly one option matches the computed value -> key to that option (fixes
+//     a mis-keyed answer, e.g. a bond that really prices at $920, not $500)
+//   - no option matches -> drop the question (the right answer is not even
+//     present, e.g. a bungled annuity)
+//   - calc absent / unparseable / ambiguous -> leave the question untouched
+function verifyNumericAnswer(q: Question): Question | null {
+  const calc = q.calc;
+  if (typeof calc !== "string" || !calc.trim()) return q;
+  let target: number;
+  try { target = evaluateExpression(calc); } catch { return q; }
+  const tol = Math.abs(target) * 0.01 + 0.01; // tolerate rounding to cents
+  const hits = OPTION_KEYS.filter((k) => {
+    const n = optionNumber(q.options[k]);
+    return n !== null && Math.abs(n - target) <= tol;
+  });
+  if (hits.length === 1) return { ...q, correct: hits[0] };
+  if (hits.length === 0) return null;
+  return q;
+}
 
 // Randomize answer position so the correct letter is evenly spread (defense in
 // depth on top of the prompt's letter-balance rule). Remaps `correct` by the
@@ -214,9 +246,15 @@ function CoachInner() {
             const optionsOk = !!opts && KEYS.every((k) => typeof opts[k] === "string" && opts[k].trim());
             const correctOk = KEYS.includes(q.correct as string);
             if (q.question && optionsOk && correctOk) {
-              parsed.push(shuffleQuestionOptions({ ...q, id: parsed.length + 1 }));
-              setGeneratedSoFar(parsed.length);
-              setQuestions([...parsed]);
+              // Verify any computed numeric answer against the model's calc
+              // expression: re-key to the matching option, or drop the question
+              // if the right answer is not even present.
+              const verified = verifyNumericAnswer(q);
+              if (verified) {
+                parsed.push(shuffleQuestionOptions({ ...verified, id: parsed.length + 1 }));
+                setGeneratedSoFar(parsed.length);
+                setQuestions([...parsed]);
+              }
             }
           } catch (parseErr) {
             // Skip malformed lines, keep going

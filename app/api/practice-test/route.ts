@@ -4,6 +4,7 @@ import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { evaluateExpression } from "@/lib/calc";
 
 // A 50-question Haiku generation can run well past Vercel's plan default
 // function timeout (~10-15s), which would sever the stream mid-test. Pin the
@@ -12,20 +13,44 @@ import { rateLimit, getClientIP } from "@/lib/rate-limit";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+// The model computes every number through this tool (lib/calc evaluates it with a
+// real parser - exact arithmetic, correct precedence and parentheses, never eval),
+// so numeric answer keys are no longer the model's flaky mental math.
+const CALCULATOR_TOOL: Anthropic.Tool = {
+  name: "calculator",
+  description:
+    "Evaluate an arithmetic expression and return the exact result. You MUST use this for EVERY calculation - never do arithmetic yourself. Supports + - * / and ^ (exponentiation, including negative and fractional exponents), parentheses, and standard operator precedence. Use explicit parentheses so precedence is unambiguous. Examples: '45 * 1.6', '720 + (18 * 1.5 * 2)', '2000 * ((1 - (1.07)^-6) / 0.07)'. Use only digits and the operators + - * / ^ and parentheses - no variables, units, percent signs, or functions (write 5% as 0.05).",
+  input_schema: {
+    type: "object",
+    properties: {
+      expression: {
+        type: "string",
+        description: "The arithmetic expression to evaluate, e.g. '(84 * (1 - 0.25))'",
+      },
+    },
+    required: ["expression"],
+  },
+};
+
+// Trim floating-point noise while keeping enough precision for money and ratios.
+function formatNumber(n: number): string {
+  return String(Math.round(n * 1e6) / 1e6);
+}
+
 const SYSTEM_PROMPT = `You are an expert question writer for FBLA (Future Business Leaders of America) competitive events. You write realistic objective questions that match the style, vocabulary, and difficulty of actual FBLA national-level tests, and every keyed answer is factually correct.
 
 CRITICAL OUTPUT FORMAT - follow exactly:
 - Output ONLY raw NDJSON: one valid JSON object per line, nothing else
 - No markdown, no code fences, no commentary, no blank lines between questions
 - Each line must be a complete, valid JSON object with this exact schema:
-{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"States the correct answer in words and why it is right, then names the most tempting wrong choice by its wording and why it is wrong. Never mentions option letters.","topic":"Exact topic name from the list"}
+{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"States the correct answer in words and why it is right, then names the most tempting wrong choice by its wording and why it is wrong. Never mentions option letters.","topic":"Exact topic name from the list","calc":"OPTIONAL: the arithmetic expression that evaluates to the correct numeric answer - include for computed-number questions, omit for conceptual ones"}
 
 ACCURACY - this matters more than anything else:
 - Before writing a question, work out its single correct answer yourself. Put that exact answer as the text of one option and set "correct" to that option's letter. Re-read the question and confirm the keyed option genuinely answers it before you emit the line.
 - Only write questions you are certain of. If you are not fully confident the keyed answer is factually correct, write an easier question on a concept you ARE certain about. A wrong answer key is the worst possible failure - it teaches the student the wrong thing.
 - Exactly ONE option may be correct. The other three must be clearly and verifiably wrong, not "also defensible." No two options may mean the same thing.
 - Do not use "All of the above", "None of the above", "Both A and B", or any option that refers to another option.
-- NUMERIC ANSWERS: Most questions must be CONCEPTUAL - definitions, which formula or method applies, cause and effect, or interpreting a result. You may ask for a computed number ONLY when it takes a SINGLE, unmistakable operation on the given values: one multiplication (a markup or one commission rate on a single amount), one subtraction (one percentage discount), one division of two given numbers (a simple probability or ratio), or selecting a value (the median or mode of a short ordered list). DO NOT chain operations or sum a list: NO overtime-plus-regular pay, NO base-plus-commission, NO tax-then-total, NO mean that requires adding several numbers, NO present or future value, annuity, amortization, bond pricing, NPV, IRR, or depreciation. When a realistic question would need more than one step, ask which method or formula applies instead of the number. After writing any numeric question, recompute it yourself and confirm the keyed option matches exactly; if it does not, rewrite it as a conceptual question.
+- CALCULATIONS: You have a calculator tool. For EVERY numeric value that takes any arithmetic - in the question, the correct answer, or a distractor - you MUST call the calculator tool and use its exact returned value. NEVER compute a number yourself, not even a simple one. Write the full expression with explicit parentheses (for example "2000 * ((1 - (1.07)^-6) / 0.07)" for the present value of an annuity, or "720 + (18 * 1.5 * 2)" for overtime pay). Because the calculator guarantees the arithmetic, realistic multi-step calculation questions are encouraged: markup and discount, payroll with overtime, present and future value, annuities, loan payments, ratios, probability, depreciation. Build distractors from common mistakes by computing those with the tool too (for example forgetting to discount, or using the wrong rate). Keep a healthy mix of conceptual and calculation questions - do not make every question a calculation. For every question whose correct answer is a computed number, also include a top-level "calc" field set to the exact expression you sent to the calculator for that answer (digits and + - * / ^ ( ) only); the app re-checks it against the options. Omit "calc" on conceptual questions.
 
 EXPLANATIONS - shown to the student after they submit:
 - Write 1 to 3 clear sentences: say what the correct answer is (in words) and why it is right, then name the single most tempting wrong choice by its WORDING and why it is wrong.
@@ -62,7 +87,7 @@ ${topicList || "General business knowledge relevant to this event"}
 
 Event overview: ${c.longDescription ?? c.description}
 
-Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis. Verify every keyed answer is factually correct before emitting it, and write each explanation referring to choices by their wording, never by letter.`;
+Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis. Use the calculator tool for EVERY computation - never do mental math. Write each explanation referring to choices by their wording, never by letter.`;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -131,30 +156,51 @@ export async function POST(req: Request): Promise<Response> {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const anthropicStream = client.messages.stream({
-          // Haiku 4.5 generates objective MCQs ~2-3x faster than Sonnet at
-          // comparable quality for this calibrated, well-specified task - the
-          // single biggest lever on "the tests take too long". Combined with
-          // the now-concise one-line explanations, a 25-question test streams
-          // in a fraction of the previous time.
-          model: "claude-haiku-4-5-20251001",
-          // Lower than the default temperature on purpose: this is a correctness-
-          // critical task, and a high temperature is the main driver of wrong answer
-          // keys and implausible options. Topic spread still keeps tests varied.
-          temperature: 0.5,
-          // Scale with question count; concise explanations keep this modest.
-          max_tokens: Math.min(12000, count * 220 + 600),
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: buildUserPrompt(slug, count, focusTopic) }],
-        });
+        // Tool-use loop. The model writes the questions and calls the calculator
+        // for every number; we evaluate each expression exactly and feed it back.
+        // Text deltas stream to the client across turns, and the client's NDJSON
+        // line buffer reassembles any line split across a calculator call. Bounded
+        // so a misbehaving model can never loop forever.
+        const messages: Anthropic.MessageParam[] = [
+          { role: "user", content: buildUserPrompt(slug, count, focusTopic) },
+        ];
+        for (let turn = 0; turn < 8; turn++) {
+          const turnStream = client.messages.stream({
+            // Haiku 4.5 keeps generation fast; the calculator tool, not the model,
+            // now owns arithmetic, so wrong keys from mental math are gone.
+            model: "claude-haiku-4-5-20251001",
+            // Lower than the default temperature: a high temperature is the main
+            // driver of wrong keys and implausible options. Topic spread still
+            // keeps tests varied.
+            temperature: 0.5,
+            // Scale with question count; concise explanations keep this modest.
+            max_tokens: Math.min(12000, count * 220 + 600),
+            system: SYSTEM_PROMPT,
+            tools: [CALCULATOR_TOOL],
+            messages,
+          });
+          turnStream.on("text", (delta) => controller.enqueue(encoder.encode(delta)));
+          const message = await turnStream.finalMessage();
 
-        for await (const chunk of anthropicStream) {
-          if (
-            chunk.type === "content_block_delta" &&
-            chunk.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(chunk.delta.text));
-          }
+          if (message.stop_reason !== "tool_use") break;
+
+          const toolUses = message.content.filter(
+            (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
+          );
+          messages.push({ role: "assistant", content: message.content });
+          messages.push({
+            role: "user",
+            content: toolUses.map((tu) => {
+              const expr = String((tu.input as { expression?: unknown }).expression ?? "");
+              let result: string;
+              try {
+                result = formatNumber(evaluateExpression(expr));
+              } catch (e) {
+                result = `ERROR: ${(e as Error).message}. Use only digits and + - * / ^ ( ).`;
+              }
+              return { type: "tool_result" as const, tool_use_id: tu.id, content: result };
+            }),
+          });
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Generation failed";
