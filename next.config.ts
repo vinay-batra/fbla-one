@@ -7,9 +7,14 @@ import type { NextConfig } from "next";
 // Fonts/avatars, Cloudflare Turnstile, the QR image host). Was shipped in
 // report-only first and validated clean - to re-observe, change the header key
 // back to "Content-Security-Policy-Report-Only".
+//
+// 'unsafe-eval' is added in DEVELOPMENT ONLY: `next dev` (React Refresh) needs
+// eval() for dev tooling, while production never uses it. This keeps the prod CSP
+// strict without breaking local development.
+const isDev = process.env.NODE_ENV !== "production";
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https://api.qrserver.com https://*.supabase.co https://lh3.googleusercontent.com",

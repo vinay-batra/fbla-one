@@ -20,13 +20,17 @@ declare global {
   }
 }
 
-function useTurnstile(onToken: (t: string | null) => void) {
+function useTurnstile(onToken: (t: string | null) => void, ready: boolean) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
 
   useEffect(() => {
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (!siteKey || !containerRef.current) return;
+    // `ready` gates until the form (and this container) is actually rendered. The
+    // auth page shows a loader while the session check runs, so on first mount the
+    // container is null - without re-running once the form appears, the widget
+    // would never mount.
+    if (!ready || !siteKey || !containerRef.current) return;
 
     const mount = () => {
       if (!containerRef.current || !window.turnstile) return;
@@ -64,7 +68,7 @@ function useTurnstile(onToken: (t: string | null) => void) {
         widgetId.current = null;
       }
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return containerRef;
 }
@@ -122,7 +126,7 @@ function AuthForm() {
   }, [nextPath]);
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  const turnstileRef = useTurnstile(setCaptchaToken);
+  const turnstileRef = useTurnstile(setCaptchaToken, sessionChecked);
   const hasTurnstile = !!siteKey;
 
   // A submit is ready when captcha is passed (or Turnstile isn't configured)
