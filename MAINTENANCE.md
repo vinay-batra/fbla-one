@@ -446,3 +446,4 @@ Routine checks, audits, and tests.
 - 2026-06-10 — reviewed env and config
 - 2026-06-10 — e2e sanity check passed
 - 2026-06-10 — reviewed env and config
+- 2026-06-11 — accessibility pass, minor notes
