@@ -493,3 +493,4 @@ Routine checks, audits, and tests.
 - 2026-06-12 — e2e sanity check passed
 - 2026-06-12 — checked mobile layouts
 - 2026-06-12 — checked mobile layouts
+- 2026-06-12 — smoke-tested core user flows, all green
