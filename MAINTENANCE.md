@@ -491,3 +491,4 @@ Routine checks, audits, and tests.
 - 2026-06-12 — general housekeeping
 - 2026-06-12 — e2e sanity check passed
 - 2026-06-12 — e2e sanity check passed
+- 2026-06-12 — checked mobile layouts
