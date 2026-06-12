@@ -495,3 +495,4 @@ Routine checks, audits, and tests.
 - 2026-06-12 — checked mobile layouts
 - 2026-06-12 — smoke-tested core user flows, all green
 - 2026-06-12 — reviewed dependency updates
+- 2026-06-12 — reviewed env and config
