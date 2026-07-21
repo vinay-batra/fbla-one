@@ -2,6 +2,15 @@
 
 All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
 
+## Unreleased - July 21, 2026 - 2025-26 competitive events refresh
+
+Registry audited against FBLA's official 2025-26 High School Competitive Events List (76 events) - it had drifted to 54 entries with several renamed/discontinued events. `lib/competitions.ts` now matches exactly, 76 of 76.
+
+- **International Business added** (the gap that prompted the audit) plus 25 other missing events: Advanced Accounting, Career Portfolio, Computer Game & Simulation Programming, Customer Service, Data Science & AI, Event Planning, Financial Statement Analysis, Human Resource Management, 6 more "Introduction to..." 9th-10th grade events, Journalism, Local Chapter Annual Business Report, Network Design, Organizational Leadership, Project Management, Public Administration & Management, Real Estate, Retail Management, Sales Presentation, Technology Support & Services, Website Design. 12 of these (all objective-test format) shipped with full topic outlines and study resources; the remaining 14 (role-play/presentation/production) are `coming-soon` stubs pending year-specific prompts, same as the site's existing convention.
+- **6 stale entries renamed** to match current official names (content/slugs kept, so no live registrations or practice logs are orphaned): Accounting I -> Accounting, Accounting II -> Advanced Accounting, Cyber Security -> Cybersecurity, Intro to Business -> Introduction to Business Concepts, Business Financial Plan -> Financial Planning, Publication Design -> Visual Design.
+- **5 discontinued events removed:** Financial Math, Intro to Financial Math, Business Calculations, Word Processing, Political Science - none appear on the 2025-26 list.
+- Verified: `tsc --noEmit` clean, lint clean, `next build` clean (76 SSG competition detail pages), live-checked the competitions grid (76 of 76, search/filter) and a new event's prep page in the browser, 0 console errors. `COMPETITION_STATS.total` and the AI-coach `ELIGIBLE` list are both derived from the array, so counts and AI-practice-test eligibility updated automatically - no other files needed changes.
+
 ## v1.7.0 - June 11, 2026 - Hardening, correct AI math, live captcha
 
 A large session: bot protection went live, the CSP is enforced, the AI practice tests are now arithmetically correct, and an owner admin view shipped.
