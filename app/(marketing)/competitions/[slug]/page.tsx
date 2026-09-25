@@ -51,8 +51,41 @@ export default async function CompetitionDetail({ params }: Props) {
     c.format === "objective-and-presentation" ||
     c.format === "team-test";
 
+  // The 76 detail pages are the main organic surface and carried no structured
+  // data at all. Breadcrumbs give the SERP trail; LearningResource describes
+  // what the page actually is.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://chapterprep.com" },
+          { "@type": "ListItem", position: 2, name: "Competitions", item: "https://chapterprep.com/competitions" },
+          { "@type": "ListItem", position: 3, name: c.name, item: `https://chapterprep.com/competitions/${c.slug}` },
+        ],
+      },
+      {
+        "@type": "LearningResource",
+        name: `${c.name} prep guide`,
+        description: c.description,
+        url: `https://chapterprep.com/competitions/${c.slug}`,
+        educationalLevel: "High school",
+        learningResourceType: "Study guide",
+        isAccessibleForFree: true,
+        inLanguage: "en",
+        about: c.topics?.length ? c.topics.map((t) => ({ "@type": "Thing", name: t })) : undefined,
+        provider: { "@type": "Organization", name: "ChapterPrep", url: "https://chapterprep.com" },
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* HERO */}
       <section
         style={{

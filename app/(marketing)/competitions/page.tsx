@@ -252,9 +252,9 @@ function CompetitionCard({ c }: { c: Competition }) {
           <span className="chip chip-brand">{c.category}</span>
           {c.popular && <span className="chip chip-accent">Popular</span>}
         </div>
-        <h3 style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", marginBottom: 8 }}>
+        <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", marginBottom: 8 }}>
           {c.name}
-        </h3>
+        </h2>
         <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6, flex: 1 }}>
           {c.description}
         </p>

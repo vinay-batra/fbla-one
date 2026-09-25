@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFocusTrap } from "@/components/useFocusTrap";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
@@ -97,16 +98,13 @@ export function PublicNav() {
   // Close mobile drawer on route change
   useEffect(() => setDrawerOpen(false), [pathname]);
 
-  // Close the drawer on Escape and return focus to the toggle.
+  // Focus management for the mobile drawer. useFocusTrap handles first-focus,
+  // Tab cycling inside the drawer, Escape, and restoring focus to the burger.
+  // Previously only Escape was handled, so Tab walked straight into the page
+  // behind the overlay.
   const burgerRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setDrawerOpen(false); burgerRef.current?.focus(); }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [drawerOpen]);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(drawerOpen, drawerRef, () => setDrawerOpen(false));
 
   return (
     <>
@@ -207,6 +205,7 @@ export function PublicNav() {
         {/* Mobile drawer */}
         {drawerOpen && (
           <div
+            ref={drawerRef}
             id="mobile-nav-drawer"
             className="nav-drawer"
             style={{

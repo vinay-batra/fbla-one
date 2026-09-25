@@ -495,6 +495,7 @@ function AuthForm() {
                   key={m}
                   type="button"
                   onClick={() => switchMode(m)}
+                  aria-pressed={m === mode}
                   style={{
                     flex: 1,
                     padding: "10px 12px",
@@ -503,7 +504,10 @@ function AuthForm() {
                     fontWeight: m === mode ? 700 : 500,
                     background: m === mode ? "var(--accent)" : "transparent",
                     border: "none",
-                    color: m === mode ? (dark ? "#060c16" : "#060c16") : "var(--text3)",
+                    // Both arms of this ternary used to be #060c16, so it never
+                    // did anything. On the darker light-mode accent that is
+                    // 3.24:1; white is 6.04:1. Dark mode keeps near-black.
+                    color: m === mode ? (dark ? "#060c16" : "#ffffff") : "var(--text3)",
                     cursor: "pointer",
                     transition: "background 0.2s, color 0.2s",
                     letterSpacing: 0.3,

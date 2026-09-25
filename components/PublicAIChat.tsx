@@ -280,8 +280,13 @@ function PublicAIChatInner() {
             </div>
           </div>
 
-          {/* Body */}
+          {/* Body. role="log" + aria-live so assistant replies are announced;
+              without it a screen-reader user sends a question and gets silence. */}
           <div
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-label="Conversation"
             style={{
               flex: 1,
               overflowY: "auto",

@@ -116,9 +116,30 @@ const SECTIONS: Section[] = [
   },
 ];
 
+/**
+ * FAQPage structured data. The answers are already in the DOM, so this is the
+ * cheapest structured-data win available and makes the page eligible for rich
+ * results. Built from SECTIONS so it can never drift from the rendered copy.
+ */
+const FAQ_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: SECTIONS.flatMap((section) =>
+    section.items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    }))
+  ),
+};
+
 export default function FAQ() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }}
+      />
       <section style={{ padding: "100px 0 40px" }}>
         <div className="container" style={{ maxWidth: 820, marginInline: "auto", textAlign: "center" }}>
           <ScrollReveal>
