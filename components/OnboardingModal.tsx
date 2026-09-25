@@ -66,7 +66,7 @@ export function OnboardingModal() {
         return () => clearTimeout(t);
       }
     } catch {
-      // localStorage unavailable — skip onboarding
+      // localStorage unavailable, so skip onboarding
     }
   }, [pathname]);
 

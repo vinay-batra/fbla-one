@@ -12,7 +12,7 @@ export default function Terms() {
   return (
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
-        <HeroBadge>Last updated May 27, 2026</HeroBadge>
+        <HeroBadge>Last updated September 25, 2026</HeroBadge>
         <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Terms of Service</h1>
 
         <Section title="What ChapterPrep is">
@@ -48,7 +48,7 @@ export default function Terms() {
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>
-          Questions? Email hello@chapterprep.com.
+          Questions? Use the feedback button in the corner of any page, or email hello@chapterprep.com.
         </p>
       </div>
     </section>

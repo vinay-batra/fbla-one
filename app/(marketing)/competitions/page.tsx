@@ -76,7 +76,7 @@ function CompetitionsList() {
             }}
           >
             Browse competitions by category, format, or content depth. Each event has its own prep
-            page with test topics, study resources, and the official rubric.
+            page with test topics, study resources, and a link to the official FBLA event guidelines.
           </p>
         </div>
       </section>

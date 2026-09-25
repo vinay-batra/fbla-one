@@ -155,7 +155,7 @@ export default function Settings() {
       if (supa) await supa.auth.signOut();
       router.push("/");
     } catch {
-      setMsg({ text: "Could not delete account. Email hello@chapterprep.com to request manual deletion.", ok: false });
+      setMsg({ text: "Could not delete account. Use the feedback button in the corner of this page to request manual deletion, or email hello@chapterprep.com.", ok: false });
       setDeleting(false);
     }
   };

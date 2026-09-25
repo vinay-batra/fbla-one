@@ -200,7 +200,7 @@ export default async function CompetitionDetail({ params }: Props) {
                               : "60 minutes, 100 questions",
                             body: c.format === "team-test"
                               ? "The written test (30 questions) covers parliamentary procedure knowledge. The live demonstration requires your team to conduct a mock meeting using proper Robert's Rules of Order procedure."
-                              : "You have 60 minutes to answer 100 multiple-choice questions. Each question has four options (A, B, C, D) with exactly one correct answer. There is no penalty for wrong answers -- always fill in your best guess.",
+                              : "You have 60 minutes to answer 100 multiple-choice questions. Each question has four options (A, B, C, D) with exactly one correct answer. There is no penalty for wrong answers, so always fill in your best guess.",
                           },
                           {
                             icon: (
@@ -221,7 +221,7 @@ export default async function CompetitionDetail({ params }: Props) {
                               </svg>
                             ),
                             title: "Top scorers advance",
-                            body: "The highest-scoring competitors at each regional advance to the state competition. State winners compete at the National Leadership Conference (NLC). Study the official FBLA topic outline -- it lists the exact subject areas and their approximate weight on the test.",
+                            body: "The highest-scoring competitors at each regional advance to the state competition. State winners compete at the National Leadership Conference (NLC). Study the official FBLA topic outline, which lists the exact subject areas and their approximate weight on the test.",
                           },
                         ].map(({ icon, title, body }) => (
                           <div key={title} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
@@ -275,7 +275,7 @@ export default async function CompetitionDetail({ params }: Props) {
                       <StudyResourcesList
                         resources={c.studyResources.map((r) =>
                           r.url === FBLA_EVENT_PAGE
-                            ? { ...r, title: `${c.name} official guidelines (FBLA)`, url: FBLA_EVENT_PAGE }
+                            ? { ...r, title: "Official FBLA competitive events page", url: FBLA_EVENT_PAGE }
                             : r
                         )}
                         competitionSlug={c.slug}
@@ -316,11 +316,11 @@ export default async function CompetitionDetail({ params }: Props) {
                     },
                     {
                       label: "Options",
-                      value: "A, B, C, D -- one correct",
+                      value: "A, B, C, D, one correct",
                     },
                     {
                       label: "Guessing",
-                      value: "No penalty -- always answer",
+                      value: "No penalty, always answer",
                     },
                     {
                       label: c.isTeam ? "Team size" : "Individual",

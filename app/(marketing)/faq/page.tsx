@@ -39,7 +39,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Why do some events say the topic is released annually?",
-        a: "Presentation, production, and case-study events use year-specific prompts or briefs released by FBLA. The platform covers the underlying skills and knowledge for all of them -- how to build a business plan, how to shoot and edit a video, how to analyze an ethics scenario -- even though the specific topic changes each year.",
+        a: "Presentation, production, and case-study events use year-specific prompts or briefs released by FBLA. The platform covers the underlying skills and knowledge for all of them (how to build a business plan, how to shoot and edit a video, how to analyze an ethics scenario) even though the specific topic changes each year.",
       },
       {
         q: "Are the study resources official FBLA materials?",
@@ -47,7 +47,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I suggest a resource?",
-        a: "Yes -- email hello@chapterprep.com with the event name and the resource URL. We review and add good ones quickly.",
+        a: "Yes. Send the event name and the resource URL through the feedback button in the corner of any page, or email hello@chapterprep.com. Good ones get added.",
       },
     ],
   },
@@ -56,7 +56,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How does the AI practice test work?",
-        a: "You pick a competition and a question count (10, 25, or 50). ChapterPrep generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
+        a: "You pick a competition and a question count (10, 25, or 50). ChapterPrep generates realistic multiple-choice questions calibrated to that event's exact topic outline, the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
       },
       {
         q: "How accurate are the AI-generated questions?",
@@ -89,7 +89,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I delete my account?",
-        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, email hello@chapterprep.com to be removed from it.",
+        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, use the feedback button on any page or email hello@chapterprep.com to be removed from it.",
       },
     ],
   },
@@ -102,11 +102,11 @@ const SECTIONS: Section[] = [
       },
       {
         q: "What can advisors see?",
-        a: "Advisors see a member roster listing every member who joined, their role, and all the competitions they have registered for. You can also see recent member practice activity -- who practiced, what event, and their score.",
+        a: "Advisors see a member roster listing every member who joined, their role, and all the competitions they have registered for. You can also see recent member practice activity: who practiced, what event, and their score.",
       },
       {
         q: "Can I export member sign-ups for regionals?",
-        a: "Yes. The advisor view has two export buttons: a full member roster CSV and a competition sign-ups CSV with one row per member per event -- useful for regional registration forms.",
+        a: "Yes. The advisor view has two export buttons: a full member roster CSV and a competition sign-ups CSV with one row per member per event, which is the shape regional registration forms want.",
       },
       {
         q: "Is ChapterPrep affiliated with FBLA?",

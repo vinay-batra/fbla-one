@@ -321,7 +321,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
                   <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
                 </svg>
                 <span style={{ fontSize: 13, color: "var(--text2)" }}>
-                  <strong style={{ color: "var(--text)" }}>Preview mode</strong> -- your data stays local and is not saved to an account.
+                  <strong style={{ color: "var(--text)" }}>Preview mode.</strong> Your data stays local and is not saved to an account.
                 </span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>

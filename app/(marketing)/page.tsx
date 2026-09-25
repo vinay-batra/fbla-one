@@ -500,7 +500,7 @@ export default function Landing() {
                   <span style={{ color: "var(--accent)" }}>ChapterPrep.</span>
                 </h2>
                 <p style={{ maxWidth: 560, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
-                  Free for every FBLA member. Sign up in under a minute -- no credit card, no setup.
+                  Free for every FBLA member. Sign up in under a minute. No credit card, no setup.
                   AI practice tests, study guides, and chapter management, all in one place.
                   Drop your email to get launch updates and prep tips.
                 </p>

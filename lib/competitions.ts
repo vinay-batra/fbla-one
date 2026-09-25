@@ -224,7 +224,7 @@ export const COMPETITIONS: Competition[] = [
     format: "case-study",
     description: "Team case study: analyze a banking scenario and present recommendations.",
     longDescription:
-      "Banking and Financial Systems is a team case study where competitors analyze a scenario involving a bank, credit union, or financial services firm and present findings and recommendations to judges. Teams typically have limited prep time before presenting. Strong teams apply core banking concepts -- capital adequacy, liquidity management, regulatory compliance -- to the specific scenario, quantify their recommendations with supporting data, and anticipate judge questions on risk and regulation.",
+      "Banking and Financial Systems is a team case study where competitors analyze a scenario involving a bank, credit union, or financial services firm and present findings and recommendations to judges. Teams typically have limited prep time before presenting. Strong teams apply core banking concepts (capital adequacy, liquidity management, regulatory compliance) to the specific scenario, quantify their recommendations with supporting data, and anticipate judge questions on risk and regulation.",
     topics: [
       "Federal Reserve and monetary policy",
       "Bank balance sheet (assets, liabilities, equity)",
@@ -1069,7 +1069,7 @@ export const COMPETITIONS: Competition[] = [
     format: "production",
     description: "Produce a broadcast journalism piece. Requires year-specific prompt.",
     longDescription:
-      "Broadcast Journalism teams produce a 3-5 minute broadcast journalism segment on a topic released annually. Strong entries look like professional local news: clear anchor delivery, concise scripting in inverted pyramid format, relevant supporting visuals, sound bites from interviews, and tight editing. The topic changes each year, but the craft and format expectations are constant -- master the production fundamentals and you can execute on any topic.",
+      "Broadcast Journalism teams produce a 3-5 minute broadcast journalism segment on a topic released annually. Strong entries look like professional local news: clear anchor delivery, concise scripting in inverted pyramid format, relevant supporting visuals, sound bites from interviews, and tight editing. The topic changes each year, but the craft and format expectations are constant. Master the production fundamentals and you can execute on any topic.",
     topics: [
       "Inverted pyramid news structure",
       "Split-page TV script format",
@@ -1098,7 +1098,7 @@ export const COMPETITIONS: Competition[] = [
     format: "presentation",
     description: "Team presentation analyzing a business ethics scenario. Year-specific topic.",
     longDescription:
-      "Business Ethics teams receive an annual scenario involving an ethical dilemma -- whistleblowing, data privacy, executive misconduct, environmental harm, or conflicts of interest -- and present analysis and recommendations to judges. Top teams do not just state a conclusion: they apply multiple ethical frameworks, identify every stakeholder, acknowledge competing interests, and propose specific, actionable solutions. Judges evaluate depth of analysis over the final verdict.",
+      "Business Ethics teams receive an annual scenario involving an ethical dilemma involving whistleblowing, data privacy, executive misconduct, environmental harm, or conflicts of interest, then present analysis and recommendations to judges. Top teams do not just state a conclusion: they apply multiple ethical frameworks, identify every stakeholder, acknowledge competing interests, and propose specific, actionable solutions. Judges evaluate depth of analysis over the final verdict.",
     topics: [
       "Utilitarian ethics (greatest good for the greatest number)",
       "Deontological ethics (duty-based, Kantian framework)",
@@ -1157,7 +1157,7 @@ export const COMPETITIONS: Competition[] = [
     format: "presentation",
     description: "Build and present a full business plan. Year-specific topic.",
     longDescription:
-      "Business Plan is FBLA's flagship team event and one of its most prestigious. Competitors build a full business plan for a concept of their own choosing -- not a year-specific prompt -- and present to panels of real business professionals. The plan must cover every dimension: executive summary, company overview, market analysis, competitive analysis, marketing strategy, operations plan, management team, and 3-year financial projections. NLC-winning teams have both a rigorous plan and a compelling, confident pitch delivery.",
+      "Business Plan is FBLA's flagship team event and one of its most prestigious. Competitors build a full business plan for a concept of their own choosing rather than a year-specific prompt, then present to panels of real business professionals. The plan must cover every dimension: executive summary, company overview, market analysis, competitive analysis, marketing strategy, operations plan, management team, and 3-year financial projections. NLC-winning teams have both a rigorous plan and a compelling, confident pitch delivery.",
     duration: "Presentation: 20 minutes + 5 min Q&A; written plan submitted in advance",
     topics: [
       "Executive summary writing (hook, problem, solution, ask)",
@@ -1276,7 +1276,7 @@ export const COMPETITIONS: Competition[] = [
     format: "production",
     description: "Produce a short video. Year-specific prompt.",
     longDescription:
-      "Digital Video Production teams plan, film, and edit a 3-5 minute video on a topic released annually -- a PSA, documentary, commercial, or narrative. Judges evaluate concept, cinematography, audio, editing, storytelling, and prompt adherence. Top teams invest heavily in pre-production (script, shot list, storyboard) before a single frame is shot. Post-production polish -- color grade, sound mix, titles -- is what separates strong entries from winning ones.",
+      "Digital Video Production teams plan, film, and edit a 3-5 minute video on a topic released annually: a PSA, documentary, commercial, or narrative. Judges evaluate concept, cinematography, audio, editing, storytelling, and prompt adherence. Top teams invest heavily in pre-production (script, shot list, storyboard) before a single frame is shot. Post-production polish in the color grade, sound mix and titles is what separates strong entries from winning ones.",
     topics: [
       "Pre-production: script writing, storyboard, and shot list",
       "Camera operation: framing, composition (rule of thirds, headroom, lead room)",
@@ -1363,7 +1363,7 @@ export const COMPETITIONS: Competition[] = [
     format: "case-study",
     description: "Team case study on a hospitality scenario.",
     longDescription:
-      "Hospitality and Event Management is a team case study where competitors receive a scenario -- planning a corporate conference, fundraising gala, product launch, or similar event -- and present a full event plan to judges, who are often hospitality industry professionals. Strong plans address every operational dimension: venue selection, catering, marketing, attendee experience, budget with contingencies, and risk mitigation. The scenario changes each year; the operational excellence expected does not.",
+      "Hospitality and Event Management is a team case study where competitors receive a scenario such as planning a corporate conference, fundraising gala, or product launch, then present a full event plan to judges, who are often hospitality industry professionals. Strong plans address every operational dimension: venue selection, catering, marketing, attendee experience, budget with contingencies, and risk mitigation. The scenario changes each year; the operational excellence expected does not.",
     topics: [
       "Event planning lifecycle (scoping, contracting, logistics, execution, post-event)",
       "Venue selection criteria, site visits, and contract terms",
@@ -1532,7 +1532,7 @@ export const COMPETITIONS: Competition[] = [
     format: "production",
     description: "Produce a PSA video. Year-specific topic.",
     longDescription:
-      "PSA teams produce a 30-60 second public service announcement video on a social issue released annually. Judging covers message clarity, emotional impact, production quality, factual accuracy, and call-to-action effectiveness. The most effective PSAs -- study the Ad Council portfolio -- use one unexpected angle, one concrete human story, and one clear ask. The issue changes each year; the persuasive short-form video craft is constant.",
+      "PSA teams produce a 30-60 second public service announcement video on a social issue released annually. Judging covers message clarity, emotional impact, production quality, factual accuracy, and call-to-action effectiveness. The most effective PSAs, and the Ad Council portfolio is worth studying, use one unexpected angle, one concrete human story, and one clear ask. The issue changes each year; the persuasive short-form video craft is constant.",
     topics: [
       "PSA format conventions (15, 30, and 60-second structures)",
       "Target audience identification and message tailoring",

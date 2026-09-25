@@ -11,7 +11,7 @@ import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
 
 // ---------------------------------------------------------------------------
-// Cloudflare Turnstile (lightweight inline — no npm package needed)
+// Cloudflare Turnstile (lightweight inline, no npm package needed)
 // ---------------------------------------------------------------------------
 declare global {
   interface Window {
@@ -390,7 +390,7 @@ function AuthForm() {
                 lineHeight: 1.55,
               }}
             >
-              Preview mode -- explore the dashboard at{" "}
+              Preview mode. Explore the dashboard at{" "}
               <Link href="/app" style={{ textDecoration: "underline" }}>
                 /app
               </Link>
@@ -549,7 +549,7 @@ function AuthForm() {
                   e.currentTarget.style.background = "var(--bg3)";
                 }}
               >
-                {/* Google brand icon — colour values are intentional exceptions */}
+                {/* Google brand icon. Colour values are intentional exceptions */}
                 <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -983,7 +983,7 @@ function AuthForm() {
 }
 
 // ---------------------------------------------------------------------------
-// Page export — Suspense required for useSearchParams
+// Page export. Suspense required for useSearchParams
 // ---------------------------------------------------------------------------
 export default function AuthPage() {
   return (
