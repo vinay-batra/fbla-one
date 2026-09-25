@@ -6,7 +6,7 @@ import { HeroBadge } from "@/components/HeroBadge";
 export const metadata: Metadata = {
   title: "Changelog",
   description:
-    "Every FBLA One release in order. From the first build to AI practice tests, chapter tools, and the public AI assistant.",
+    "Every ChapterPrep release in order. From the first build to AI practice tests, chapter tools, and the public AI assistant.",
   alternates: { canonical: "/changelog" },
 };
 
@@ -46,9 +46,9 @@ const ERAS: Era[] = [
     versions: "v0.3",
     dateRange: "May 28, 2026",
     intro:
-      "FBLA One went live at fbla.one, wired to real auth, a database, and cross-device sync.",
+      "ChapterPrep went live at chapterprep.com, wired to real auth, a database, and cross-device sync.",
     highlights: [
-      "Deployed to fbla.one on Vercel with SSL and push-to-deploy",
+      "Deployed to chapterprep.com on Vercel with SSL and push-to-deploy",
       "Supabase auth: Google OAuth, email/password, and magic link",
       "Registrations, practice logs, and saved resources sync across devices",
       "Caught and fixed a critical table-grant bug via a live integration test",
@@ -131,7 +131,7 @@ const ERAS: Era[] = [
     versions: "v1.4 - v1.6.2",
     dateRange: "Jun 4 - Jun 8, 2026",
     intro:
-      "FBLA One grew into a full chapter learning platform, then a deep trust and accessibility pass hardened every corner.",
+      "ChapterPrep grew into a full chapter learning platform, then a deep trust and accessibility pass hardened every corner.",
     highlights: [
       "Chapter assignments with a per-member completion grid and one-tap practice",
       "Student leaderboard plus a Road to Nationals study plan with stage countdowns",
@@ -324,7 +324,7 @@ export default function ChangelogPage() {
                   <span style={{ color: "var(--accent)" }}>way.</span>
                 </h2>
                 <p style={{ maxWidth: 520, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
-                  FBLA One is free for every member, and we are always adding to
+                  ChapterPrep is free for every member, and we are always adding to
                   it. Get your chapter on it today.
                 </p>
                 <div style={{ marginTop: 30, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>

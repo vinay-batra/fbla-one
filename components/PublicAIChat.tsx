@@ -168,8 +168,8 @@ function PublicAIChatInner() {
       <button
         ref={buttonRef}
         onClick={() => setOpen((o) => !o)}
-        aria-label="Ask FBLA One AI"
-        title="Ask FBLA One"
+        aria-label="Ask ChapterPrep AI"
+        title="Ask ChapterPrep"
         className="fbla-ai-chat-btn"
         style={{
           position: "fixed",
@@ -231,7 +231,7 @@ function PublicAIChatInner() {
           ref={panelRef}
           role="dialog"
           aria-modal="false"
-          aria-label="Ask FBLA One AI assistant"
+          aria-label="Ask ChapterPrep AI assistant"
           style={{
             position: "fixed",
             bottom: 100,
@@ -262,7 +262,7 @@ function PublicAIChatInner() {
             }}
           >
             <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, fontWeight: 700, letterSpacing: 2.5, textTransform: "uppercase", color: "var(--accent)" }}>
-              Ask FBLA One
+              Ask ChapterPrep
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "var(--text3)", letterSpacing: 0.3 }}>
@@ -302,7 +302,7 @@ function PublicAIChatInner() {
                   </svg>
                 </div>
                 <h3 style={{ fontFamily: "'Space Mono', monospace", fontSize: 19, fontWeight: 700, color: "var(--text)", margin: "0 0 6px", letterSpacing: -0.3 }}>
-                  Ask FBLA One
+                  Ask ChapterPrep
                 </h3>
                 <p style={{ fontSize: 13.5, color: "var(--text3)", margin: "0 0 20px", textAlign: "center", lineHeight: 1.5 }}>
                   FBLA prep questions answered instantly.

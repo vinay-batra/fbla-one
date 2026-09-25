@@ -22,13 +22,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: c.description,
     alternates: { canonical: `/competitions/${c.slug}` },
     openGraph: {
-      title: `${c.name} · FBLA One`,
+      title: `${c.name} · ChapterPrep`,
       description: c.description,
       images: ["/og-image.png"],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${c.name} · FBLA One`,
+      title: `${c.name} · ChapterPrep`,
       description: c.description,
       images: ["/og-image.png"],
     },
@@ -270,7 +270,7 @@ export default async function CompetitionDetail({ params }: Props) {
                         <span style={{ fontSize: 12, color: "var(--text3)" }}>Bookmark to save</span>
                       </div>
                       <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 18 }}>
-                        Curated by FBLA One. Free unless noted. External links open in a new tab.
+                        Curated by ChapterPrep. Free unless noted. External links open in a new tab.
                       </p>
                       <StudyResourcesList
                         resources={c.studyResources.map((r) =>

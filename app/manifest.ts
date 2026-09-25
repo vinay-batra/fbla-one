@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FBLA One",
-    short_name: "FBLA One",
+    name: "ChapterPrep",
+    short_name: "ChapterPrep",
     description: "Competition guides, study resources, and prep tracker for FBLA chapters.",
     start_url: "/app",
     display: "standalone",

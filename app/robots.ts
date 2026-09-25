@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       // Authenticated app + auth utility pages have no SEO value
       disallow: ["/app", "/auth"],
     },
-    sitemap: "https://fbla.one/sitemap.xml",
-    host: "https://fbla.one",
+    sitemap: "https://chapterprep.com/sitemap.xml",
+    host: "https://chapterprep.com",
   };
 }

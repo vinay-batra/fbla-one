@@ -115,9 +115,9 @@ export function Footer() {
             zIndex: 2,
           }}
         >
-          <span>© {new Date().getFullYear()} FBLA One. Built for FBLA students, by an FBLA student.</span>
+          <span>© {new Date().getFullYear()} ChapterPrep. Built for FBLA students, by an FBLA student.</span>
           <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
-            v{APP_VERSION} · fbla.one
+            v{APP_VERSION} · chapterprep.com
           </span>
         </div>
 

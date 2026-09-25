@@ -3,7 +3,7 @@ import { HeroBadge } from "@/components/HeroBadge";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  description: "How FBLA One handles your data.",
+  description: "How ChapterPrep handles your data.",
 };
 
 export default function Privacy() {
@@ -30,11 +30,11 @@ export default function Privacy() {
         </Section>
 
         <Section title="Your rights">
-          <p>You can delete your account anytime from Settings, which removes your profile, registrations, practice logs, and saved resources. To also be removed from our email notification list, or to request a copy of your data, email privacy@fbla.one. We honor GDPR and CCPA requests within 30 days.</p>
+          <p>You can delete your account anytime from Settings, which removes your profile, registrations, practice logs, and saved resources. To also be removed from our email notification list, or to request a copy of your data, email privacy@chapterprep.com. We honor GDPR and CCPA requests within 30 days.</p>
         </Section>
 
         <Section title="Children">
-          <p>FBLA is primarily a high-school activity, so most users are 13-18. FBLA One is not directed to children under 13, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has created an account, email privacy@fbla.one and we will delete it. For school-managed deployments, the school or district is responsible for obtaining any consent required for its students.</p>
+          <p>FBLA is primarily a high-school activity, so most users are 13-18. ChapterPrep is not directed to children under 13, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has created an account, email privacy@chapterprep.com and we will delete it. For school-managed deployments, the school or district is responsible for obtaining any consent required for its students.</p>
         </Section>
 
         <Section title="Changes">
@@ -42,7 +42,7 @@ export default function Privacy() {
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>
-          Questions? Email privacy@fbla.one. We respond within 3 business days.
+          Questions? Email privacy@chapterprep.com. We respond within 3 business days.
         </p>
       </div>
     </section>

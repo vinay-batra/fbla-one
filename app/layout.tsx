@@ -15,16 +15,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fbla.one"),
+  metadataBase: new URL("https://chapterprep.com"),
   title: {
-    default: "FBLA One - The all-in-one FBLA chapter platform",
-    template: "%s · FBLA One",
+    default: "ChapterPrep - The all-in-one FBLA chapter platform",
+    template: "%s · ChapterPrep",
   },
   description:
     "Competition guides, study resources, prep tracker, deadline calendar, and chapter management for FBLA chapters. Built for FBLA students, by an FBLA student.",
-  applicationName: "FBLA One",
-  appleWebApp: { capable: true, title: "FBLA One", statusBarStyle: "black-translucent" },
-  authors: [{ name: "FBLA One" }],
+  applicationName: "ChapterPrep",
+  appleWebApp: { capable: true, title: "ChapterPrep", statusBarStyle: "black-translucent" },
+  authors: [{ name: "ChapterPrep" }],
   keywords: [
     "FBLA",
     "Future Business Leaders of America",
@@ -35,16 +35,16 @@ export const metadata: Metadata = {
     "competition prep",
   ],
   openGraph: {
-    title: "FBLA One",
+    title: "ChapterPrep",
     description: "Everything your FBLA chapter needs, in one place.",
     type: "website",
-    url: "https://fbla.one",
-    siteName: "FBLA One",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "FBLA One" }],
+    url: "https://chapterprep.com",
+    siteName: "ChapterPrep",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ChapterPrep" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FBLA One",
+    title: "ChapterPrep",
     description: "Everything your FBLA chapter needs, in one place.",
     images: ["/og-image.png"],
   },

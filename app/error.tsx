@@ -40,8 +40,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         Something went wrong.
       </h1>
       <p style={{ fontSize: 16, color: "var(--text2)", maxWidth: 460, lineHeight: 1.6 }}>
-        FBLA One hit an unexpected error. This was logged. Try again, and if it keeps happening
-        email <a href="mailto:hello@fbla.one" className="animated-link" style={{ color: "var(--accent)" }}>hello@fbla.one</a>.
+        ChapterPrep hit an unexpected error. This was logged. Try again, and if it keeps happening
+        email <a href="mailto:hello@chapterprep.com" className="animated-link" style={{ color: "var(--accent)" }}>hello@chapterprep.com</a>.
       </p>
       <div style={{ marginTop: 14, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
         <button onClick={reset} className="btn btn-accent btn-lg cta-shimmer">Try again</button>

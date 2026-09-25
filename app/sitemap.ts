@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { COMPETITIONS } from "@/lib/competitions";
 
-const BASE = "https://fbla.one";
+const BASE = "https://chapterprep.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

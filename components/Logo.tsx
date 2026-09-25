@@ -21,7 +21,7 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
   return (
     <Link
       href={href}
-      aria-label="FBLA One home"
+      aria-label="ChapterPrep home"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -58,8 +58,8 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
       </span>
       {!markOnly && (
         <span style={{ display: "inline-flex", alignItems: "baseline", gap: 5, lineHeight: 1 }}>
-          <span style={{ fontSize: s.font, color: "var(--brand)" }}>FBLA</span>
-          <span style={{ fontSize: s.font, color: "var(--accent)" }}>One</span>
+          <span style={{ fontSize: s.font, color: "var(--brand)" }}>Chapter</span>
+          <span style={{ fontSize: s.font, color: "var(--accent)" }}>Prep</span>
         </span>
       )}
     </Link>

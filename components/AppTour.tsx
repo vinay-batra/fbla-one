@@ -12,7 +12,7 @@ type Step = {
 
 const STEPS: Step[] = [
   {
-    title: "Welcome to FBLA One",
+    title: "Welcome to ChapterPrep",
     body: "Here is a 30-second tour of everything you can do. Use the arrows to move along, or skip anytime.",
   },
   {
@@ -38,7 +38,7 @@ const STEPS: Step[] = [
   {
     selector: ".fbla-ai-chat-btn",
     title: "Ask anytime",
-    body: "Stuck on a concept? Ask the FBLA One assistant from any page, day or night.",
+    body: "Stuck on a concept? Ask the ChapterPrep assistant from any page, day or night.",
   },
   {
     title: "You are all set",

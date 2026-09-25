@@ -3,7 +3,7 @@ import { HeroBadge } from "@/components/HeroBadge";
 
 export const metadata: Metadata = {
   title: "Terms",
-  description: "FBLA One terms of service.",
+  description: "ChapterPrep terms of service.",
 };
 
 export default function Terms() {
@@ -13,8 +13,8 @@ export default function Terms() {
         <HeroBadge>Last updated May 27, 2026</HeroBadge>
         <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Terms of Service</h1>
 
-        <Section title="What FBLA One is">
-          <p>FBLA One is an independent educational platform for FBLA (Future Business Leaders of America) chapters. It is not affiliated with, endorsed by, or sponsored by FBLA-PBL Inc.</p>
+        <Section title="What ChapterPrep is">
+          <p>ChapterPrep is an independent educational platform for FBLA (Future Business Leaders of America) chapters. It is not affiliated with, endorsed by, or sponsored by FBLA-PBL Inc.</p>
         </Section>
 
         <Section title="Your account">
@@ -22,7 +22,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Acceptable use">
-          <p>Don't use FBLA One to harass other members, scrape content systematically, attempt to bypass security, or upload malicious material. We can suspend accounts that do these things.</p>
+          <p>Don't use ChapterPrep to harass other members, scrape content systematically, attempt to bypass security, or upload malicious material. We can suspend accounts that do these things.</p>
         </Section>
 
         <Section title="Content & competition materials">
@@ -30,15 +30,15 @@ export default function Terms() {
         </Section>
 
         <Section title="Pricing">
-          <p>FBLA One is free for every student and every chapter, forever. There are no paid tiers, no per-seat fees, and no upsells. If that ever changes, we'll post a notice here and in the app at least 30 days before any pricing takes effect.</p>
+          <p>ChapterPrep is free for every student and every chapter, forever. There are no paid tiers, no per-seat fees, and no upsells. If that ever changes, we'll post a notice here and in the app at least 30 days before any pricing takes effect.</p>
         </Section>
 
         <Section title="Disclaimer">
-          <p>FBLA One is provided "as is." We make no guarantee that using the platform will result in placing at any competition. Study still required.</p>
+          <p>ChapterPrep is provided "as is." We make no guarantee that using the platform will result in placing at any competition. Study still required.</p>
         </Section>
 
         <Section title="Liability">
-          <p>To the maximum extent permitted by law, FBLA One is not liable for indirect, incidental, or consequential damages arising from use of the platform.</p>
+          <p>To the maximum extent permitted by law, ChapterPrep is not liable for indirect, incidental, or consequential damages arising from use of the platform.</p>
         </Section>
 
         <Section title="Governing law">
@@ -46,7 +46,7 @@ export default function Terms() {
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>
-          Questions? Email hello@fbla.one.
+          Questions? Email hello@chapterprep.com.
         </p>
       </div>
     </section>

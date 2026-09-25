@@ -7,13 +7,13 @@
  *
  * Setup:
  *   1. Create an account at resend.com
- *   2. Add + verify the fbla.one domain (add the DNS records Resend gives you)
+ *   2. Add + verify the chapterprep.com domain (add the DNS records Resend gives you)
  *   3. Add RESEND_API_KEY to .env.local and Vercel env vars
  *   4. (Optional) point Supabase Auth -> SMTP at Resend so confirmation /
- *      magic-link emails come from hello@fbla.one instead of supabase.io
+ *      magic-link emails come from hello@chapterprep.com instead of supabase.io
  */
 
-const FROM_DEFAULT = "FBLA One <hello@fbla.one>";
+const FROM_DEFAULT = "ChapterPrep <hello@chapterprep.com>";
 
 type SendArgs = {
   to: string | string[];

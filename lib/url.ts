@@ -13,7 +13,7 @@ export function safeNextPath(raw: string | null | undefined, fallback = "/app"):
   // Must be root-relative, not protocol-relative, and contain no backslashes.
   if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) return fallback;
   try {
-    const base = "https://fbla.one";
+    const base = "https://chapterprep.com";
     const resolved = new URL(raw, base);
     if (resolved.origin !== base) return fallback; // resolved off-origin -> reject
     return resolved.pathname + resolved.search + resolved.hash;

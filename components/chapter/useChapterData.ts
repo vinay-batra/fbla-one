@@ -208,7 +208,7 @@ export function useChapterData() {
     });
   }
 
-  const joinLink = chapter ? `${typeof window !== "undefined" ? window.location.origin : "https://fbla.one"}/join/${chapter.invite_code}` : "";
+  const joinLink = chapter ? `${typeof window !== "undefined" ? window.location.origin : "https://chapterprep.com"}/join/${chapter.invite_code}` : "";
   function copyJoinLink() {
     if (!joinLink) return;
     navigator.clipboard.writeText(joinLink).then(() => {
@@ -218,7 +218,7 @@ export function useChapterData() {
   }
   function shareJoinLink() {
     if (!joinLink) return;
-    const data = { title: `Join ${chapter?.name ?? "our chapter"} on FBLA One`, text: "Tap to join our FBLA chapter:", url: joinLink };
+    const data = { title: `Join ${chapter?.name ?? "our chapter"} on ChapterPrep`, text: "Tap to join our FBLA chapter:", url: joinLink };
     if (typeof navigator !== "undefined" && navigator.share) navigator.share(data).catch(() => {});
     else copyJoinLink();
   }

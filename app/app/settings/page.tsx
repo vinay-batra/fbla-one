@@ -155,7 +155,7 @@ export default function Settings() {
       if (supa) await supa.auth.signOut();
       router.push("/");
     } catch {
-      setMsg({ text: "Could not delete account. Email hello@fbla.one to request manual deletion.", ok: false });
+      setMsg({ text: "Could not delete account. Email hello@chapterprep.com to request manual deletion.", ok: false });
       setDeleting(false);
     }
   };
@@ -268,7 +268,7 @@ export default function Settings() {
 
       {/* Preferences */}
       <Card>
-        <CardHeader eyebrow="Preferences" title="How FBLA One works for you" />
+        <CardHeader eyebrow="Preferences" title="How ChapterPrep works for you" />
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, cursor: "pointer" }}>
             <span>

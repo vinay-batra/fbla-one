@@ -68,9 +68,9 @@ export function ChapterInfo({ c }: { c: ChapterController }) {
           <button
             type="button"
             onClick={() => {
-              const subj = encodeURIComponent(`Join ${chapter?.name ?? "our chapter"} on FBLA One`);
+              const subj = encodeURIComponent(`Join ${chapter?.name ?? "our chapter"} on ChapterPrep`);
               const body = encodeURIComponent(
-                `Hi!\n\nJoin our FBLA chapter on FBLA One to track your competition prep, access study guides for all 55 events, and generate AI practice tests.\n\nInvite code: ${chapter?.invite_code}\n\nGo to https://fbla.one/app, click "Chapter" in the sidebar, and enter the code under "Join a chapter."\n\nSee you there!`
+                `Hi!\n\nJoin our FBLA chapter on ChapterPrep to track your competition prep, access study guides for all 76 events, and generate AI practice tests.\n\nInvite code: ${chapter?.invite_code}\n\nGo to https://chapterprep.com/app, click "Chapter" in the sidebar, and enter the code under "Join a chapter."\n\nSee you there!`
               );
               // Navigate the current tab to the mailto: handler. window.open(.., "_blank")
               // just spawns a blank tab the OS mail client can't take over.

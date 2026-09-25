@@ -12,7 +12,7 @@ const SECTIONS: Section[] = [
     title: "Getting Started",
     items: [
       {
-        q: "What is FBLA One?",
+        q: "What is ChapterPrep?",
         a: "An all-in-one platform for FBLA chapters. Competition guides, study resources, prep tracker, and chapter management - everything you'd otherwise put in a Drive folder, but actually usable.",
       },
       {
@@ -21,7 +21,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Is it really free?",
-        a: "Yes. FBLA One is free for every student and every chapter, forever. No paid tiers, no upsells, no card required.",
+        a: "Yes. ChapterPrep is free for every student and every chapter, forever. No paid tiers, no upsells, no card required.",
       },
       {
         q: "Do I need an account?",
@@ -34,7 +34,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How many events do you cover?",
-        a: "All 55 FBLA competitive events are in the registry, and all 55 now have complete content: event description, test format details, topic list, and curated study resources. Objective-test events also support AI practice test generation.",
+        a: "All 76 FBLA competitive events are in the registry, and all 76 now have complete content: event description, test format details, topic list, and curated study resources. Objective-test events also support AI practice test generation.",
       },
       {
         q: "Why do some events say the topic is released annually?",
@@ -46,7 +46,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I suggest a resource?",
-        a: "Yes -- email hello@fbla.one with the event name and the resource URL. We review and add good ones quickly.",
+        a: "Yes -- email hello@chapterprep.com with the event name and the resource URL. We review and add good ones quickly.",
       },
     ],
   },
@@ -55,7 +55,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How does the AI practice test work?",
-        a: "You pick a competition and a question count (10, 25, or 50). FBLA One generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
+        a: "You pick a competition and a question count (10, 25, or 50). ChapterPrep generates realistic multiple-choice questions calibrated to that event's exact topic outline -- the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
       },
       {
         q: "How accurate are the AI-generated questions?",
@@ -88,7 +88,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I delete my account?",
-        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, email hello@fbla.one to be removed from it.",
+        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, email hello@chapterprep.com to be removed from it.",
       },
     ],
   },
@@ -108,7 +108,7 @@ const SECTIONS: Section[] = [
         a: "Yes. The advisor view has two export buttons: a full member roster CSV and a competition sign-ups CSV with one row per member per event -- useful for regional registration forms.",
       },
       {
-        q: "Is FBLA One affiliated with FBLA-PBL?",
+        q: "Is ChapterPrep affiliated with FBLA-PBL?",
         a: "No. Independent platform built by an FBLA student. Not endorsed by or affiliated with FBLA-PBL Inc.",
       },
     ],
@@ -130,7 +130,7 @@ export default function FAQ() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p style={{ marginTop: 18, fontSize: 17, color: "var(--text2)", lineHeight: 1.6 }}>
-              Don't see your question? <a href="mailto:hello@fbla.one?subject=FBLA%20One%20question" className="animated-link" style={{ color: "var(--accent)" }}>Email us.</a>
+              Don't see your question? <a href="mailto:hello@chapterprep.com?subject=ChapterPrep%20question" className="animated-link" style={{ color: "var(--accent)" }}>Email us.</a>
             </p>
           </ScrollReveal>
         </div>

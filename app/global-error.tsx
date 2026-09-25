@@ -33,7 +33,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             fontFamily: "var(--font-mono)",
           }}
         >
-          FBLA One
+          ChapterPrep
         </p>
         <h1 style={{ fontSize: 40, letterSpacing: "-0.02em", color: "var(--text)" }}>
           Something broke.

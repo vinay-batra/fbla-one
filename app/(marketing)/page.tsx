@@ -13,7 +13,7 @@ import {
 } from "@/lib/competitions";
 
 export const metadata: Metadata = {
-  title: { absolute: "FBLA One - AI Practice Tests for Every FBLA Objective Event" },
+  title: { absolute: "ChapterPrep - AI Practice Tests for Every FBLA Objective Event" },
   description:
     "Generate unlimited AI practice tests for every FBLA objective event. Up to 50 questions, instant explanations, score tracking. Plus study guides, deadline calendar, and advisor dashboard -- all free.",
   alternates: { canonical: "/" },
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
 const JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "FBLA One",
-  url: "https://fbla.one",
+  name: "ChapterPrep",
+  url: "https://chapterprep.com",
   description: "AI-powered FBLA prep: unlimited practice tests, study guides, deadline calendar, and chapter management.",
   publisher: {
     "@type": "Organization",
-    name: "FBLA One",
-    url: "https://fbla.one",
-    logo: "https://fbla.one/icon-512.png",
+    name: "ChapterPrep",
+    url: "https://chapterprep.com",
+    logo: "https://chapterprep.com/icon-512.png",
   },
 };
 
@@ -87,7 +87,7 @@ export default function Landing() {
                 <span className="hero-dot" style={{ background: "var(--red)" }} />
                 <span className="hero-dot" style={{ background: "var(--accent)" }} />
                 <span className="hero-dot" style={{ background: "var(--green)" }} />
-                <span className="font-mono hero-preview-url">fbla.one/app/coach</span>
+                <span className="font-mono hero-preview-url">chapterprep.com/app/coach</span>
               </div>
               <div className="hero-preview-body">
                 <div className="hero-preview-meta">
@@ -477,7 +477,7 @@ export default function Landing() {
                 <HeroBadge>Ready to upgrade your chapter?</HeroBadge>
                 <h2 style={{ marginTop: 16, marginBottom: 14 }}>
                   Get your chapter on{" "}
-                  <span style={{ color: "var(--accent)" }}>FBLA One.</span>
+                  <span style={{ color: "var(--accent)" }}>ChapterPrep.</span>
                 </h2>
                 <p style={{ maxWidth: 560, marginInline: "auto", color: "var(--text2)", fontSize: 16 }}>
                   Free for every FBLA member. Sign up in under a minute -- no credit card, no setup.

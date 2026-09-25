@@ -1,7 +1,7 @@
 /**
  * FBLA Competitive Events Registry
  *
- * Source of truth for every competition tracked by FBLA One.
+ * Source of truth for every competition tracked by ChapterPrep.
  * Based on the FBLA Competitive Events Guide. Re-verify each year - FBLA
  * adds/renames events for the new program of work.
  *

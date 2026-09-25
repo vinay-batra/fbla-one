@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate every FBLA One brand asset from the master mark.
+"""Regenerate every ChapterPrep brand asset from the master mark.
 
 Source of truth: public/logo-mark.png (a transparent, trimmed square PNG of the
 mark). To swap the logo: replace public/logo-mark.png with a new transparent PNG
@@ -53,7 +53,7 @@ square(512, 0.18, WHITE).convert("RGB").save("public/icon-512.png")
 W, H = 1200, 630
 og = Image.new("RGB", (W, H), (247, 249, 252))
 d = ImageDraw.Draw(og)
-d.rectangle([0, 0, W, 6], fill=(200, 136, 26))
+d.rectangle([0, 0, W, 6], fill=(47, 127, 224))
 lg = square(300, 0.02)
 og.paste(lg, (150, (H - 300) // 2), lg)
 try:
@@ -62,9 +62,9 @@ try:
 except Exception:
     f_bold = f_tag = ImageFont.load_default()
 tx = 500
-d.text((tx, 240), "FBLA", font=f_bold, fill=(0, 60, 126))
-d.text((tx + d.textlength("FBLA ", font=f_bold), 240), "One", font=f_bold, fill=(200, 136, 26))
-d.text((tx, 350), "AI-powered FBLA competition prep", font=f_tag, fill=(90, 107, 138))
+d.text((tx, 240), "Chapter", font=f_bold, fill=(13, 38, 89))
+d.text((tx + d.textlength("Chapter", font=f_bold), 240), "Prep", font=f_bold, fill=(47, 127, 224))
+d.text((tx, 350), "AI practice tests for competitive events", font=f_tag, fill=(90, 107, 138))
 og.save("public/og-image.png")
 
 print("Regenerated all brand assets from", SRC)

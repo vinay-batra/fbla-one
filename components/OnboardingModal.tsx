@@ -10,7 +10,7 @@ const STEPS = [
   {
     num: "01",
     title: "Pick your competitions",
-    body: "Browse all 55 FBLA events. Register for the ones you are competing in to track your prep.",
+    body: "Browse all 76 FBLA events. Register for the ones you are competing in to track your prep.",
     href: "/competitions",
     cta: "Browse events",
     icon: (
@@ -143,7 +143,7 @@ export function OnboardingModal() {
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
           <div>
-            <p className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>Welcome to FBLA One</p>
+            <p className="eyebrow" style={{ marginBottom: 6, color: "var(--accent)" }}>Welcome to ChapterPrep</p>
             <h2 id="onboarding-title" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>Three things to do first.</h2>
           </div>
           <button
