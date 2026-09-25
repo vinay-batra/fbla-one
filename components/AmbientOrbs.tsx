@@ -25,7 +25,7 @@ export function AmbientOrbs() {
           maxWidth: 900,
           maxHeight: 900,
           background:
-            "radial-gradient(circle, rgba(255, 184, 28, 0.22) 0%, rgba(255, 184, 28, 0.08) 35%, transparent 70%)",
+            "radial-gradient(circle, rgba(45, 212, 191, 0.13) 0%, rgba(45, 212, 191, 0.05) 35%, transparent 70%)",
           filter: "blur(60px)",
         }}
       />
@@ -39,7 +39,7 @@ export function AmbientOrbs() {
           maxWidth: 820,
           maxHeight: 820,
           background:
-            "radial-gradient(circle, rgba(93, 156, 228, 0.14) 0%, rgba(93, 156, 228, 0.05) 40%, transparent 75%)",
+            "radial-gradient(circle, rgba(96, 165, 250, 0.14) 0%, rgba(96, 165, 250, 0.05) 40%, transparent 75%)",
           filter: "blur(80px)",
         }}
       />

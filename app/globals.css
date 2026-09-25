@@ -3,7 +3,9 @@
 /* ─────────────────────────────────────────────────────────────
    ChapterPrep - global styles
    Light + dark theme via [data-theme] attribute on <html>
-   Palette: navy #003c7e (brand) + gold #ffb81c (accent)
+   Palette: blue #1d4ed8 / #60a5fa (brand, taken from the logo mark) +
+   teal #0d9488 / #2dd4bf (accent). Medal and warning colors stay
+   semantic (gold/silver/bronze, amber) and are not brand colors.
 ───────────────────────────────────────────────────────────── */
 
 html {
@@ -21,7 +23,7 @@ body {
   --bg2:         #f7f9fc;
   --bg3:         #e7edf6;
   --border:      #d6deeb;
-  --border2:     rgba(0, 60, 126, 0.18);
+  --border2:     rgba(29, 78, 216, 0.18);
   --border-dim:  #e2e8f3;
 
   --text:        #0b1a33;
@@ -35,20 +37,20 @@ body {
   --red:         #c0392b;
   --red-rgb:     192, 57, 43;
 
-  --accent:      #c8881a;
-  --accent-rgb:  200, 136, 26;
-  --accent-text: #8b5e0d;
+  --accent:      #0d9488;
+  --accent-rgb:  13, 148, 136;
+  --accent-text: #0f766e;
   --medal-gold:   #a67c00;
   --medal-silver: #6b7280;
   --medal-bronze: #8a5a2b;
-  --accent-dim:  rgba(200, 136, 26, 0.1);
-  --accent-border: rgba(200, 136, 26, 0.32);
-  --accent-glow: 0 0 24px rgba(200, 136, 26, 0.28);
+  --accent-dim:  rgba(13, 148, 136, 0.1);
+  --accent-border: rgba(13, 148, 136, 0.32);
+  --accent-glow: 0 0 24px rgba(13, 148, 136, 0.28);
 
-  --brand:       #003c7e;
-  --brand-rgb:   0, 60, 126;
-  --brand-dim:   rgba(0, 60, 126, 0.08);
-  --brand-border: rgba(0, 60, 126, 0.28);
+  --brand:       #1d4ed8;
+  --brand-rgb:   29, 78, 216;
+  --brand-dim:   rgba(29, 78, 216, 0.08);
+  --brand-border: rgba(29, 78, 216, 0.28);
 
   --warning:     #c17c20;
 
@@ -84,11 +86,11 @@ body {
   --bg2:         #0a1322;
   --bg3:         #11203a;
   --border:      rgba(255, 255, 255, 0.07);
-  --border2:     rgba(255, 184, 28, 0.18);
+  --border2:     rgba(45, 212, 191, 0.18);
   --border-dim:  rgba(255, 255, 255, 0.05);
 
-  --text:        #f0ecde;
-  --text1:       #f0ecde;
+  --text:        #e9eef7;
+  --text1:       #e9eef7;
   --text2:       #b3bccd;
   --text3:       #828ca8;
   --text-muted:  #7c87a2;
@@ -98,20 +100,20 @@ body {
   --red:         #e05c5c;
   --red-rgb:     224, 92, 92;
 
-  --accent:      #ffb81c;
-  --accent-rgb:  255, 184, 28;
-  --accent-text: #ffb81c;
+  --accent:      #2dd4bf;
+  --accent-rgb:  45, 212, 191;
+  --accent-text: #2dd4bf;
   --medal-gold:   #d4af37;
   --medal-silver: #aab4c2;
   --medal-bronze: #c07f3c;
-  --accent-dim:  rgba(255, 184, 28, 0.1);
-  --accent-border: rgba(255, 184, 28, 0.32);
-  --accent-glow: 0 0 30px rgba(255, 184, 28, 0.32);
+  --accent-dim:  rgba(45, 212, 191, 0.1);
+  --accent-border: rgba(45, 212, 191, 0.32);
+  --accent-glow: 0 0 30px rgba(45, 212, 191, 0.32);
 
-  --brand:       #5d9ce4;
-  --brand-rgb:   93, 156, 228;
-  --brand-dim:   rgba(93, 156, 228, 0.12);
-  --brand-border: rgba(93, 156, 228, 0.32);
+  --brand:       #60a5fa;
+  --brand-rgb:   96, 165, 250;
+  --brand-dim:   rgba(96, 165, 250, 0.12);
+  --brand-border: rgba(96, 165, 250, 0.32);
 
   --warning:     #e09a3e;
 

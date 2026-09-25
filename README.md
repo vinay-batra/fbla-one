@@ -1,13 +1,13 @@
-# FBLA One
+# ChapterPrep
 
 AI-powered all-in-one platform for FBLA chapters: competition guides, AI practice tests, prep tracker, deadline calendar, and advisor dashboard.
 
-**Live at [fbla.one](https://fbla.one)** · Pilot: Council Rock High School South · Officer meeting: Aug 25, 2026
+**Live at [chapterprep.com](https://chapterprep.com)** · Pilot: Council Rock High School South
 
 | | |
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
-| Hosting | Vercel, domain `fbla.one` (SSL active) |
+| Hosting | Vercel, domain `chapterprep.com` (SSL active) |
 | Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0017, all applied + verified live: RLS 18/18, leaderboard 8/8, audit-remediation 0017 verified). |
 | Auth | Google OAuth + email/password + magic link + Turnstile (PKCE via `/auth/callback`) |
 | AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
@@ -45,7 +45,7 @@ Sign up (as a student or advisor), pick your event, then everything lives in the
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`)
 - **AI**: `@anthropic-ai/sdk` -- streaming practice test generation via `/api/practice-test`
 - **Hosting**: Vercel (frontend + edge functions), Supabase Postgres (DB)
-- **Domain**: fbla.one
+- **Domain**: chapterprep.com
 
 ---
 
@@ -106,7 +106,7 @@ notify pgrst, 'reload schema';
 ```
 
 Google OAuth is live. Auth settings: email confirmation **disabled** (instant signup).
-Redirect URLs in Authentication -> URL Configuration: `https://fbla.one/auth/callback` + `http://localhost:3000/auth/callback`.
+Redirect URLs in Authentication -> URL Configuration: `https://chapterprep.com/**`, `https://www.chapterprep.com/**` and `http://localhost:3000/**` (the `/**` matters - a bare origin will not match `/auth/callback`). Site URL: `https://chapterprep.com`.
 
 ---
 

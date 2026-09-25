@@ -142,7 +142,32 @@ const ERAS: Era[] = [
     ],
     tags: ["Chapter", "Learning", "Audit"],
   },
+  {
+    num: "08",
+    name: "ChapterPrep",
+    versions: "v1.7 - v1.8",
+    dateRange: "Jun 11 - Sep 25, 2026",
+    intro:
+      "Hardening, correct arithmetic in every AI test, and then a new name. The platform became ChapterPrep and moved to its own identity.",
+    highlights: [
+      "Renamed to ChapterPrep at chapterprep.com, with every account and practice log carried over",
+      "A new visual identity in brand blue and teal, checked against WCAG AA throughout",
+      "Practice test math is now exact: a real expression evaluator verifies every computed answer",
+      "Bot protection on sign-in and a strict Content Security Policy in production",
+      "An in-test stopwatch, weak-topic drills, and a regional registration export for advisors",
+      "The competitive events registry rebuilt to the official 2025-26 list, all 76 events",
+    ],
+    tags: ["Rebrand", "Security", "Accuracy"],
+  },
 ];
+
+// Spelled-out count so the hero line can never drift from the array again
+// (it said "Seven chapters" while ERAS held eight).
+const NUMBER_WORDS = [
+  "Zero", "One", "Two", "Three", "Four", "Five", "Six",
+  "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+];
+const ERA_COUNT_WORD = NUMBER_WORDS[ERAS.length] ?? String(ERAS.length);
 
 export default function ChangelogPage() {
   return (
@@ -210,7 +235,7 @@ export default function ChangelogPage() {
                 fontWeight: 700,
               }}
             >
-              Seven chapters · scroll
+              {ERA_COUNT_WORD} chapters · scroll
             </span>
             <svg width="22" height="10" viewBox="0 0 22 10" fill="none">
               <path

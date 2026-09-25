@@ -14,7 +14,14 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Current focus
 
-**LIVE at [fbla.one](https://fbla.one). Last shipped: v1.7.0 (June 11, 2026) - Turnstile captcha LIVE, CSP enforced, calculator-verified AI tests, owner admin view.** **Migrations: 0001-0017, ALL applied + verified live.** Read the v1.7.0 block first; the v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history.
+**LIVE at [chapterprep.com](https://chapterprep.com). Last shipped: v1.8.0 (Sept 25, 2026) - the product is now ChapterPrep, off the FBLA name and domain.** **Migrations: 0001-0017, ALL applied + verified live.** Read the v1.8.0 block first; the v1.7.0/v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history from when the product was called FBLA One at fbla.one. **Do not rewrite that history.** The old name shipped and the record of it stays intact.
+
+> **v1.8.0 - ChapterPrep rebrand (Sept 25, 2026), DONE + deployed + verified live.** The product moved off the FBLA name and the `fbla.one` domain to its own identity, by agreement with FBLA's national office, ahead of an Oct 1 2026 date. `fbla.one` is being transferred to FBLA. (This repo is public - the correspondence and the details behind the change are deliberately not written up here.)
+> - **Name:** `FBLA One` -> **ChapterPrep** across metadata, manifest, marketing copy, auth, tour, onboarding, AI chat prompt, footer and the `Logo` wordmark. The first rename pass was case sensitive and missed the uppercase `FBLA ONE` eyebrow on the auth card plus the admin CSV filename - **always grep case-insensitively (`grep -rni "fbla[ _-]*one"`) when checking for leftovers.**
+> - **Domain:** `fbla.one` -> **chapterprep.com** in `metadataBase`, sitemap, robots, JSON-LD, invite links, `safeNextPath` base and support addresses. Apex is canonical now (www 308s to it), which matches every URL the code emits. `fbla.one` is off the Vercel project and is being transferred to FBLA.
+> - **Palette:** dropped FBLA's navy + gold. `--brand` is now blue `#1d4ed8` / `#60a5fa` taken from the logo mark, `--accent` is teal `#0d9488` / `#2dd4bf`. Dark `--text` moved from warm cream `#f0ecde` to cool `#e9eef7` since the cream existed to pair with gold. All WCAG-checked: light brand 6.70:1, light `--accent-text` 5.47:1, dark accent 10.52:1, dark text on the accent button 10.36:1. Medal gold/silver/bronze and `--warning` amber are **semantic, not brand**, and deliberately stayed.
+> - **Kept deliberately:** the `fbla_*` localStorage keys (renaming them would wipe every existing user's registrations, practice logs and saved resources), all *descriptive* references to FBLA competitive events, and the not-affiliated disclaimer in the footer.
+> - **STILL BROKEN, needs Vinay:** the Cloudflare **Turnstile widget's hostname allowlist still only contains `fbla.one`**, so the widget throws `Error 110200` on chapterprep.com and, because Supabase Auth captcha protection is enabled against it, **sign-in and sign-up both fail**. Fix in the Cloudflare dashboard, not in code. Also `hello@` and `privacy@chapterprep.com` have no MX records so they bounce - and they never worked on fbla.one either, which matters because the privacy policy promises a data-deletion channel there.
 
 > **Unreleased (July 21, 2026) - competitive events registry refresh.** Vinay flagged International Business missing; audit against FBLA's official 2025-26 HS Competitive Events List (76 events) found the registry had drifted to 54 with several renamed/discontinued events. `lib/competitions.ts` is now 76/76 exact: added International Business + 25 other missing events (12 objective-test with full topics/resources, 14 non-objective-test as `coming-soon` stubs); renamed 6 stale entries to current names keeping slugs stable (Accounting I->Accounting, Accounting II->Advanced Accounting, Cyber Security->Cybersecurity, Intro to Business->Introduction to Business Concepts, Business Financial Plan->Financial Planning, Publication Design->Visual Design); removed 5 discontinued events (Financial Math, Intro to Financial Math, Business Calculations, Word Processing, Political Science). `COMPETITION_STATS.total` and the coach's `ELIGIBLE` filter both derive from `COMPETITIONS.length`/format, so counts and AI-practice-test eligibility for the new objective-test events updated with zero other file changes. Verified tsc/lint/build clean (76 SSG detail pages) + live-checked in browser (competitions grid 76/76, International Business stub page, Data Science & AI full page), 0 console errors. See CHANGELOG "Unreleased" for the full list. Not yet committed/pushed.
 
@@ -155,10 +162,10 @@ There's a self-contained integration test pattern (used twice this session to ca
 - `ThemeToggle` is a 36×36 sun/moon icon button.
 
 ### Dark vars
-`--bg: #060c16` (near-black navy), `--accent: #ffb81c` (FBLA gold), `--brand: #5d9ce4` (lighter blue for contrast), `--text: #f0ecde` (warm cream).
+`--bg: #060c16` (near-black navy), `--accent: #2dd4bf` (teal), `--brand: #60a5fa` (lighter blue for contrast), `--text: #e9eef7` (cool off-white).
 
 ### Light vars
-`--bg: #ffffff`, `--accent: #c8881a` (contrast-safe gold), `--brand: #003c7e` (FBLA navy), `--text: #0b1a33` (deep navy text).
+`--bg: #ffffff`, `--accent: #0d9488` (teal; `--accent-text: #0f766e` for AA body text), `--brand: #1d4ed8` (blue, taken from the logo mark), `--text: #0b1a33` (deep navy text).
 
 ---
 

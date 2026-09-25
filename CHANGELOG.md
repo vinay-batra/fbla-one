@@ -1,8 +1,33 @@
 # Changelog
 
-All notable changes to FBLA One. Live at [fbla.one](https://fbla.one).
+All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterprep.com).
 
-## Unreleased - July 21, 2026 - 2025-26 competitive events refresh
+The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
+
+## v1.8.0 - September 25, 2026 - ChapterPrep
+
+The product is now **ChapterPrep**, at **chapterprep.com**. The FBLA name is off the product, the domain, and the branding.
+
+### Why
+The project needed its own identity. "FBLA" is a registered trademark of Future Business Leaders of America, Inc., and building a long-term product around someone else's mark was never the right foundation. ChapterPrep stands on its own, and the name no longer ties the product to a single organization.
+
+### Name and domain
+- `FBLA One` is now `ChapterPrep` across page titles, metadata, the manifest, marketing copy, auth, the guided tour, onboarding, the AI chat assistant and the logo wordmark.
+- `fbla.one` is now `chapterprep.com` in canonical URLs, the sitemap, robots, JSON-LD, chapter invite links, redirect validation and support addresses. The apex is canonical; `www` redirects to it.
+- Existing accounts are untouched. Storage keys kept their original prefix, so every registration, practice log and saved resource carried over.
+
+### New visual identity
+- Brand blue `#1d4ed8` / `#60a5fa`, pulled from the logo mark, replaces the old navy.
+- Teal `#0d9488` / `#2dd4bf` replaces the old gold accent.
+- Dark mode text moved from a warm cream to a cool off-white, which suits the new accent.
+- Every pairing was checked against WCAG AA and the new palette scores higher than the one it replaced: 6.70:1 for brand text in light mode, 10.52:1 for the accent in dark mode.
+- The social preview card, favicons and PWA icons were regenerated from the same source mark.
+- Medal and warning colors are semantic rather than brand, so they were left alone.
+
+### Also
+- Corrected copy that still advertised 55 events; the registry has had 76 since v1.7.1.
+
+## v1.7.1 - July 21, 2026 - 2025-26 competitive events refresh
 
 Registry audited against FBLA's official 2025-26 High School Competitive Events List (76 events) - it had drifted to 54 entries with several renamed/discontinued events. `lib/competitions.ts` now matches exactly, 76 of 76.
 

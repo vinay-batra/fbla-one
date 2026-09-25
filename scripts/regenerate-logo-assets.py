@@ -53,7 +53,7 @@ square(512, 0.18, WHITE).convert("RGB").save("public/icon-512.png")
 W, H = 1200, 630
 og = Image.new("RGB", (W, H), (247, 249, 252))
 d = ImageDraw.Draw(og)
-d.rectangle([0, 0, W, 6], fill=(47, 127, 224))
+d.rectangle([0, 0, W, 6], fill=(13, 148, 136))
 lg = square(300, 0.02)
 og.paste(lg, (150, (H - 300) // 2), lg)
 try:
@@ -62,8 +62,8 @@ try:
 except Exception:
     f_bold = f_tag = ImageFont.load_default()
 tx = 500
-d.text((tx, 240), "Chapter", font=f_bold, fill=(13, 38, 89))
-d.text((tx + d.textlength("Chapter", font=f_bold), 240), "Prep", font=f_bold, fill=(47, 127, 224))
+d.text((tx, 240), "Chapter", font=f_bold, fill=(29, 78, 216))
+d.text((tx + d.textlength("Chapter", font=f_bold), 240), "Prep", font=f_bold, fill=(13, 148, 136))
 d.text((tx, 350), "AI practice tests for competitive events", font=f_tag, fill=(90, 107, 138))
 og.save("public/og-image.png")
 
