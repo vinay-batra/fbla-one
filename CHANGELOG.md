@@ -4,6 +4,59 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.9.0 - September 25, 2026 - Faster, clearer, more accessible
+
+A quality pass over the whole site: it now loads in under half the bytes, meets
+WCAG AA everywhere we can measure, and says only things that are actually true.
+
+### Faster
+Measured on the live homepage: **590.6 KB down to 250 KB, and first paint from
+1332 ms to 712 ms.**
+
+- Fonts are self-hosted rather than imported from Google. The old CSS `@import`
+  was invisible to the browser's preload scanner, so fonts could not even begin
+  loading until the stylesheet had arrived and parsed, then needed a third
+  connection. That was a serialized chain of roughly 270 ms before any styled
+  text could appear.
+- The chat bubble was loading a 512-pixel, 215 KB logo into a 34-pixel slot.
+- The authentication library is no longer downloaded by signed-out visitors. It
+  was reaching every page, including the privacy policy, to answer a question
+  those visitors never ask.
+- Dropped an animation dependency that cost 131 KB for a single dropdown fade,
+  replaced by four lines of CSS.
+- Images and brand assets are now cached properly between visits.
+
+### Clearer and more accessible
+- A "skip to content" link, and the floating help buttons no longer steal the
+  first two keyboard stops on every page.
+- Text and buttons meet WCAG AA contrast throughout. The most visible fix: the
+  practice-test button on competition pages was very hard to read in dark mode.
+- Focus outlines are visible again on every text field.
+- The sign-in page had no page structure for screen readers; it does now.
+- The mobile menu traps focus correctly, AI chat replies are announced, and the
+  current page is marked in every navigation menu.
+- Search on the competitions page has a proper label and announces its result
+  count.
+
+### More accurate
+- The FAQ claimed all 76 events had complete prep content. 62 do. It also
+  claimed 34 events support AI practice tests; 41 do. Both now read from the
+  registry directly, as the homepage statistics already do.
+- Links labelled as event-specific official guidelines all pointed to the same
+  general page, and are now labelled accordingly.
+- Every place the site asks you to email us now also offers the in-app feedback
+  button.
+- The disclaimer that ChapterPrep is independent and unaffiliated now appears
+  throughout the signed-in app and on the sign-in page, not only in the
+  marketing footer.
+
+### Nicer
+- The practice-question preview on the homepage tilts in 3D as you move your
+  pointer.
+- Cards catch light on hover, and dark mode picked up a fine grain that removes
+  the banding on large background gradients.
+- Fixed a bug that could have left the entire competitions grid invisible.
+
 ## v1.8.0 - September 25, 2026 - ChapterPrep
 
 The product is now **ChapterPrep**, at **chapterprep.com**. The FBLA name is off the product, the domain, and the branding.

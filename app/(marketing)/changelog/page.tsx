@@ -159,6 +159,23 @@ const ERAS: Era[] = [
     ],
     tags: ["Rebrand", "Security", "Accuracy"],
   },
+  {
+    num: "09",
+    name: "Faster and Clearer",
+    versions: "v1.9",
+    dateRange: "Sep 25, 2026",
+    intro:
+      "A quality pass over the whole site: less than half the bytes, WCAG AA contrast throughout, and copy that says only what is actually true.",
+    highlights: [
+      "Page weight cut from 590KB to 250KB and first paint nearly halved",
+      "Fonts self-hosted, a 215KB logo shrunk to 1KB, and an unused animation library removed",
+      "Skip-to-content link, visible focus rings, and full keyboard support in every menu",
+      "Contrast meets WCAG AA site-wide, in both light and dark themes",
+      "Event counts now read from the registry so they can never go stale again",
+      "The homepage practice preview tilts in 3D as you move your pointer",
+    ],
+    tags: ["Performance", "Accessibility", "Polish"],
+  },
 ];
 
 // Spelled-out count so the hero line can never drift from the array again
