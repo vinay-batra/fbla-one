@@ -122,6 +122,7 @@ function CompetitionsList() {
             </svg>
             <input
               type="search"
+              aria-label="Search competitions"
               placeholder="Search competitions..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -161,6 +162,7 @@ function CompetitionsList() {
 
           <div
             className="font-mono"
+            aria-live="polite"
             style={{
               marginLeft: "auto",
               fontSize: 11,

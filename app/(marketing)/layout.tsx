@@ -5,7 +5,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   return (
     <>
       <PublicNav />
-      <main className="page-fadein" style={{ position: "relative", zIndex: 1 }}>
+      <main id="main" tabIndex={-1} className="page-fadein" style={{ position: "relative", zIndex: 1 }}>
         {children}
       </main>
       <Footer />

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
-import { getSupabase } from "@/lib/supabase";
 
 type NavLinkSpec = { href: string; label: string };
 
@@ -27,27 +26,44 @@ export function PublicNav() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const supa = getSupabase();
-    if (!supa) { setLoggedIn(false); return; }
-    // Seed from cache to avoid flash on remount
+    // Seed from cache FIRST and synchronously, so the nav paints the right
+    // buttons immediately and the dynamic import below is invisible to users.
     try {
       const c = localStorage.getItem("fbla_logged_in");
       if (c === "1") setLoggedIn(true);
       else if (c === "0") setLoggedIn(false);
     } catch {}
-    // Authoritative check
-    supa.auth.getUser().then(({ data }) => {
-      const li = !!data.user;
-      setLoggedIn(li);
-      try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
-    });
-    // Stay reactive
-    const { data: { subscription } } = supa.auth.onAuthStateChange((_, session) => {
-      const li = !!session?.user;
-      setLoggedIn(li);
-      try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
-    });
-    return () => subscription.unsubscribe();
+
+    let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
+
+    // Imported dynamically: a static import pulled the whole Supabase auth SDK
+    // (~65KB brotli) into the shared chunk of every marketing route, just to
+    // decide whether to render "Log in" or "Go to dashboard".
+    (async () => {
+      const { getSupabase } = await import("@/lib/supabase");
+      if (cancelled) return;
+      const supa = getSupabase();
+      if (!supa) { setLoggedIn(false); return; }
+
+      // Authoritative check
+      supa.auth.getUser().then(({ data }) => {
+        if (cancelled) return;
+        const li = !!data.user;
+        setLoggedIn(li);
+        try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
+      });
+      // Stay reactive
+      const { data: { subscription } } = supa.auth.onAuthStateChange((_, session) => {
+        const li = !!session?.user;
+        setLoggedIn(li);
+        try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
+      });
+      if (cancelled) { subscription.unsubscribe(); return; }
+      unsubscribe = () => subscription.unsubscribe();
+    })();
+
+    return () => { cancelled = true; unsubscribe?.(); };
   }, []);
 
   useEffect(() => {
@@ -205,6 +221,7 @@ export function PublicNav() {
                 <Link
                   key={l.href}
                   href={l.href}
+                  aria-current={pathname === l.href ? "page" : undefined}
                   style={{
                     padding: "12px 14px",
                     borderRadius: 8,
@@ -271,6 +288,7 @@ function NavLink({ href, label, active }: NavLinkSpec & { active?: boolean }) {
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       style={{
         padding: "9px 14px",
         borderRadius: 9,

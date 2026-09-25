@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AffiliationNotice } from "@/components/AffiliationNotice";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
 
@@ -235,7 +237,8 @@ function AuthForm() {
     borderRadius: 11,
     color: "var(--text)",
     fontSize: 16, // 16px avoids iOS Safari zoom-on-focus
-    outline: "none",
+    // No `outline: "none"`: inline styles beat the stylesheet, so this removed
+    // the keyboard focus ring from every sign-in field.
     transition: "border-color 0.18s, box-shadow 0.18s",
     boxShadow:
       focused === field
@@ -300,7 +303,7 @@ function AuthForm() {
       />
 
       {/* Minimal top bar */}
-      <div
+      <header
         style={{
           position: "relative",
           zIndex: 10,
@@ -328,10 +331,12 @@ function AuthForm() {
           </Link>
           <ThemeToggle />
         </div>
-      </div>
+      </header>
 
       {/* Centered card */}
-      <div
+      <main
+        id="main"
+        tabIndex={-1}
         style={{
           flex: 1,
           display: "flex",
@@ -418,8 +423,7 @@ function AuthForm() {
                   boxShadow: "0 6px 18px rgba(11,26,51,0.18)",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-mark.png" alt="" width={36} height={36} style={{ objectFit: "contain" }} />
+                <Image src="/logo-mark.png" alt="" width={36} height={36} style={{ objectFit: "contain" }} />
               </div>
               <span
                 className="font-mono"
@@ -968,8 +972,12 @@ function AuthForm() {
             </Link>
             .
           </p>
+          <AffiliationNotice
+            variant="compact"
+            style={{ marginTop: 14, textAlign: "center", maxWidth: "none" }}
+          />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

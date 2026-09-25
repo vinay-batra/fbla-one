@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
+import { COMPETITION_STATS } from "@/lib/competitions";
 
 type QA = { q: string; a: string };
 type Section = { title: string; items: QA[] };
@@ -34,7 +35,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How many events do you cover?",
-        a: "All 76 FBLA competitive events are in the registry, and all 76 now have complete content: event description, test format details, topic list, and curated study resources. Objective-test events also support AI practice test generation.",
+        a: `All ${COMPETITION_STATS.total} FBLA competitive events are in the registry. ${COMPETITION_STATS.withContent} of them have full prep content today: event description, test format details, topic list, and curated study resources. The rest are listed with a prep page on the way. Objective-test events also support AI practice test generation.`,
       },
       {
         q: "Why do some events say the topic is released annually?",
@@ -42,7 +43,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Are the study resources official FBLA materials?",
-        a: "No. We link to free, high-quality external resources (Khan Academy, AccountingCoach, Investopedia, Professor Messer, MDN, etc.) that match each event's topic outline. We are not affiliated with FBLA-PBL Inc.",
+        a: "No. We link to free, high-quality external resources (Khan Academy, AccountingCoach, Investopedia, Professor Messer, MDN, etc.) that match each event's topic outline. We are not affiliated with Future Business Leaders of America, Inc.",
       },
       {
         q: "Can I suggest a resource?",
@@ -63,7 +64,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Which events support AI practice tests?",
-        a: "All 34 events that include a timed objective (multiple-choice) test. Presentation, case-study, and production events don't have a standardized test, so AI practice tests aren't applicable for those.",
+        a: `${COMPETITION_STATS.aiEligible} events: the ones with a timed objective (multiple-choice) test and full prep content. Presentation, case-study, role-play, and production events are judged on performance rather than a standardized test, so AI practice tests do not apply to those.`,
       },
       {
         q: "Do my scores get saved?",
@@ -108,8 +109,8 @@ const SECTIONS: Section[] = [
         a: "Yes. The advisor view has two export buttons: a full member roster CSV and a competition sign-ups CSV with one row per member per event -- useful for regional registration forms.",
       },
       {
-        q: "Is ChapterPrep affiliated with FBLA-PBL?",
-        a: "No. Independent platform built by an FBLA student. Not endorsed by or affiliated with FBLA-PBL Inc.",
+        q: "Is ChapterPrep affiliated with FBLA?",
+        a: "No. Independent platform built by an FBLA student. Not endorsed by or affiliated with Future Business Leaders of America, Inc.",
       },
     ],
   },

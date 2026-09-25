@@ -38,7 +38,9 @@ export function daysUntil(iso: string): number {
 
 /** Green / gold / red by score percentage. */
 export function scoreColor(pct: number): string {
-  return pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--accent)" : "var(--red)";
+  // --accent-text, not --accent: this renders as small bold text on cards and
+  // --accent alone does not clear AA at those sizes in light mode.
+  return pct >= 80 ? "var(--green)" : pct >= 60 ? "var(--accent-text)" : "var(--red)";
 }
 
 /** Quote-escape a matrix of cells into a CSV string. */

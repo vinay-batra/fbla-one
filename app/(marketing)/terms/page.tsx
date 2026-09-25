@@ -14,7 +14,7 @@ export default function Terms() {
         <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Terms of Service</h1>
 
         <Section title="What ChapterPrep is">
-          <p>ChapterPrep is an independent educational platform for FBLA (Future Business Leaders of America) chapters. It is not affiliated with, endorsed by, or sponsored by FBLA-PBL Inc.</p>
+          <p>ChapterPrep is an independent educational platform for FBLA (Future Business Leaders of America) chapters. It is not affiliated with, endorsed by, or sponsored by Future Business Leaders of America, Inc.</p>
         </Section>
 
         <Section title="Your account">
@@ -26,7 +26,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Content & competition materials">
-          <p>Study resources link to third-party sources. We make a good-faith effort to link to legitimate, free educational content, but we don't own or warrant external resources. Official FBLA rubrics and event guides are the property of FBLA-PBL Inc. and are linked, not hosted.</p>
+          <p>Study resources link to third-party sources. We make a good-faith effort to link to legitimate, free educational content, but we don't own or warrant external resources. Official FBLA rubrics and event guides are the property of Future Business Leaders of America, Inc. and are linked, not hosted.</p>
         </Section>
 
         <Section title="Pricing">

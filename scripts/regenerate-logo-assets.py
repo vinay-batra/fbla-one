@@ -32,7 +32,6 @@ def square(size, pad_ratio, bg=None):
 
 # Keep the in-app transparent mark normalized (re-trim + pad to a clean square)
 square(512, 0.04).save("public/logo-mark.png")
-square(512, 0.04).save("public/logo.png")
 
 # Favicons (white bg so the blue mark reads on any browser chrome)
 square(32, 0.06, WHITE).convert("RGB").save("public/favicon-16x16.png")

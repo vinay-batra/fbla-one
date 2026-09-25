@@ -37,22 +37,22 @@ body {
   --red:         #c0392b;
   --red-rgb:     192, 57, 43;
 
-  --accent:      #0d9488;
-  --accent-rgb:  13, 148, 136;
-  --accent-text: #0f766e;
-  --medal-gold:   #a67c00;
+  --accent:      #0e6f64;
+  --accent-rgb:  14, 111, 100;
+  --accent-text: #0e6f64;
+  --medal-gold:   #8a6600;
   --medal-silver: #6b7280;
   --medal-bronze: #8a5a2b;
-  --accent-dim:  rgba(13, 148, 136, 0.1);
-  --accent-border: rgba(13, 148, 136, 0.32);
-  --accent-glow: 0 0 24px rgba(13, 148, 136, 0.28);
+  --accent-dim:  rgba(14, 111, 100, 0.1);
+  --accent-border: rgba(14, 111, 100, 0.32);
+  --accent-glow: 0 0 24px rgba(14, 111, 100, 0.28);
 
   --brand:       #1d4ed8;
   --brand-rgb:   29, 78, 216;
   --brand-dim:   rgba(29, 78, 216, 0.08);
   --brand-border: rgba(29, 78, 216, 0.28);
 
-  --warning:     #c17c20;
+  --warning:     #9a6209;
 
   --card-bg:     #ffffff;
   --card-glass:  rgba(255, 255, 255, 0.78);
@@ -175,6 +175,28 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(var(--accent-rgb), 0.6); }
 
 ::selection { background: rgba(var(--accent-rgb), 0.35); color: var(--text); }
+
+/* Visually hidden until focused. First tab stop on every page. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 2000;
+  padding: 10px 16px;
+  border-radius: 8px;
+  /* Inverted pair rather than the accent: white on the bright dark-mode teal
+     was only 1.86:1. --text on --bg is guaranteed maximum contrast in both. */
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.18s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
 
 :focus-visible {
   outline: 2px solid var(--accent-text);
@@ -354,10 +376,12 @@ p { color: var(--text2); line-height: 1.62; }
 
 .btn-accent {
   background: var(--accent);
-  color: #0b1a33;
+  color: #ffffff;
   box-shadow: var(--accent-glow);
 }
 [data-theme="dark"] .btn-accent { color: #0b0e16; }
+/* white on the light-blue dark --brand is only 2.54:1; navy text is 6.83:1 */
+[data-theme="dark"] .btn-brand { color: #0b1a33; }
 .btn-accent:hover:not(:disabled) {
   filter: brightness(1.08);
   box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.45);
@@ -448,7 +472,9 @@ p { color: var(--text2); line-height: 1.62; }
   font-family: var(--font-body);
   font-size: 16px; /* 16px avoids iOS Safari zoom-on-focus; desktop tightens below */
   padding: 11px 14px;
-  outline: none;
+  /* No `outline: none` here. It came after the global :focus-visible rule with
+     equal specificity and killed the focus ring on every text field. The
+     :focus border + shadow below is a secondary cue, not a replacement. */
   width: 100%;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -794,3 +820,7 @@ p { color: var(--text2); line-height: 1.62; }
    max-width; without this they left-align and strand on the left half. This is
    a no-op for full-width content and centers anything narrower. */
 .app-main-content > * { margin-inline: auto; }
+
+@media (max-width: 768px) {
+  .footer-link { min-height: 44px; display: inline-flex; align-items: center; }
+}

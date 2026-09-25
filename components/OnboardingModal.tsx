@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { COMPETITION_STATS } from "@/lib/competitions";
 
 const KEY = "fbla_onboarded";
 
@@ -10,7 +11,7 @@ const STEPS = [
   {
     num: "01",
     title: "Pick your competitions",
-    body: "Browse all 76 FBLA events. Register for the ones you are competing in to track your prep.",
+    body: `Browse all ${COMPETITION_STATS.total} FBLA events, then register for the one you are competing in to track your prep.`,
     href: "/competitions",
     cta: "Browse events",
     icon: (

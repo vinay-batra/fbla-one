@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 interface Message {
   role: "user" | "assistant";
@@ -220,8 +221,7 @@ function PublicAIChatInner() {
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src="/logo-mark.png" alt="" width={34} height={34} style={{ objectFit: "contain", pointerEvents: "none" }} />
+          <Image src="/logo-mark.png" alt="" width={34} height={34} style={{ objectFit: "contain", pointerEvents: "none" }} />
         )}
       </button>
 
@@ -391,7 +391,6 @@ function PublicAIChatInner() {
                 borderRadius: 12,
                 color: "var(--text)",
                 fontSize: 14,
-                outline: "none",
                 transition: "border-color 0.15s, box-shadow 0.15s",
                 opacity: atLimit ? 0.6 : 1,
               }}

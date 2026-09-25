@@ -29,7 +29,7 @@ const ERAS: Era[] = [
     versions: "v0.1 - v0.2",
     dateRange: "May 27, 2026",
     intro:
-      "The first build: a Corvo-grade design system and a complete registry of every FBLA competitive event.",
+      "The first build: a Corvo-grade design system and the first registry of FBLA competitive events.",
     highlights: [
       "Full theme system, light and dark, CSS variables, no Tailwind",
       "55-event registry with categories, formats, and topic outlines",
@@ -46,9 +46,9 @@ const ERAS: Era[] = [
     versions: "v0.3",
     dateRange: "May 28, 2026",
     intro:
-      "ChapterPrep went live at chapterprep.com, wired to real auth, a database, and cross-device sync.",
+      "The platform went live, wired to real auth, a database, and cross-device sync.",
     highlights: [
-      "Deployed to chapterprep.com on Vercel with SSL and push-to-deploy",
+      "Deployed on Vercel with SSL and push-to-deploy",
       "Supabase auth: Google OAuth, email/password, and magic link",
       "Registrations, practice logs, and saved resources sync across devices",
       "Caught and fixed a critical table-grant bug via a live integration test",

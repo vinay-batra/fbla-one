@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Logo } from "./Logo";
 import { APP_VERSION } from "@/lib/version";
+import { AffiliationNotice } from "@/components/AffiliationNotice";
 
 type FooterCol = {
   title: string;
@@ -70,17 +71,7 @@ export function Footer() {
               resources, prep tracker, and chapter management - built for FBLA
               students, by an FBLA student.
             </p>
-            <p
-              style={{
-                marginTop: 18,
-                color: "var(--text-muted)",
-                fontSize: 11,
-                lineHeight: 1.6,
-              }}
-            >
-              Not affiliated with Future Business Leaders of America, Inc. FBLA
-              competition names referenced for educational use only.
-            </p>
+            <AffiliationNotice style={{ marginTop: 18 }} />
           </div>
 
           {COLS.map((col) => (

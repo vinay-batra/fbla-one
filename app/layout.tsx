@@ -75,10 +75,14 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
+          {/* First tab stop on every page. GlobalShell renders the feedback and
+              AI-chat FABs, which used to sit before {children} and stole the
+              first two tab stops site-wide. */}
+          <a href="#main" className="skip-link">Skip to content</a>
           <DataSync />
           <ConditionalAmbientOrbs />
-          <GlobalShell />
           {children}
+          <GlobalShell />
         </ThemeProvider>
       </body>
     </html>

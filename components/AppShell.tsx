@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { AffiliationNotice } from "@/components/AffiliationNotice";
 import { DeadlineAlert } from "./DeadlineAlert";
 import { AppTour } from "./AppTour";
 import { getSupabase } from "@/lib/supabase";
@@ -151,13 +152,14 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           <Logo size="md" />
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <nav aria-label="Dashboard" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {NAV.map((item) => {
             const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 data-tour={item.href === "/app" ? "dashboard" : item.href.split("/").pop()}
                 style={{
                   display: "flex",
@@ -296,6 +298,8 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
         </header>
 
         <main
+          id="main"
+          tabIndex={-1}
           className="app-main-content"
           style={{
             flex: 1,
@@ -341,6 +345,15 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           )}
           <DeadlineAlert />
           {children}
+          <footer
+            style={{
+              marginTop: 48,
+              paddingTop: 20,
+              borderTop: "0.5px solid var(--border-dim)",
+            }}
+          >
+            <AffiliationNotice variant="compact" />
+          </footer>
         </main>
       </div>
 
