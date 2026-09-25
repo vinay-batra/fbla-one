@@ -119,7 +119,9 @@ export function PublicNav() {
             gap: 24,
           }}
         >
-          <Logo size="md" />
+          <span className="nav-logo-wrap">
+            <Logo size="md" />
+          </span>
 
           {/* Desktop links */}
           <div className="nav-links-desktop" style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -240,6 +242,22 @@ export function PublicNav() {
           .nav-links-desktop { display: none !important; }
           .nav-burger { display: inline-flex !important; }
           .nav-hide-mobile { display: none !important; }
+        }
+        /* On a 375px phone the md wordmark plus the action row overflowed the
+           container, clipping ~15px off the burger so the menu was hard to tap.
+           Step the logo down to the sm metrics and tighten the gap so the row
+           fits. Logo sets these inline, hence the !important. */
+        @media (max-width: 430px) {
+          .nav-logo-wrap > a { gap: 8px !important; }
+          .nav-logo-wrap > a > span:first-child {
+            width: 26px !important;
+            height: 26px !important;
+          }
+          .nav-logo-wrap > a > span:first-child img {
+            width: 21px !important;
+            height: 21px !important;
+          }
+          .nav-logo-wrap > a > span:last-child > span { font-size: 17px !important; }
         }
         @media (min-width: 769px) {
           .nav-drawer { display: none !important; }
