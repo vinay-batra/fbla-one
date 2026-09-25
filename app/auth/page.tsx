@@ -430,7 +430,7 @@ function AuthForm() {
                   color: "var(--text)",
                 }}
               >
-                FBLA ONE
+                CHAPTERPREP
               </span>
             </Link>
           </div>

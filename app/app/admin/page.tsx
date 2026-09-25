@@ -37,7 +37,7 @@ export default function AdminSignupsPage() {
       ["Email", "Source", "Signed up"],
       ...signups.map((s) => [s.email, s.source ?? "", s.created_at]),
     ];
-    downloadCsv(`fbla-one-email-signups-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
+    downloadCsv(`chapterprep-email-signups-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(rows));
   };
 
   return (
