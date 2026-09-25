@@ -142,8 +142,8 @@ export default function Landing() {
                 marginInline: "auto",
               }}
             >
-              <StatBlock value="55" label="Competitions tracked" />
-              <StatBlock value="34" label="AI practice test events" />
+              <StatBlock value={String(COMPETITION_STATS.total)} label="Competitions tracked" />
+              <StatBlock value={String(COMPETITION_STATS.aiEligible)} label="AI practice test events" />
               <StatBlock value="50" label="Questions max per test" />
               <StatBlock value="Free" label="Always, forever" />
             </div>

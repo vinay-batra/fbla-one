@@ -1814,8 +1814,27 @@ export function getPopularCompetitions(): Competition[] {
 }
 
 /** Quick stats for the marketing site. */
+/**
+ * Formats an AI practice test can actually be generated for. Exported so the
+ * coach's picker and the marketing counts read from ONE definition: the landing
+ * page used to hardcode "55 competitions / 34 AI events" and both had silently
+ * drifted from the registry.
+ */
+export const AI_TESTABLE_FORMATS: readonly CompetitionFormat[] = [
+  "objective-test",
+  "objective-and-presentation",
+  "team-test",
+];
+
+/** An event is AI-testable when it has real content AND a testable format. */
+export function isAiTestable(c: Competition): boolean {
+  return c.contentStatus === "complete" && AI_TESTABLE_FORMATS.includes(c.format);
+}
+
 export const COMPETITION_STATS = {
   total: COMPETITIONS.length,
   withContent: COMPETITIONS.filter((c) => c.contentStatus === "complete").length,
   categories: CATEGORIES.length,
+  /** Events the AI practice test generator supports. Drives marketing copy. */
+  aiEligible: COMPETITIONS.filter(isAiTestable).length,
 };

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
-import { COMPETITIONS, getCompetition, FORMAT_LABEL } from "@/lib/competitions";
+import { COMPETITIONS, getCompetition, FORMAT_LABEL, isAiTestable } from "@/lib/competitions";
 import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, onStorageChange, type WeakTopic } from "@/lib/storage";
 import { evaluateExpression } from "@/lib/calc";
 import { AI_LOG_PREFIX } from "@/lib/chapter";
@@ -29,13 +29,7 @@ type Phase = "idle" | "generating" | "taking" | "reviewing";
 
 // ── Eligible competitions (objective tests only) ───────────────
 
-const ELIGIBLE = COMPETITIONS.filter(
-  (c) =>
-    c.contentStatus === "complete" &&
-    (c.format === "objective-test" ||
-      c.format === "objective-and-presentation" ||
-      c.format === "team-test")
-);
+const ELIGIBLE = COMPETITIONS.filter(isAiTestable);
 
 // ── Score helpers ──────────────────────────────────────────────
 
