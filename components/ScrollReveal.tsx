@@ -34,6 +34,13 @@ export function ScrollReveal({ children, delay = 0, y = 24, threshold = 0.12 }: 
       return;
     }
 
+    // A percentage threshold is measured against the ELEMENT, not the viewport,
+    // so anything taller than the viewport can never reach it: a 6839px block
+    // in a 768px viewport tops out at a ratio of 0.112 and would stay invisible
+    // forever. For those, fire as soon as any part intersects.
+    const tallerThanViewport = el.getBoundingClientRect().height > window.innerHeight;
+    const effectiveThreshold = tallerThanViewport ? 0 : threshold;
+
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -41,7 +48,7 @@ export function ScrollReveal({ children, delay = 0, y = 24, threshold = 0.12 }: 
           obs.disconnect();
         }
       },
-      { threshold, rootMargin: "0px 0px -8% 0px" }
+      { threshold: effectiveThreshold, rootMargin: "0px 0px -8% 0px" }
     );
     obs.observe(el);
     return () => obs.disconnect();

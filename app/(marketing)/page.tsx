@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { TiltCard } from "@/components/TiltCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { HeroBadge } from "@/components/HeroBadge";
 import { HeroCta } from "@/components/HeroCta";
@@ -102,6 +103,7 @@ export default function Landing() {
 
           {/* Product preview: a live-feel AI practice question in a framed window */}
           <ScrollReveal delay={0.3}>
+            <TiltCard>
             <div className="hero-preview">
               <div className="hero-preview-bar">
                 <span className="hero-dot" style={{ background: "var(--red)" }} />
@@ -143,6 +145,7 @@ export default function Landing() {
                 </div>
               </div>
             </div>
+            </TiltCard>
           </ScrollReveal>
 
           {/* Hero stats strip */}

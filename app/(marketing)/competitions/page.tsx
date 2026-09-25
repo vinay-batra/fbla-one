@@ -201,20 +201,24 @@ function CompetitionsList() {
               </button>
             </div>
           ) : (
-            <div
-              className="comp-list-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 16,
-              }}
-            >
-              {filtered.map((c, i) => (
-                <ScrollReveal key={c.slug} delay={Math.min(i * 0.02, 0.3)}>
-                  <CompetitionCard c={c} />
-                </ScrollReveal>
-              ))}
-            </div>
+            /* One reveal for the whole grid, not one per card. Wrapping each of
+               the 76 cards meant 76 IntersectionObservers, a wall of blank
+               space when scrolling quickly, and a re-triggered fade on every
+               search keystroke as newly-matched cards mounted hidden. */
+            <ScrollReveal>
+              <div
+                className="comp-list-grid"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 16,
+                }}
+              >
+                {filtered.map((c) => (
+                  <CompetitionCard key={c.slug} c={c} />
+                ))}
+              </div>
+            </ScrollReveal>
           )}
         </div>
 

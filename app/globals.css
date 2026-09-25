@@ -175,6 +175,22 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 
 ::selection { background: rgba(var(--accent-rgb), 0.35); color: var(--text); }
 
+/* Fine luminance grain, dark theme only. Breaks up banding on the large
+   background gradients so the dark surfaces read as depth rather than flat
+   fill. Inline SVG turbulence: no network request, no layout, no hit testing. */
+[data-theme="dark"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) {
+  /* nothing animated here, but keep the hook alongside the other motion rules */
+}
+
 /* Profile dropdown entrance. Replaces framer-motion, which shipped 131KB into
    every route's shared chunk for exactly this one 0.15s transition. The global
    prefers-reduced-motion reset below neutralizes it. */
@@ -534,7 +550,8 @@ p { color: var(--text2); line-height: 1.62; }
 .card-hover:hover {
   transform: translateY(-3px);
   border-color: var(--accent-border);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.16),
+    0 10px 30px -12px rgba(var(--accent-rgb), 0.28);
 }
 .card-elevated {
   box-shadow: var(--shadow);
