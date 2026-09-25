@@ -15,8 +15,9 @@ const isDev = process.env.NODE_ENV !== "production";
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
+  // Fonts are self-hosted via next/font, so the Google Fonts origins are gone.
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' data: https://api.qrserver.com https://*.supabase.co https://lh3.googleusercontent.com",
   "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://challenges.cloudflare.com",
   "frame-src https://challenges.cloudflare.com",
@@ -42,11 +43,26 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    // The optimizer inherited `max-age=0, must-revalidate` from its upstream in
+    // public/, so every repeat navigation paid a conditional round-trip per
+    // image. These derive from content we control and change only on redeploy.
+    minimumCacheTTL: 31536000,
+  },
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: SECURITY_HEADERS,
+      },
+      {
+        // Brand assets are regenerated only by scripts/regenerate-logo-assets.py,
+        // so they can be cached hard. Everything else in public/ keeps the
+        // default revalidate behavior.
+        source: "/:file(favicon-16x16.png|favicon-32x32.png|apple-touch-icon.png|icon-192.png|icon-512.png|logo-mark.png|og-image.png)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" },
+        ],
       },
     ];
   },

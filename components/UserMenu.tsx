@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
 import { getSupabase } from "@/lib/supabase";
 
 type Profile = {
@@ -93,15 +92,11 @@ export function UserMenu() {
         </svg>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
+      {open && (
+          <div
             role="menu"
             aria-label="Profile menu"
-            initial={{ opacity: 0, y: -6, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.97 }}
-            transition={{ duration: 0.15 }}
+            className="usermenu-pop"
             style={{
               position: "absolute",
               top: "calc(100% + 8px)",
@@ -151,9 +146,8 @@ export function UserMenu() {
                 Sign out
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </div>
   );
 }

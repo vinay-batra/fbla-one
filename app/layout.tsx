@@ -1,9 +1,38 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Space_Mono, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ConditionalAmbientOrbs } from "@/components/ConditionalAmbientOrbs";
 import { DataSync } from "@/components/DataSync";
 import { GlobalShell } from "@/components/GlobalShell";
 import "./globals.css";
+
+/**
+ * Self-hosted from our own origin. The previous @import in globals.css was
+ * invisible to the HTML preload scanner, so the font CSS could not even start
+ * until globals.css had downloaded and parsed, then needed a third origin hop
+ * for the woff2 files. Measured as a serialized ~270ms chain before webfont
+ * text could paint. next/font also generates a size-adjusted fallback, which
+ * removes the layout shift on swap.
+ *
+ * Inter and Space Grotesk are variable fonts, so the full weight range costs
+ * the same as a single weight. Space Mono is static, hence the explicit list.
+ */
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-space-grotesk",
+});
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-space-mono",
+});
 
 export const viewport: Viewport = {
   themeColor: [
@@ -69,7 +98,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>

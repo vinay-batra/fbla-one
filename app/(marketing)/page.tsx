@@ -12,11 +12,31 @@ import {
   FORMAT_LABEL,
 } from "@/lib/competitions";
 
+const HOME_TITLE = "ChapterPrep - AI Practice Tests for Every FBLA Objective Event";
+// Kept under ~160 characters so search results do not truncate it.
+const HOME_DESCRIPTION =
+  "Unlimited AI practice tests for every FBLA objective event, with instant explanations and score tracking. Study guides, deadlines and an advisor dashboard. Free.";
+
 export const metadata: Metadata = {
-  title: { absolute: "ChapterPrep - AI Practice Tests for Every FBLA Objective Event" },
-  description:
-    "Generate unlimited AI practice tests for every FBLA objective event. Up to 50 questions, instant explanations, score tracking. Plus study guides, deadline calendar, and advisor dashboard -- all free.",
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
   alternates: { canonical: "/" },
+  // Without this the homepage inherited the root layout's generic OG copy and
+  // threw away its own, which is the strongest copy on the site.
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: "/",
+    siteName: "ChapterPrep",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ChapterPrep" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: ["/og-image.png"],
+  },
 };
 
 const JSON_LD = {

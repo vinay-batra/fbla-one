@@ -3,7 +3,9 @@ import { HeroBadge } from "@/components/HeroBadge";
 
 export const metadata: Metadata = {
   title: "Terms",
-  description: "ChapterPrep terms of service.",
+  description:
+    "The terms for using ChapterPrep: what the platform is, acceptable use, that it is free for every student and chapter, and the limits of our warranties.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function Terms() {

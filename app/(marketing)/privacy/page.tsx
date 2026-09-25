@@ -3,7 +3,9 @@ import { HeroBadge } from "@/components/HeroBadge";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  description: "How ChapterPrep handles your data.",
+  description:
+    "How ChapterPrep collects, uses and deletes your data, including what we store for chapter members, what we never sell, and how to request removal.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function Privacy() {

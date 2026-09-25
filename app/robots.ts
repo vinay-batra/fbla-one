@@ -5,8 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Authenticated app + auth utility pages have no SEO value
-      disallow: ["/app", "/auth"],
+      // Trailing slashes matter: robots.txt matches by PREFIX, so a bare "/app"
+      // also blocked /apple-touch-icon.png. /join/ holds chapter invite links,
+      // which should never be crawled.
+      disallow: ["/app/", "/auth/", "/join/"],
     },
     sitemap: "https://chapterprep.com/sitemap.xml",
     host: "https://chapterprep.com",
