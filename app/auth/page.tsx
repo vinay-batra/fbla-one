@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,71 +9,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AffiliationNotice } from "@/components/AffiliationNotice";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
-
-// ---------------------------------------------------------------------------
-// Cloudflare Turnstile (lightweight inline, no npm package needed)
-// ---------------------------------------------------------------------------
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (el: HTMLElement | string, opts: Record<string, unknown>) => string;
-      reset: (id: string) => void;
-    };
-  }
-}
-
-function useTurnstile(onToken: (t: string | null) => void, ready: boolean) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const widgetId = useRef<string | null>(null);
-
-  useEffect(() => {
-    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    // `ready` gates until the form (and this container) is actually rendered. The
-    // auth page shows a loader while the session check runs, so on first mount the
-    // container is null - without re-running once the form appears, the widget
-    // would never mount.
-    if (!ready || !siteKey || !containerRef.current) return;
-
-    const mount = () => {
-      if (!containerRef.current || !window.turnstile) return;
-      widgetId.current = window.turnstile.render(containerRef.current, {
-        sitekey: siteKey,
-        callback: (token: string) => onToken(token),
-        "expired-callback": () => onToken(null),
-        theme: "auto",
-        size: "normal",
-      });
-    };
-
-    if (window.turnstile) {
-      mount();
-    } else {
-      const existing = document.getElementById("cf-turnstile-script");
-      if (!existing) {
-        const script = document.createElement("script");
-        script.id = "cf-turnstile-script";
-        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-        script.async = true;
-        script.defer = true;
-        script.onload = mount;
-        document.head.appendChild(script);
-      } else {
-        existing.addEventListener("load", mount);
-      }
-    }
-
-    return () => {
-      // Tear down the widget so a remount (e.g. switching auth modes) doesn't
-      // leave a stale Turnstile iframe behind.
-      if (widgetId.current && window.turnstile) {
-        try { window.turnstile.reset(widgetId.current); } catch {}
-        widgetId.current = null;
-      }
-    };
-  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return containerRef;
-}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -100,7 +35,6 @@ function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [magicSent, setMagicSent] = useState(false);
 
   // Watch data-theme for the bg glow colour
@@ -127,13 +61,7 @@ function AuthForm() {
     }).catch(() => setSessionChecked(true));
   }, [nextPath]);
 
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-  const turnstileRef = useTurnstile(setCaptchaToken, sessionChecked);
-  const hasTurnstile = !!siteKey;
-
-  // A submit is ready when captcha is passed (or Turnstile isn't configured)
-  const captchaReady = !hasTurnstile || !!captchaToken;
-  const canSubmit = !loading && captchaReady;
+  const canSubmit = !loading;
 
   const handle = async () => {
     if (!canSubmit) return;
@@ -154,7 +82,6 @@ function AuthForm() {
         const { error } = await supa.auth.signInWithPassword({
           email,
           password,
-          options: captchaToken ? { captchaToken } : undefined,
         });
         if (error) throw error;
         // Full reload (not router.push) so the server picks up the fresh
@@ -168,7 +95,6 @@ function AuthForm() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            ...(captchaToken ? { captchaToken } : {}),
           },
         });
         if (error) throw error;
@@ -188,7 +114,6 @@ function AuthForm() {
           email,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback?next=${nextPath}`,
-            ...(captchaToken ? { captchaToken } : {}),
           },
         });
         if (error) throw error;
@@ -198,7 +123,6 @@ function AuthForm() {
         // reset
         const { error } = await supa.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth/callback?next=/app`,
-          ...(captchaToken ? { captchaToken } : {}),
         });
         if (error) throw error;
         setSuccess("Password reset email sent.");
@@ -767,11 +691,6 @@ function AuthForm() {
                 Forgot password?
               </button>
             </div>
-          )}
-
-          {/* Cloudflare Turnstile */}
-          {hasTurnstile && (
-            <div ref={turnstileRef} style={{ marginBottom: 12 }} />
           )}
 
           {/* Error / success */}

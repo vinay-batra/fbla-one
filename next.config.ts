@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 // Next's inline hydration/bootstrap and the inline theme-init script in
 // app/layout.tsx are allowed without nonce wiring; everything else is locked to
 // 'self' plus the explicit third parties below (Supabase, Anthropic, Google
-// Fonts/avatars, Cloudflare Turnstile, the QR image host). Was shipped in
+// Fonts/avatars, the QR image host). Was shipped in
 // report-only first and validated clean - to re-observe, change the header key
 // back to "Content-Security-Policy-Report-Only".
 //
@@ -14,13 +14,13 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV !== "production";
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   // Fonts are self-hosted via next/font, so the Google Fonts origins are gone.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data: https://api.qrserver.com https://*.supabase.co https://lh3.googleusercontent.com",
-  "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://challenges.cloudflare.com",
-  "frame-src https://challenges.cloudflare.com",
+  "connect-src 'self' https://*.supabase.co https://api.anthropic.com",
+  "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

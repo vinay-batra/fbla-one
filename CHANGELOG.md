@@ -4,6 +4,16 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.9.1 - September 26, 2026 - Captcha removed
+
+Cloudflare Turnstile has been removed. Its hostname allowlist still pointed at the
+old domain, so rather than protecting sign-up it was blocking every sign-in and
+sign-up attempt outright. The widget, its loader, the Content-Security-Policy
+entries for it and its environment variable are all gone.
+
+There is no bot protection on sign-up at the moment. That is a deliberate trade
+against authentication being completely broken, and it is easy to reverse.
+
 ## v1.9.0 - September 25, 2026 - Faster, clearer, more accessible
 
 A quality pass over the whole site: it now loads in under half the bytes, meets
