@@ -14,10 +14,10 @@ import {
   FORMAT_LABEL,
 } from "@/lib/competitions";
 
-const HOME_TITLE = "ChapterPrep - AI Practice Tests for Every FBLA Objective Event";
+const HOME_TITLE = "ChapterPrep - Practice Tests for Every FBLA Objective Event";
 // Kept under ~160 characters so search results do not truncate it.
 const HOME_DESCRIPTION =
-  "Unlimited AI practice tests for every FBLA objective event, with instant explanations and score tracking. Study guides, deadlines and an advisor dashboard. Free.";
+  "Unlimited practice tests for every FBLA objective event, with instant explanations and score tracking. Study guides, deadlines and an advisor dashboard. Free.";
 
 export const metadata: Metadata = {
   title: { absolute: HOME_TITLE },
