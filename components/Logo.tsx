@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { BrandMark } from "@/components/BrandMark";
 
 type Props = {
   href?: string;
@@ -32,30 +32,9 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
         textDecoration: "none",
       }}
     >
-      <span
-        aria-hidden="true"
-        style={{
-          flexShrink: 0,
-          width: s.plate,
-          height: s.plate,
-          borderRadius: s.radius,
-          // White plate to match the favicon + PWA icons (square white bg). The
-          // blue mark reads on any background, so this stays white in both themes.
-          background: "#ffffff",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Image
-          src="/logo-mark.png"
-          width={s.mark}
-          height={s.mark}
-          alt=""
-          aria-hidden="true"
-          style={{ objectFit: "contain", height: s.mark, width: s.mark }}
-        />
-      </span>
+      {/* Rendered directly rather than on a white plate: the old "1" mark needed
+          the plate to read, the bookmark carries its own shape and gradient. */}
+      <BrandMark size={s.plate} />
       {!markOnly && (
         <span style={{ display: "inline-flex", alignItems: "baseline", lineHeight: 1 }}>
           <span style={{ fontSize: s.font, color: "var(--brand)" }}>Chapter</span>

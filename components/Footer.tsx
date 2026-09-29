@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Logo } from "./Logo";
 import { APP_VERSION } from "@/lib/version";
 import { AffiliationNotice } from "@/components/AffiliationNotice";
+import { BrandMark } from "@/components/BrandMark";
 
 type FooterCol = {
   title: string;
@@ -127,18 +127,9 @@ export function Footer() {
             overflow: "hidden",
           }}
         >
-          <Image
-            src="/logo-mark.png"
-            alt=""
-            aria-hidden="true"
-            width={520}
-            height={520}
-            style={{
-              width: "min(520px, 70vw)",
-              height: "auto",
-              transform: "translateY(40%)",
-            }}
-          />
+          <div style={{ width: "min(520px, 70vw)", transform: "translateY(40%)" }}>
+            <BrandMark size={520} className="footer-watermark-mark" />
+          </div>
         </div>
       </div>
 

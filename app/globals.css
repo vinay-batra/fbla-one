@@ -31,8 +31,8 @@ body {
   --text3:       #5a6b8a;
   --text-muted:  #5c6c89;
 
-  --green:       #16864d;
-  --green-rgb:   22, 134, 77;
+  --green:       #11703f; /* 4.37:1 on --bg2 before; now 5.83, and 4.92 on its own 12% tint */
+  --green-rgb:   17, 112, 63;
   --red:         #c0392b;
   --red-rgb:     192, 57, 43;
 
@@ -852,3 +852,6 @@ p { color: var(--text2); line-height: 1.62; }
 @media (max-width: 768px) {
   .footer-link { min-height: 44px; display: inline-flex; align-items: center; }
 }
+
+/* Footer watermark: let the fixed-size BrandMark scale to its wrapper. */
+.footer-watermark-mark { width: 100% !important; height: auto !important; }

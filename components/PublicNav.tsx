@@ -265,13 +265,9 @@ export function PublicNav() {
            fits. Logo sets these inline, hence the !important. */
         @media (max-width: 430px) {
           .nav-logo-wrap > a { gap: 8px !important; }
-          .nav-logo-wrap > a > span:first-child {
+          .nav-logo-wrap > a > svg {
             width: 26px !important;
             height: 26px !important;
-          }
-          .nav-logo-wrap > a > span:first-child img {
-            width: 21px !important;
-            height: 21px !important;
           }
           .nav-logo-wrap > a > span:last-child > span { font-size: 17px !important; }
         }

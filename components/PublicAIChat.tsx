@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+import { BrandMark } from "@/components/BrandMark";
 
 interface Message {
   role: "user" | "assistant";
@@ -221,7 +221,7 @@ function PublicAIChatInner() {
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          <Image src="/logo-mark.png" alt="" width={34} height={34} style={{ objectFit: "contain", pointerEvents: "none" }} />
+          <span style={{ pointerEvents: "none", display: "inline-flex" }}><BrandMark size={32} /></span>
         )}
       </button>
 

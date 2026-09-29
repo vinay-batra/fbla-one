@@ -3,10 +3,10 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AffiliationNotice } from "@/components/AffiliationNotice";
+import { BrandMark } from "@/components/BrandMark";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
 
@@ -347,7 +347,7 @@ function AuthForm() {
                   boxShadow: "0 6px 18px rgba(11,26,51,0.18)",
                 }}
               >
-                <Image src="/logo-mark.png" alt="" width={36} height={36} style={{ objectFit: "contain" }} />
+                <BrandMark size={38} />
               </div>
               <span
                 className="font-mono"

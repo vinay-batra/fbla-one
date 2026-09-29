@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { TiltCard } from "@/components/TiltCard";
+import { ChapterShowcase } from "@/components/ChapterShowcase";
 import { SectionHeader } from "@/components/SectionHeader";
 import { HeroBadge } from "@/components/HeroBadge";
 import { HeroCta } from "@/components/HeroCta";
@@ -72,10 +73,7 @@ export default function Landing() {
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
           <div style={{ maxWidth: 940, marginInline: "auto", textAlign: "center" }}>
             <ScrollReveal>
-              <HeroBadge>AI-Powered FBLA Prep</HeroBadge>
-            </ScrollReveal>
-            <ScrollReveal delay={0.06}>
-              <h1 className="hero-headline" style={{ marginTop: 22 }}>
+              <h1 className="hero-headline">
                 Practice smarter.{" "}
                 <span className="hero-accent">Score higher.</span>
               </h1>
@@ -91,7 +89,7 @@ export default function Landing() {
                   lineHeight: 1.65,
                 }}
               >
-                Unlimited AI practice tests for every FBLA objective event. Up to 50 questions,
+                Unlimited practice tests for every FBLA objective event. Up to 50 questions,
                 instant explanations, score tracking. Plus study guides, a deadline calendar,
                 and an advisor dashboard. All free.
               </p>
@@ -113,35 +111,37 @@ export default function Landing() {
               </div>
               <div className="hero-preview-body">
                 <div className="hero-preview-meta">
-                  <span className="eyebrow" style={{ color: "var(--accent)" }}>AI Practice Test</span>
-                  <span className="font-mono hero-preview-count">Question 7 / 50 · Accounting I</span>
+                  <span className="eyebrow" style={{ color: "var(--accent)" }}>Practice Test</span>
+                  <span className="font-mono hero-preview-count">Question 7 / 50 · Accounting</span>
                 </div>
                 <p className="hero-preview-q">
-                  A company purchases supplies on account. Which accounts are affected, and how?
+                  On October 1, a company prepays $4,800 for a 12-month insurance policy. What
+                  adjusting entry does it record on December 31?
                 </p>
                 <div className="hero-preview-opts">
                   <div className="hero-opt">
                     <span className="hero-opt-key">A</span>
-                    Debit Supplies, credit Cash
+                    Debit Prepaid Insurance $1,200, credit Insurance Expense $1,200
                   </div>
                   <div className="hero-opt hero-opt--correct">
                     <span className="hero-opt-key hero-opt-key--correct">B</span>
-                    Debit Supplies, credit Accounts Payable
+                    Debit Insurance Expense $1,200, credit Prepaid Insurance $1,200
                     <svg className="hero-opt-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   </div>
                   <div className="hero-opt">
                     <span className="hero-opt-key">C</span>
-                    Debit Accounts Payable, credit Supplies
+                    Debit Insurance Expense $4,800, credit Prepaid Insurance $4,800
                   </div>
                   <div className="hero-opt">
                     <span className="hero-opt-key">D</span>
-                    Debit Cash, credit Supplies
+                    Debit Insurance Expense $3,600, credit Prepaid Insurance $3,600
                   </div>
                 </div>
                 <div className="hero-preview-explain">
                   <span className="font-mono hero-explain-tag">WHY</span>
-                  Buying on account means you owe later, so Accounts Payable (a liability) is
-                  credited while Supplies (an asset) is debited.
+                  October, November and December have been used: 3 of 12 months, so
+                  $4,800 &times; 3/12 = $1,200 moves from the asset to the expense. $3,600 is
+                  what is still prepaid, not what was used.
                 </div>
               </div>
             </div>
@@ -395,6 +395,9 @@ export default function Landing() {
           }
         `}</style>
       </section>
+
+      {/* --- CHAPTER SHOWCASE (officers + advisers) ------------- */}
+      <ChapterShowcase />
 
       {/* --- COMPETITIONS PREVIEW ------------------------------- */}
       <section style={{ padding: "80px 0 40px" }}>

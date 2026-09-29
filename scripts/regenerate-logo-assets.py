@@ -63,7 +63,7 @@ except Exception:
 tx = 500
 d.text((tx, 240), "Chapter", font=f_bold, fill=(29, 78, 216))
 d.text((tx + d.textlength("Chapter", font=f_bold), 240), "Prep", font=f_bold, fill=(13, 148, 136))
-d.text((tx, 350), "AI practice tests for competitive events", font=f_tag, fill=(90, 107, 138))
+d.text((tx, 350), "Practice tests for every competitive event", font=f_tag, fill=(90, 107, 138))
 og.save("public/og-image.png")
 
 print("Regenerated all brand assets from", SRC)
