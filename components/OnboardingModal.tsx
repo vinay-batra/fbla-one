@@ -10,7 +10,7 @@ const KEY = "fbla_onboarded";
 const STEPS = [
   {
     num: "01",
-    title: "Pick your competitions",
+    title: "Pick your event",
     body: `Browse all ${COMPETITION_STATS.total} FBLA events, then register for the one you are competing in to track your prep.`,
     href: "/competitions",
     cta: "Browse events",
@@ -24,7 +24,7 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "Practice with AI",
+    title: "Take a practice test",
     body: "Generate a practice test of up to 50 questions for any objective event. Every wrong answer explained.",
     href: "/app/coach",
     cta: "Try a test",
@@ -56,10 +56,18 @@ export function OnboardingModal() {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try { setSignedIn(localStorage.getItem("fbla_logged_in") === "1"); } catch {}
+    let isSignedIn = false;
+    try { isSignedIn = localStorage.getItem("fbla_logged_in") === "1"; } catch {}
+    setSignedIn(isSignedIn);
     // The /app area uses the spotlight tour (AppTour) instead of this modal,
     // and it must never cover the /auth form. Marketing pages only.
     if (pathname?.startsWith("/app") || pathname?.startsWith("/auth")) return;
+    // Account onboarding is only actionable once you HAVE an account: every
+    // step links into the signed-in app. It used to auto-open for every
+    // first-time visitor 700ms after landing, which on a fresh browser (a
+    // projector laptop, a school computer) covered the entire hero before the
+    // page had said anything.
+    if (!isSignedIn) return;
     try {
       if (!localStorage.getItem(KEY)) {
         const t = setTimeout(() => setShow(true), 700);
