@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { TiltCard } from "@/components/TiltCard";
 import { ChapterShowcase } from "@/components/ChapterShowcase";
 import { HeroCta } from "@/components/HeroCta";
 import { EmailCta } from "@/components/EmailCta";
@@ -91,15 +90,26 @@ export default function Landing() {
             </div>
             <div className="ed-rise ed-d1">
               <h1 className="ed-display">
-                Walk into regionals{" "}
-                <span className="pen-underline">already knowing the test.</span>
+                Walk into regionals already{" "}
+                <span className="pen-underline">
+                  knowing the test.
+                  {/* Two real pen strokes drawn along a fixed path: a firm pass,
+                      then a lighter second pass, the way people underline twice
+                      for emphasis. Replaces a background that grew from zero
+                      width and visibly stretched the curve as it went. */}
+                  <svg className="pen-underline-svg" viewBox="0 0 300 18" preserveAspectRatio="none" aria-hidden="true">
+                    <path className="pu-1" pathLength={1} d="M4 10C52 5 104 13 156 8s96-5 140-3" />
+                    <path className="pu-2" pathLength={1} d="M22 15c58-4 128-3 262-6" />
+                  </svg>
+                </span>
               </h1>
             </div>
             <div className="ed-rise ed-d2">
+              {/* Numbers live in the ledger right below; this line carries the
+                  promise, not the stats. */}
               <p className="ed-lede">
-                Unlimited practice tests for every FBLA objective event, built around each
-                event&apos;s topic outline with every answer explained. Study guides for all{" "}
-                {COMPETITION_STATS.total}. Free for every member and every chapter.
+                Practice tests built from your event&apos;s topic outline, with every answer
+                explained. By competition day, the real test feels familiar.
               </p>
             </div>
             <div className="ed-rise ed-d3">
@@ -109,16 +119,16 @@ export default function Landing() {
                   Browse all {COMPETITION_STATS.total} events <span aria-hidden="true">→</span>
                 </Link>
               </div>
-              <p className="ed-fine">
-                Free, no credit card. Made by a chapter Competition Chair who needed it first.
-              </p>
+              <p className="ed-fine">Made by a chapter Competition Chair who needed it first.</p>
             </div>
           </div>
 
           <div className="ed-rise ed-d4">
-            <TiltCard max={3}>
-              <ExamSheet />
-            </TiltCard>
+            {/* No 3D tilt here: an answerable sheet must not move under the
+                cursor. The tilt rotated the card as the pointer moved, so the
+                hovered answer slid out from under it and the hover state and
+                cursor flickered. */}
+            <ExamSheet />
           </div>
         </div>
       </section>
