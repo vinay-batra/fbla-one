@@ -119,7 +119,7 @@ export default function ForAdvisorsPage() {
       </section>
 
       <section className="ed-section ed-steps-section" id="how-it-works">
-        <div className="container">
+        <div className="container ed-narrow">
           <ScrollReveal>
             <div className="ed-section-head ed-section-head-wide">
               <p className="ed-kicker">How it works</p>
@@ -147,7 +147,7 @@ export default function ForAdvisorsPage() {
       </section>
 
       <section className="ed-section ed-advisor-faq">
-        <div className="container">
+        <div className="container ed-narrow">
           <ScrollReveal>
             <div className="ed-section-head ed-section-head-wide">
               <p className="ed-kicker">Questions</p>

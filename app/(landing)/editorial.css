@@ -908,7 +908,11 @@
 
 /* ── For advisors page ── */
 
-.ed-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 820px; }
+/* The steps and Q&A read as one column centered on the page, so they line up
+   with the centered close below instead of hugging the left edge of a wide
+   container. */
+.ed-narrow { max-width: 920px; }
+.ed-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
 .ed-step {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
@@ -928,7 +932,7 @@
 .ed-step-body { margin-top: 8px; max-width: 600px; font-size: 16.5px; line-height: 1.62; color: var(--text2); text-wrap: pretty; }
 .ed-steps-section { padding-top: 40px; }
 
-.ed-qa { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 48px; max-width: 920px; margin: 0; }
+.ed-qa { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 48px; margin: 0; }
 .ed-qa dt { font-family: var(--font-serif), Georgia, serif; font-size: 20px; color: var(--text); }
 .ed-qa dd { margin: 8px 0 0; font-size: 15.5px; line-height: 1.62; color: var(--text2); }
 .ed-qa a { color: var(--pen-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
