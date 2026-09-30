@@ -8,7 +8,7 @@ AI-powered all-in-one platform for FBLA chapters: every competitive event verifi
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `chapterprep.com` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0019, all applied + verified live; Mock Regionals 47/47, readiness 36/36). |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0020, all applied + verified live; Mock Regionals 47/47, readiness 36/36, mistake bank 16/16). |
 | Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
 | AI | Anthropic via `ANTHROPIC_API_KEY`: `claude-haiku-4-5` writes practice questions (`/api/practice-test`) and runs the public chat; `claude-sonnet-5` checks every question (`/api/verify-questions`) and powers the AI Judge (`/api/judge`) |
 
