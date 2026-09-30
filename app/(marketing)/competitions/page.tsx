@@ -11,12 +11,13 @@ import {
   COMPETITIONS,
   CATEGORIES,
   FORMAT_LABEL,
+  type CompetitionFormat,
   COMPETITION_STATS,
   type Competition,
   type CompetitionCategory,
 } from "@/lib/competitions";
 
-type Status = "all" | "complete" | "partial" | "coming-soon";
+type FormatFilter = "all" | CompetitionFormat;
 
 export default function CompetitionsListPage() {
   return (
@@ -32,12 +33,12 @@ function CompetitionsList() {
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CompetitionCategory | "all">(initialCategory);
-  const [status, setStatus] = useState<Status>("all");
+  const [format, setFormat] = useState<FormatFilter>("all");
 
   const filtered = useMemo(() => {
     let out: Competition[] = COMPETITIONS;
     if (category !== "all") out = out.filter((c) => c.category === category);
-    if (status !== "all") out = out.filter((c) => c.contentStatus === status);
+    if (format !== "all") out = out.filter((c) => c.format === format);
     if (query.trim()) {
       const q = query.toLowerCase();
       out = out.filter(
@@ -54,7 +55,7 @@ function CompetitionsList() {
       if (!a.popular && b.popular) return 1;
       return a.name.localeCompare(b.name);
     });
-  }, [category, status, query]);
+  }, [category, format, query]);
 
   return (
     <>
@@ -76,7 +77,7 @@ function CompetitionsList() {
               lineHeight: 1.6,
             }}
           >
-            Browse competitions by category, format, or content depth. Each event has its own prep
+            Filter by category or by how the event is judged: a test, a role play, or a presentation. Each event has its own prep
             page with test topics, study resources, and a link to the official FBLA event guidelines.
           </p>
         </div>
@@ -148,17 +149,22 @@ function CompetitionsList() {
             ))}
           </select>
 
-          {/* Status */}
+          {/* Format: the first thing a student needs to know about an event */}
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as Status)}
+            value={format}
+            onChange={(e) => setFormat(e.target.value as FormatFilter)}
             className="input-field"
             style={{ height: 40, width: "auto" }}
-            aria-label="Filter by content status"
+            aria-label="Filter by event format"
           >
-            <option value="all">Any content</option>
-            <option value="complete">Full guides</option>
-            <option value="partial">Partial</option>
+            <option value="all">Any format</option>
+            {(Object.keys(FORMAT_LABEL) as CompetitionFormat[])
+              .filter((f) => COMPETITIONS.some((c) => c.format === f))
+              .map((f) => (
+                <option key={f} value={f}>
+                  {FORMAT_LABEL[f]}
+                </option>
+              ))}
           </select>
 
           <div
@@ -193,7 +199,7 @@ function CompetitionsList() {
                 onClick={() => {
                   setQuery("");
                   setCategory("all");
-                  setStatus("all");
+                  setFormat("all");
                 }}
                 className="btn btn-ghost btn-sm btn-pill"
                 style={{ marginTop: 8 }}
@@ -237,28 +243,18 @@ function CompetitionsList() {
 }
 
 function CompetitionCard({ c }: { c: Competition }) {
-  const isSoon = c.contentStatus === "coming-soon";
   return (
     <Link href={`/competitions/${c.slug}`} style={{ textDecoration: "none" }}>
-      <Card
-        variant="hover"
-        style={{
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          opacity: isSoon ? 0.75 : 1,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 14 }}>
-          <span className="chip chip-brand">{c.category}</span>
-          {c.popular && <span className="chip chip-accent">Popular</span>}
+      <Card variant="hover" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        {/* Format leads: whether it is a test, a role play or a presentation is
+            the first thing a student picks an event by. */}
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+          <span className="chip chip-format">{FORMAT_LABEL[c.format]}</span>
+          <span className="chip">{c.isTeam ? "Team" : "Individual"}</span>
+          {c.popular && <span className="chip chip-brand" style={{ marginLeft: "auto" }}>Popular</span>}
         </div>
-        <h2 style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", marginBottom: 8 }}>
-          {c.name}
-        </h2>
-        <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6, flex: 1 }}>
-          {c.description}
-        </p>
+        <h2 style={{ fontSize: 19, fontWeight: 500, marginBottom: 8 }}>{c.name}</h2>
+        <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6, flex: 1 }}>{c.description}</p>
         <div
           style={{
             marginTop: 16,
@@ -270,17 +266,13 @@ function CompetitionCard({ c }: { c: Competition }) {
             borderTop: "0.5px solid var(--border)",
           }}
         >
-          <span className="chip">{FORMAT_LABEL[c.format]}</span>
-          {isSoon ? (
-            <span className="chip">Coming soon</span>
-          ) : (
-            <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
-              Prep page
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </span>
-          )}
+          <span style={{ fontSize: 12, color: "var(--text3)" }}>{c.category}</span>
+          <span style={{ color: "var(--accent)", fontSize: 12, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+            Prep page
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </span>
         </div>
       </Card>
     </Link>

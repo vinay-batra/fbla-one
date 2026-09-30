@@ -27,7 +27,7 @@ type Question = {
 
 type Phase = "idle" | "generating" | "taking" | "reviewing";
 
-// ── Eligible competitions (objective tests only) ───────────────
+// ── Eligible competitions (any event with an objective test) ───
 
 const ELIGIBLE = COMPETITIONS.filter(isAiTestable);
 

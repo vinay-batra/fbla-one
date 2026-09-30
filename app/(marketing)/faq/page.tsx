@@ -36,11 +36,11 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How many events do you cover?",
-        a: `All ${COMPETITION_STATS.total} FBLA competitive events are in the registry. ${COMPETITION_STATS.withContent} of them have full prep content today: event description, test format details, topic list, and curated study resources. The rest are listed with a prep page on the way. Objective-test events also support AI practice test generation.`,
+        a: `All ${COMPETITION_STATS.total} FBLA competitive events are in the registry. ${COMPETITION_STATS.withContent} of them have full prep content today: event description, test format details, topic list, and curated study resources.${COMPETITION_STATS.withContent < COMPETITION_STATS.total ? " The rest are listed with a prep page on the way." : ""} Every event with an objective test also supports AI practice test generation.`,
       },
       {
         q: "Why do some events say the topic is released annually?",
-        a: "Presentation, production, and case-study events use year-specific prompts or briefs released by FBLA. The platform covers the underlying skills and knowledge for all of them (how to build a business plan, how to shoot and edit a video, how to analyze an ethics scenario) even though the specific topic changes each year.",
+        a: "Presentation events (and the role play finals) use year-specific topics, cases, or scenarios released by FBLA. The platform covers the underlying skills and knowledge for all of them (how to build a business plan, how to shoot and edit a video, how to analyze an ethics scenario) even though the specific topic changes each year.",
       },
       {
         q: "Are the study resources official FBLA materials?",
@@ -65,7 +65,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Which events support AI practice tests?",
-        a: `${COMPETITION_STATS.aiEligible} events: the ones with a timed objective (multiple-choice) test and full prep content. Presentation, case-study, role-play, and production events are judged on performance rather than a standardized test, so AI practice tests do not apply to those.`,
+        a: `${COMPETITION_STATS.aiEligible} events: every event that includes the 50-minute, 100-question objective (multiple-choice) test. That covers the test-only events, the role play events (everyone takes the test before the role play final), and Future Business Leader and Business Ethics. Presentation, production, and chapter events have no multiple-choice test, so AI practice tests do not apply to those.`,
       },
       {
         q: "Do my scores get saved?",

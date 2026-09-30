@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
-import { COMPETITIONS, FORMAT_LABEL, getCompetition, FBLA_EVENT_PAGE } from "@/lib/competitions";
+import { COMPETITIONS, FORMAT_LABEL, getCompetition, FBLA_EVENT_PAGE, hasObjectiveTest } from "@/lib/competitions";
 import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -46,10 +46,10 @@ export default async function CompetitionDetail({ params }: Props) {
     .slice(0, 3);
 
   const isSoon = c.contentStatus === "coming-soon";
-  const isObjectiveTest =
-    c.format === "objective-test" ||
-    c.format === "objective-and-presentation" ||
-    c.format === "team-test";
+  // Any format with a multiple-choice objective test (test-only, test then
+  // role play, test + presentation) gets the test-day card and practice CTA.
+  const isObjectiveTest = hasObjectiveTest(c);
+  const isRolePlay = c.format === "test-then-role-play";
 
   // The 76 detail pages are the main organic surface and carried no structured
   // data at all. Breadcrumbs give the SERP trail; LearningResource describes
@@ -142,10 +142,7 @@ export default async function CompetitionDetail({ params }: Props) {
             <ScrollReveal delay={0.16}>
               <div style={{ marginTop: 32, display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {!isSoon && <RegisterButton slug={c.slug} name={c.name} />}
-                {c.contentStatus === "complete" &&
-                  (c.format === "objective-test" ||
-                    c.format === "objective-and-presentation" ||
-                    c.format === "team-test") && (
+                {c.contentStatus === "complete" && isObjectiveTest && (
                   <Link
                     href={`/app/coach?slug=${c.slug}`}
                     className="btn btn-brand btn-pill"
@@ -223,12 +220,16 @@ export default async function CompetitionDetail({ params }: Props) {
                                 <path d="M12 6v6l4 2" />
                               </svg>
                             ),
-                            title: c.format === "team-test"
-                              ? "Two-part event: written test + live demonstration"
-                              : "60 minutes, 100 questions",
-                            body: c.format === "team-test"
-                              ? "The written test (30 questions) covers parliamentary procedure knowledge. The live demonstration requires your team to conduct a mock meeting using proper Robert's Rules of Order procedure."
-                              : "You have 60 minutes to answer 100 multiple-choice questions. Each question has four options (A, B, C, D) with exactly one correct answer. There is no penalty for wrong answers, so always fill in your best guess.",
+                            title: isRolePlay
+                              ? "Test first, then a role play for finalists"
+                              : c.format === "test-and-presentation"
+                                ? "Test plus a judged presentation"
+                                : "50 minutes, 100 questions",
+                            body: isRolePlay
+                              ? "Every competitor takes a 50-minute, 100-question multiple-choice test. At nationals the top 15 test scores (team scores are averaged) advance to the role play round, and only the role play score decides the winners. The test score breaks ties."
+                              : c.format === "test-and-presentation"
+                                ? "You take a 50-minute, 100-question multiple-choice test. Your test score is added to your pre-judged and preliminary round scores to decide who reaches the final round."
+                                : "You have 50 minutes to answer 100 multiple-choice questions. Each correct answer is worth one point and there is no penalty for wrong answers, so always fill in your best guess.",
                           },
                           {
                             icon: (
@@ -267,7 +268,7 @@ export default async function CompetitionDetail({ params }: Props) {
                   {c.topics && c.topics.length > 0 && (
                     <Card style={{ marginTop: 20 }}>
                       <h2 style={{ fontSize: 20, marginBottom: 14, letterSpacing: "-0.01em" }}>
-                        What's on the test
+                        {isObjectiveTest || c.format === "production" ? "What's on the test" : "What judges score"}
                       </h2>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                         {c.topics.map((t) => (
@@ -336,11 +337,11 @@ export default async function CompetitionDetail({ params }: Props) {
                   {[
                     {
                       label: "Time limit",
-                      value: c.format === "team-test" ? "30 min (test) + 10 min demo" : "60 minutes",
+                      value: "50 minutes",
                     },
                     {
                       label: "Questions",
-                      value: c.format === "team-test" ? "30 questions + live demo" : "100 multiple choice",
+                      value: "100 multiple choice",
                     },
                     {
                       label: "Options",
@@ -351,8 +352,8 @@ export default async function CompetitionDetail({ params }: Props) {
                       value: "No penalty, always answer",
                     },
                     {
-                      label: c.isTeam ? "Team size" : "Individual",
-                      value: c.isTeam ? "Varies by event" : "Solo event",
+                      label: c.isTeam ? "Team test" : "Individual",
+                      value: c.isTeam ? "Member scores averaged" : "Solo event",
                     },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "8px 0", borderBottom: "0.5px solid var(--border-dim)" }}>
