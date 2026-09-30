@@ -40,6 +40,12 @@ export type BankedQuestion = {
   lastSeenAt: string;
   /** Test that last counted as a correct answer, so one test counts once. */
   lastRightTest?: string;
+  /**
+   * True once this entry has been saved to the student's account. A synced
+   * entry that later disappears from the account was cleared on another
+   * device, so it is dropped here instead of being uploaded again.
+   */
+  synced?: boolean;
 };
 
 type Bank = Record<string, BankedQuestion[]>;
@@ -163,6 +169,8 @@ export function recordTestForBank(slug: string, testId: string, items: TestItem[
   const now = new Date().toISOString();
   let added = 0;
   let cleared = 0;
+  const changed = new Set<string>();
+  const removed = new Set<string>();
 
   for (const it of items) {
     const id = bankId(it.question, it.options[it.correct]);
@@ -175,6 +183,7 @@ export function recordTestForBank(slug: string, testId: string, items: TestItem[
         existing.lastMissedAt = now;
         existing.lastSeenAt = now;
         existing.lastRightTest = undefined;
+        changed.add(id);
       } else {
         byId.set(id, {
           id,
@@ -190,6 +199,7 @@ export function recordTestForBank(slug: string, testId: string, items: TestItem[
           lastMissedAt: now,
           lastSeenAt: now,
         });
+        changed.add(id);
         added += 1;
       }
     } else if (existing) {
@@ -198,22 +208,203 @@ export function recordTestForBank(slug: string, testId: string, items: TestItem[
         existing.timesRight += 1;
         existing.lastRightTest = testId;
       }
+      changed.add(id);
       if (existing.timesRight >= CLEAR_AFTER) {
         byId.delete(id);
+        changed.delete(id);
+        removed.add(id);
         cleared += 1;
       }
     }
   }
 
   // Cap per event: keep the most recently seen.
-  const next = [...byId.values()].sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt)).slice(0, MAX_PER_EVENT);
+  const sorted = [...byId.values()].sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt));
+  const next = sorted.slice(0, MAX_PER_EVENT);
+  for (const dropped of sorted.slice(MAX_PER_EVENT)) {
+    changed.delete(dropped.id);
+    removed.add(dropped.id);
+  }
   bank[slug] = next;
   writeBank(bank);
+  void pushChanges(slug, next.filter((q) => changed.has(q.id)), [...removed]);
   return { added, cleared, stillIn: next.length };
 }
 
 export function clearBank(slug: string): void {
   const bank = readBank();
+  const ids = (bank[slug] ?? []).map((q) => q.id);
   delete bank[slug];
   writeBank(bank);
+  void pushChanges(slug, [], ids);
+}
+
+// ── Account sync ───────────────────────────────────────────────
+// Signed in, the bank is mirrored to public.mistake_bank (migration 0020) so it
+// follows the student between devices. Signed out or in preview it stays local,
+// and whatever was banked before signing up is uploaded on the first sign-in.
+// Every sync call is best effort: a network error or a missing table (before
+// 0020 is applied) leaves the local bank working exactly as before.
+
+let syncUser: string | null = null;
+
+/** Set by DataSync when a user signs in (null on sign out). */
+export function setMistakeSyncUser(id: string | null): void {
+  syncUser = id;
+}
+
+type Row = {
+  user_id?: string;
+  competition_slug: string;
+  question_key: string;
+  data: { question: string; options: Record<Option, string>; correct: Option; explanation: string; topic?: string };
+  times_missed: number;
+  times_right: number;
+  last_right_test: string | null;
+  first_missed_at: string;
+  last_missed_at: string;
+  last_seen_at: string;
+};
+
+const ROW_COLUMNS =
+  "competition_slug, question_key, data, times_missed, times_right, last_right_test, first_missed_at, last_missed_at, last_seen_at";
+
+function toRow(q: BankedQuestion, userId: string): Row {
+  return {
+    user_id: userId,
+    competition_slug: q.slug,
+    question_key: q.id,
+    data: { question: q.question, options: q.options, correct: q.correct, explanation: q.explanation, topic: q.topic },
+    times_missed: q.timesMissed,
+    times_right: q.timesRight,
+    last_right_test: q.lastRightTest ?? null,
+    first_missed_at: q.firstMissedAt,
+    last_missed_at: q.lastMissedAt,
+    last_seen_at: q.lastSeenAt,
+  };
+}
+
+function fromRow(r: Row): BankedQuestion | null {
+  const q: BankedQuestion = {
+    id: r.question_key,
+    slug: r.competition_slug,
+    question: r.data?.question,
+    options: r.data?.options,
+    correct: r.data?.correct,
+    explanation: r.data?.explanation ?? "",
+    topic: r.data?.topic,
+    timesMissed: r.times_missed,
+    timesRight: r.times_right,
+    lastRightTest: r.last_right_test ?? undefined,
+    firstMissedAt: r.first_missed_at,
+    lastMissedAt: r.last_missed_at,
+    lastSeenAt: r.last_seen_at,
+    synced: true,
+  };
+  return isValid(q) ? q : null;
+}
+
+async function client() {
+  if (!syncUser) return null;
+  const { getSupabase } = await import("./supabase");
+  return getSupabase();
+}
+
+/** Mark entries as saved to the account without firing a change event. */
+function markSynced(slug: string, ids: string[]): void {
+  if (!ids.length) return;
+  const bank = readBank();
+  const set = new Set(ids);
+  for (const q of bank[slug] ?? []) if (set.has(q.id)) q.synced = true;
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(bank));
+  } catch {}
+}
+
+async function pushChanges(slug: string, upserts: BankedQuestion[], deletes: string[]): Promise<void> {
+  const userId = syncUser;
+  if (!userId || (!upserts.length && !deletes.length)) return;
+  try {
+    const supa = await client();
+    if (!supa) return;
+    if (upserts.length) {
+      const { error } = await supa
+        .from("mistake_bank")
+        .upsert(upserts.map((q) => toRow(q, userId)), { onConflict: "user_id,competition_slug,question_key" });
+      if (!error) markSynced(slug, upserts.map((q) => q.id));
+    }
+    if (deletes.length) {
+      await supa.from("mistake_bank").delete().eq("user_id", userId).eq("competition_slug", slug).in("question_key", deletes);
+    }
+  } catch {
+    /* offline or 0020 not applied: the next sign-in pull reconciles */
+  }
+}
+
+/**
+ * Merge the account's bank with this browser's on sign-in. For a question on
+ * both sides the more recently seen copy wins. A local entry that was synced
+ * before but is gone from the account was cleared on another device, so it is
+ * dropped; a local entry never synced is new and is uploaded.
+ */
+export async function pullMistakes(userId: string): Promise<void> {
+  setMistakeSyncUser(userId);
+  try {
+    const supa = await client();
+    if (!supa) return;
+    const { data, error } = await supa.from("mistake_bank").select(ROW_COLUMNS).eq("user_id", userId);
+    if (error) return; // includes 0020 not applied yet
+    const remote = new Map<string, BankedQuestion>();
+    for (const r of (data ?? []) as unknown as Row[]) {
+      const q = fromRow(r);
+      if (q) remote.set(`${q.slug}|${q.id}`, q);
+    }
+
+    const local = readBank();
+    const merged: Bank = {};
+    const toUpload: BankedQuestion[] = [];
+    const put = (q: BankedQuestion) => (merged[q.slug] ??= []).push(q);
+
+    for (const [slug, list] of Object.entries(local)) {
+      for (const q of (Array.isArray(list) ? list : []).filter(isValid)) {
+        const key = `${slug}|${q.id}`;
+        const r = remote.get(key);
+        if (r) {
+          remote.delete(key);
+          if (q.lastSeenAt > r.lastSeenAt) {
+            put({ ...q, slug, synced: true });
+            toUpload.push({ ...q, slug });
+          } else {
+            put(r);
+          }
+        } else if (!q.synced) {
+          put({ ...q, slug });
+          toUpload.push({ ...q, slug });
+        }
+        // else: synced before and gone from the account, so cleared elsewhere.
+      }
+    }
+    for (const r of remote.values()) put(r);
+
+    for (const slug of Object.keys(merged)) {
+      merged[slug] = merged[slug]
+        .sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt))
+        .slice(0, MAX_PER_EVENT);
+    }
+    writeBank(merged);
+
+    if (toUpload.length) {
+      const bySlug = new Map<string, BankedQuestion[]>();
+      for (const q of toUpload) bySlug.set(q.slug, [...(bySlug.get(q.slug) ?? []), q]);
+      for (const [slug, qs] of bySlug) await pushChanges(slug, qs, []);
+    }
+  } catch {
+    /* best effort */
+  }
+}
+
+/** On sign out: the bank belongs to the account, not to a shared computer. */
+export function clearLocalMistakes(): void {
+  setMistakeSyncUser(null);
+  writeBank({});
 }

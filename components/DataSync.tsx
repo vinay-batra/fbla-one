@@ -47,6 +47,8 @@ export function DataSync() {
         Promise.resolve()
           .then(() => ensureProfile(user.id, user.email ?? null, name))
           .then(() => pullFromSupabase(user.id))
+          // The mistake bank syncs separately (it only loads when needed).
+          .then(() => import("@/lib/mistakes").then((m) => m.pullMistakes(user.id)))
           .finally(() => inFlight.delete(user.id));
       };
 
@@ -60,12 +62,14 @@ export function DataSync() {
         if (event === "SIGNED_OUT") {
           lastUserId = null;
           clearSyncedData();
+          import("@/lib/mistakes").then((m) => m.clearLocalMistakes()).catch(() => {});
           return;
         }
         if (user && user.id !== lastUserId) {
           onUser(user);
         } else if (user) {
           setSyncUser(user.id);
+          import("@/lib/mistakes").then((m) => m.setMistakeSyncUser(user.id)).catch(() => {});
         }
       });
 
