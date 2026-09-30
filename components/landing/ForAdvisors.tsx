@@ -1,4 +1,3 @@
-import { AuthLink } from "@/components/landing/AuthLink";
 import { PenCheck, PenCross } from "@/components/PenMarks";
 
 /**
@@ -17,78 +16,54 @@ const ROSTER: { name: string; event: string; detail: string; status: "ready" | "
 
 const STATUS = { ready: "Ready", track: "On track", attn: "Needs attention" };
 
-export function ForAdvisors() {
+export function AdvisorVisual() {
   return (
-    <div className="container">
-      <div className="ed-section-head ed-section-head-wide">
-        <p className="ed-kicker">For advisors</p>
-        <h2 className="ed-h2">
-          Run regionals at your <em>next meeting.</em>
-        </h2>
-        <p className="ed-muted">
-          Mock Regionals puts one timed test on the projector for the whole chapter. Everyone joins
-          from their phone, the clock is the same for everyone, and the room finds out who would
-          place. Then the readiness report shows who is ready and who needs you.
+    <div className="adv-grid">
+      <figure className="adv-projector" aria-label="Example Mock Regionals lobby">
+        <div className="adv-bar">
+          <span>Mock Regionals</span>
+          <span>Accounting</span>
+        </div>
+        <p className="adv-go">Join at chapterprep.com/mock/K7QMRT</p>
+        <div className="adv-code" aria-label="Join code K7QMRT">
+          {"K7QMRT".split("").map((ch, i) => (
+            <span key={i}>{ch}</span>
+          ))}
+        </div>
+        <p className="adv-joined">
+          <strong>{JOINED.length} members</strong> have joined
         </p>
-      </div>
+        <ul className="adv-names">
+          {JOINED.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+        <figcaption className="ed-fineprint">Example lobby. Names are made up.</figcaption>
+      </figure>
 
-      <div className="adv-grid">
-        <figure className="adv-projector" aria-label="Example Mock Regionals lobby">
-          <div className="adv-bar">
-            <span>Mock Regionals</span>
-            <span>Accounting</span>
-          </div>
-          <p className="adv-go">Join at chapterprep.com/mock/K7QMRT</p>
-          <div className="adv-code" aria-label="Join code K7QMRT">
-            {"K7QMRT".split("").map((ch, i) => (
-              <span key={i}>{ch}</span>
-            ))}
-          </div>
-          <p className="adv-joined">
-            <strong>{JOINED.length} members</strong> have joined
-          </p>
-          <ul className="adv-names">
-            {JOINED.map((n) => (
-              <li key={n}>{n}</li>
-            ))}
-          </ul>
-          <figcaption className="ed-fineprint">Example lobby. Names are made up.</figcaption>
-        </figure>
-
-        <figure className="adv-roster" aria-label="Example readiness report">
-          <div className="adv-bar">
-            <span>Readiness report</span>
-            <span>4 members</span>
-          </div>
-          <ul>
-            {ROSTER.map((r) => (
-              <li key={r.name}>
-                <span className="adv-mark" aria-hidden="true">
-                  {r.status === "ready" ? <PenCheck /> : r.status === "attn" ? <PenCross /> : null}
-                </span>
-                <div className="adv-who">
-                  <p className="adv-name">{r.name}</p>
-                  <p className="adv-detail">
-                    {r.event} · {r.detail}
-                  </p>
-                </div>
-                <span className={`adv-status adv-${r.status}`}>{STATUS[r.status]}</span>
-              </li>
-            ))}
-          </ul>
-          <figcaption className="ed-fineprint">Example chapter. Names are made up.</figcaption>
-        </figure>
-      </div>
-
-      <div className="adv-foot">
-        <AuthLink href="/app/chapter" className="btn btn-accent ed-btn">
-          Set up your chapter <span aria-hidden="true">→</span>
-        </AuthLink>
-        <p className="ed-muted adv-also">
-          Also included: a chapter leaderboard, practice assignments, shared deadlines, and regional
-          registration exported in one file.
-        </p>
-      </div>
+      <figure className="adv-roster" aria-label="Example readiness report">
+        <div className="adv-bar">
+          <span>Readiness report</span>
+          <span>4 members</span>
+        </div>
+        <ul>
+          {ROSTER.map((r) => (
+            <li key={r.name}>
+              <span className="adv-mark" aria-hidden="true">
+                {r.status === "ready" ? <PenCheck /> : r.status === "attn" ? <PenCross /> : null}
+              </span>
+              <div className="adv-who">
+                <p className="adv-name">{r.name}</p>
+                <p className="adv-detail">
+                  {r.event} · {r.detail}
+                </p>
+              </div>
+              <span className={`adv-status adv-${r.status}`}>{STATUS[r.status]}</span>
+            </li>
+          ))}
+        </ul>
+        <figcaption className="ed-fineprint">Example chapter. Names are made up.</figcaption>
+      </figure>
     </div>
   );
 }

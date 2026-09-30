@@ -25,47 +25,30 @@ const CARDS = [
   },
 ];
 
-export function MistakeCards() {
+export function MistakeStack() {
   return (
-    <div className="container ed-split ed-split-flip">
-      <div className="ed-split-copy">
-        <p className="ed-kicker">The mistake bank</p>
-        <h2 className="ed-h2">
-          What you miss <em>comes back.</em>
-        </h2>
-        <p className="ed-body">
-          Every question you get wrong is saved. It shows up again in later tests, mixed in with new
-          ones, until you answer it right twice in two different sittings. Then it is cleared.
-        </p>
-        <p className="ed-body">
-          Short on time? Review only your mistakes, with no waiting. The bank follows your account,
-          so it is the same on your phone and your laptop.
-        </p>
-      </div>
-
-      <div className="mcards" aria-label="Example mistake bank">
-        {CARDS.map((c, i) => (
-          <div key={c.q} className={`mcard mcard-${i}`}>
-            <div className="mcard-head">
-              <span>{c.topic}</span>
-              <span className="mcard-missed">Missed {c.missed === 1 ? "once" : `${c.missed} times`}</span>
-            </div>
-            <p className="mcard-q">{c.q}</p>
-            <div className="mcard-progress">
-              <span className="mcard-ticks" aria-hidden="true">
-                {[0, 1].map((k) => (
-                  <span key={k} className={`mcard-tick${k < c.right ? " is-done" : ""}`}>
-                    {k < c.right && <PenCheck />}
-                  </span>
-                ))}
-              </span>
-              <span>
-                Right {c.right} of 2{c.right === 1 ? ", one more to clear it" : ""}
-              </span>
-            </div>
+    <div className="mcards" aria-label="Example mistake bank">
+      {CARDS.map((c, i) => (
+        <div key={c.q} className={`mcard mcard-${i}`}>
+          <div className="mcard-head">
+            <span>{c.topic}</span>
+            <span className="mcard-missed">Missed {c.missed === 1 ? "once" : `${c.missed} times`}</span>
           </div>
-        ))}
-      </div>
+          <p className="mcard-q">{c.q}</p>
+          <div className="mcard-progress">
+            <span className="mcard-ticks" aria-hidden="true">
+              {[0, 1].map((k) => (
+                <span key={k} className={`mcard-tick${k < c.right ? " is-done" : ""}`}>
+                  {k < c.right && <PenCheck />}
+                </span>
+              ))}
+            </span>
+            <span>
+              Right {c.right} of 2{c.right === 1 ? ", one more to clear it" : ""}
+            </span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

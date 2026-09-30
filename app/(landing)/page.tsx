@@ -6,11 +6,6 @@ import { EmailCta } from "@/components/EmailCta";
 import { ExamSheet } from "@/components/landing/ExamSheet";
 import { PenUnderline } from "@/components/PenUnderline";
 import { WhyDifferent } from "@/components/landing/WhyDifferent";
-import { CheckedTwice } from "@/components/landing/CheckedTwice";
-import { MistakeCards } from "@/components/landing/MistakeCards";
-import { JudgeDemo } from "@/components/landing/JudgeDemo";
-import { EventTypes } from "@/components/landing/EventTypes";
-import { ForAdvisors } from "@/components/landing/ForAdvisors";
 import { EventIndex } from "@/components/landing/EventIndex";
 import { COMPETITION_STATS } from "@/lib/competitions";
 
@@ -116,7 +111,7 @@ export default function Landing() {
             <span className="ed-sep" aria-hidden="true">·</span>
             every answer <strong>checked twice</strong>
             <span className="ed-sep" aria-hidden="true">·</span>
-            <strong>free</strong> for every chapter
+            <strong>always free</strong>
           </p>
         </div>
       </section>
@@ -125,37 +120,6 @@ export default function Landing() {
       <section className="ed-section">
         <ScrollReveal>
           <WhyDifferent />
-        </ScrollReveal>
-      </section>
-
-      {/* The proof, section by section */}
-      <section id="checked" className="ed-section ed-section-rule">
-        <ScrollReveal>
-          <CheckedTwice />
-        </ScrollReveal>
-      </section>
-
-      <section id="mistakes" className="ed-section ed-section-rule">
-        <ScrollReveal>
-          <MistakeCards />
-        </ScrollReveal>
-      </section>
-
-      <section id="judge" className="ed-section ed-section-rule">
-        <ScrollReveal>
-          <JudgeDemo />
-        </ScrollReveal>
-      </section>
-
-      <section id="event-types" className="ed-section ed-section-rule">
-        <ScrollReveal>
-          <EventTypes />
-        </ScrollReveal>
-      </section>
-
-      <section id="advisors" className="ed-section ed-section-rule">
-        <ScrollReveal>
-          <ForAdvisors />
         </ScrollReveal>
       </section>
 

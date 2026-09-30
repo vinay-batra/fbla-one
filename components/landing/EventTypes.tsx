@@ -63,15 +63,7 @@ export function EventTypes() {
   };
 
   return (
-    <div className="container">
-      <div className="ed-section-head ed-section-head-wide">
-        <p className="ed-kicker">Your event</p>
-        <h2 className="ed-h2">Which kind of event is yours?</h2>
-        <p className="ed-muted">
-          Every FBLA event is decided one of three ways. Each needs different practice.
-        </p>
-      </div>
-
+    <div className="et">
       <div className="et-tabs" role="tablist" aria-label="Kinds of events">
         {TABS.map((t, i) => (
           <button
