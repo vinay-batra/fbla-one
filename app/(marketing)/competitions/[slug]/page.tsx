@@ -5,6 +5,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import { Card } from "@/components/Card";
 import { RegisterButton } from "@/components/RegisterButton";
 import { COMPETITIONS, FORMAT_LABEL, getCompetition, FBLA_EVENT_PAGE, hasObjectiveTest } from "@/lib/competitions";
+import { judgeModeFor } from "@/components/judge/rubric";
 import { StudyResourcesList } from "@/components/StudyResourcesList";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -49,6 +50,7 @@ export default async function CompetitionDetail({ params }: Props) {
   // Any format with a multiple-choice objective test (test-only, test then
   // role play, test + presentation) gets the test-day card and practice CTA.
   const isObjectiveTest = hasObjectiveTest(c);
+  const judgeMode = judgeModeFor(c.format);
   const isRolePlay = c.format === "test-then-role-play";
 
   // The 76 detail pages are the main organic surface and carried no structured
@@ -151,6 +153,11 @@ export default async function CompetitionDetail({ params }: Props) {
                       <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
                     </svg>
                     AI Practice Test
+                  </Link>
+                )}
+                {judgeMode && (
+                  <Link href={`/app/judge?event=${c.slug}`} className="btn btn-ghost btn-pill">
+                    {judgeMode === "role-play" ? "Practice the role play" : "Get judged on your presentation"}
                   </Link>
                 )}
                 {c.rubricUrl && (

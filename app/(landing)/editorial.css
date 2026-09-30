@@ -322,3 +322,7 @@
    than a grey blob. CSS fill/stroke override the SVG's presentation attributes. */
 .ed .footer-watermark-mark path:first-of-type { fill: var(--text); }
 .ed .footer-watermark-mark path:last-of-type { stroke: var(--bg); }
+
+/* Quiz nudge under the hero buttons, for students who have not picked an event. */
+.ed-finder { margin-top: 18px; font-size: 13.5px; color: var(--text3); }
+.ed-finder a { color: var(--pen-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

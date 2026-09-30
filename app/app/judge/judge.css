@@ -1,0 +1,756 @@
+/* ─────────────────────────────────────────────────────────────
+   Judge: role play and presentation practice, scored like a real
+   rating sheet. Paper and ink, marked up in red pen. Tokens only;
+   every class here is prefixed judge-.
+───────────────────────────────────────────────────────────── */
+
+.judge {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 760px;
+  padding-bottom: 56px;
+}
+.judge.judge-wide { max-width: 1140px; }
+
+.judge-loading { padding: 40px 0; color: var(--text3); }
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.judge-hero { display: flex; flex-direction: column; gap: 12px; }
+.judge .judge-h1 { font-size: clamp(34px, 4.6vw, 52px); }
+.judge-lede {
+  max-width: 600px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+
+/* ── Setup ────────────────────────────────────────────────── */
+.judge-setup { display: flex; flex-direction: column; gap: 26px; }
+.judge-pick { display: flex; flex-direction: column; gap: 8px; }
+.judge-select { cursor: pointer; }
+.judge-link {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.judge-slip {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--text);
+}
+.judge-slip-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.judge-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 20px;
+}
+.judge-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.judge-step-num {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--pen-text);
+  font-variant-numeric: lining-nums;
+}
+.judge-step-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.judge-step-detail { font-size: 12.5px; line-height: 1.5; color: var(--text3); }
+
+.judge-criteria summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.judge-criteria p { margin: 6px 0 8px; font-size: 13.5px; color: var(--text2); }
+.judge-criteria ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  columns: 2;
+  column-gap: 28px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text2);
+}
+.judge-criteria li { break-inside: avoid; }
+
+.judge-compose { display: flex; flex-direction: column; gap: 18px; }
+
+/* ── Actions, errors ──────────────────────────────────────── */
+.judge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.judge-actions-note { font-size: 12.5px; color: var(--text3); }
+.judge-error {
+  padding: 12px 16px;
+  border: 0.5px solid var(--red);
+  border-radius: 10px;
+  background: rgba(var(--red-rgb), 0.08);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--red);
+}
+
+/* ── Response input + mic ─────────────────────────────────── */
+.judge-input { display: flex; flex-direction: column; }
+.judge-input-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.judge-input-label { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.judge-input-hint {
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text3);
+}
+.judge-textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.6;
+}
+.judge-input-error { margin-top: 8px; font-size: 13px; color: var(--red); }
+.judge-count {
+  margin-top: 6px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+}
+
+.judge-mic {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.judge-mic:hover:not(:disabled) { background: var(--bg3); }
+.judge-mic:disabled { opacity: 0.45; cursor: not-allowed; }
+.judge-mic.judge-mic-on {
+  border-color: var(--pen-text);
+  background: var(--brand-dim);
+  color: var(--pen-text);
+}
+.judge-mic-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pen);
+  animation: judge-breathe 1.4s ease-in-out infinite;
+}
+@keyframes judge-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.judge-interim {
+  margin-top: 8px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+.judge-interim-label {
+  margin-right: 10px;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pen-text);
+}
+.judge-interim-idle { color: var(--text3); }
+
+/* ── Stage (prep + performance) ───────────────────────────── */
+.judge-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.judge-stage:focus,
+.judge-reading:focus,
+.judge .judge-total-title:focus { outline: none; }
+.judge-stage-right { display: contents; }
+/* Phone order: the clock first, then what the student needs next. */
+.judge-stage-timer { order: 0; display: flex; flex-direction: column; gap: 14px; }
+.judge-stage-side { order: 1; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.judge-stage-main { order: 2; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.judge-stage-perform .judge-stage-main { order: 1; }
+.judge-stage-perform .judge-stage-side { order: 2; }
+
+@media (min-width: 980px) {
+  .judge-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 36px;
+  }
+  .judge-stage-right {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* The timer: big, calm, set in the serif. */
+.judge-timer { padding: 4px 0 2px; }
+.judge-timer-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.judge-timer-clock {
+  display: flex;
+  align-items: baseline;
+  margin: 6px 0 16px;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(68px, 15vw, 112px);
+  font-variation-settings: "opsz" 144;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: var(--text);
+  transition: color 0.6s ease;
+}
+.judge-timer-sign { font-size: 0.6em; margin-right: 4px; }
+.judge-timer-track {
+  height: 2px;
+  background: var(--track);
+  overflow: hidden;
+}
+.judge-timer-fill {
+  display: block;
+  height: 100%;
+  background: var(--text);
+  transform-origin: left center;
+  transition: transform 0.3s linear, background 0.6s ease;
+}
+.judge-timer-caption { margin-top: 10px; font-size: 13.5px; color: var(--text2); }
+.judge-timer.judge-timer-low .judge-timer-clock { color: var(--pen-text); }
+.judge-timer.judge-timer-low .judge-timer-fill { background: var(--pen); }
+.judge-timer.judge-timer-over .judge-timer-clock,
+.judge-timer.judge-timer-over .judge-timer-label { color: var(--red); }
+.judge-timer.judge-timer-over .judge-timer-fill { background: var(--red); }
+
+/* Notecards: ruled paper, in the textarea and read-only beside the card. */
+.judge-notecard .judge-textarea {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 25px,
+    var(--border) 25px,
+    var(--border) 26px
+  );
+  background-attachment: local;
+  background-position: 0 10px;
+  line-height: 26px;
+  font-family: var(--font-serif);
+  font-size: 15px;
+}
+.judge-notecard-read {
+  padding: 14px 18px 16px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+.judge-notecard-label {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.judge-notecard-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 26px;
+  color: var(--text);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 25px,
+    var(--border) 25px,
+    var(--border) 26px
+  );
+}
+
+/* ── The role play card: a printed event card ─────────────── */
+.judge-card {
+  position: relative;
+  padding: 24px 30px 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--card-bg);
+  box-shadow: var(--sheet-shadow);
+  animation: judge-deal 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+@keyframes judge-deal {
+  from { opacity: 0; transform: translateY(10px) rotate(-0.6deg); }
+  to { opacity: 1; transform: none; }
+}
+.judge-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 3px double var(--text);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.judge-card-event {
+  margin-top: 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--pen-text);
+}
+.judge .judge-card-title {
+  margin-top: 4px;
+  font-size: clamp(24px, 2.6vw, 30px);
+  line-height: 1.12;
+}
+.judge-card-company {
+  margin-top: 4px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--text2);
+}
+.judge-card-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.judge .judge-card-label {
+  margin-bottom: 8px;
+  font-family: var(--font-body);
+  font-size: 11px !important;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.judge-card-list {
+  padding-left: 18px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+.judge-card-list li + li { margin-top: 3px; }
+.judge-card-situation {
+  font-family: var(--font-serif);
+  font-variation-settings: "opsz" 24;
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--text);
+  text-wrap: pretty;
+}
+.judge-card-roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 22px;
+  margin-top: 14px;
+}
+.judge-card-roles dt {
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.judge-card-roles dd { font-size: 14px; line-height: 1.5; color: var(--text); }
+.judge-card-tasks {
+  list-style: none;
+  counter-reset: judge-task;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.judge-card-tasks li {
+  position: relative;
+  padding-left: 30px;
+  counter-increment: judge-task;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.judge-card-tasks li::before {
+  content: counter(judge-task) ".";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--pen-text);
+}
+.judge-card-foot {
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--text3);
+}
+
+/* ── Judging (waiting) ────────────────────────────────────── */
+.judge-reading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 0 12px;
+  text-align: center;
+}
+.judge-reading-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(260px, 80%);
+  margin-bottom: 14px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--card-bg);
+  box-shadow: var(--sheet-shadow);
+}
+.judge-reading-sheet span {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  animation: judge-breathe 1.6s ease-in-out infinite;
+}
+.judge-reading-sheet span:nth-child(2) { width: 82%; animation-delay: 0.2s; }
+.judge-reading-sheet span:nth-child(3) { width: 90%; animation-delay: 0.4s; }
+.judge-reading-sheet span:nth-child(4) { width: 55%; animation-delay: 0.6s; background: var(--brand-dim); }
+.judge-reading-title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--text);
+}
+.judge-reading-note { max-width: 380px; font-size: 13.5px; color: var(--text3); }
+
+/* ── Results: the rating sheet ────────────────────────────── */
+.judge-results { display: flex; flex-direction: column; gap: 26px; }
+
+.judge-sheet {
+  position: relative;
+  padding: 24px 28px 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  box-shadow: var(--sheet-shadow);
+}
+.judge-sheet-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.judge-sheet-event { margin-right: 14px; font-weight: 700; color: var(--brand); }
+
+.judge-total {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin: 4px 0 22px;
+}
+.judge-total-mark {
+  position: relative;
+  flex-shrink: 0;
+  min-width: 118px;
+  padding: 14px 22px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 60px;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  color: var(--pen-text);
+  transform: rotate(-5deg);
+}
+.judge-total-mark > span { position: relative; z-index: 1; }
+.judge-total-circle {
+  left: -6px;
+  top: -8px;
+  width: calc(100% + 12px);
+  height: calc(100% + 16px);
+  stroke-width: 2.4;
+}
+.judge-total-circle path { animation-delay: 0.25s; }
+.judge-total-copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.judge .judge-total-title {
+  font-size: 22px !important;
+  line-height: 1.2;
+  font-variant-numeric: lining-nums;
+}
+.judge-total-of { font-weight: 400; color: var(--text2); }
+.judge-verdict {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.42;
+  color: var(--text);
+  text-wrap: pretty;
+}
+.judge-total-sm .judge-total-mark { min-width: 96px; font-size: 44px; padding: 12px 18px; }
+
+/* Criterion rows. Scores sit in a red-ruled left margin, like a legal pad. */
+.judge-rows {
+  position: relative;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.judge-rows::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 55px;
+  width: 1px;
+  background: var(--pen);
+  opacity: 0.5;
+}
+.judge-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.judge-row-score {
+  align-self: start;
+  padding-top: 2px;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  color: var(--pen-text);
+  transform: rotate(-6deg);
+  animation: judge-ink 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 90ms + 250ms);
+}
+@keyframes judge-ink {
+  from { opacity: 0; transform: rotate(-6deg) scale(1.25); }
+  to { opacity: 1; transform: rotate(-6deg) scale(1); }
+}
+.judge-row-body { min-width: 0; }
+.judge-row-name { font-size: 15px; font-weight: 600; line-height: 1.35; color: var(--text); }
+.judge-row-level { margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: var(--text3); }
+.judge-note {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-variation-settings: "opsz" 24, "SOFT" 100;
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--pen-text);
+  text-wrap: pretty;
+}
+.judge-sum {
+  padding-top: 10px;
+  text-align: right;
+  font-size: 12.5px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+}
+
+.judge-block { margin-top: 26px; }
+.judge .judge-block-title { margin-bottom: 6px; font-size: 21px; }
+.judge-marks { list-style: none; }
+.judge-marks li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.judge-marks li:last-child { border-bottom: none; }
+.judge-marks .report-mark { margin-top: 2px; }
+.judge-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.judge-quote.judge-paraphrase { font-style: normal; font-size: 16px; }
+.judge-fix-issue { font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--text); }
+.judge-why { margin-top: 3px; font-size: 14px; line-height: 1.55; color: var(--text2); }
+
+.judge-finalist {
+  margin-top: 24px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--pen);
+  background: var(--bg2);
+}
+.judge-finalist-label {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pen-text);
+}
+.judge-finalist-text {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.judge-overtime {
+  padding-left: 14px;
+  border-left: 2px solid var(--red);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+.judge-submitted summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+}
+.judge-submitted p {
+  max-height: 320px;
+  overflow: auto;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--bg2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+
+.judge-next { padding-top: 20px; border-top: 1px dashed var(--border); }
+
+/* ── Round two: follow-up questions ───────────────────────── */
+.judge-qa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 26px;
+  border-top: 1px solid var(--text);
+}
+.judge .judge-qa-title { font-size: clamp(26px, 3vw, 34px); }
+.judge-qa-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 8px;
+}
+.judge-qa-item { display: flex; flex-direction: column; gap: 10px; }
+.judge-qa-q {
+  font-family: var(--font-serif);
+  font-variation-settings: "opsz" 30;
+  font-size: 18.5px;
+  line-height: 1.42;
+  color: var(--text);
+}
+.judge-qa-num {
+  margin-right: 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--pen-text);
+}
+.judge-sheet-qa { margin-top: 10px; }
+
+/* ── Narrow screens ───────────────────────────────────────── */
+@media (max-width: 860px) {
+  .judge-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+}
+@media (max-width: 640px) {
+  .judge { gap: 26px; }
+  .judge-steps { grid-template-columns: minmax(0, 1fr); }
+  .judge-criteria ul { columns: 1; }
+  .judge-card { padding: 18px 18px 16px; }
+  .judge-card-head { font-size: 9.5px; letter-spacing: 0.1em; }
+  .judge-card-roles { grid-template-columns: minmax(0, 1fr); }
+  .judge-sheet { padding: 18px 16px 20px; }
+  .judge-total { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .judge-total-mark { font-size: 48px; min-width: 100px; }
+  .judge-row { grid-template-columns: 34px minmax(0, 1fr); gap: 18px; }
+  .judge-rows::before { left: 43px; }
+  .judge-row-score { font-size: 25px; }
+  .judge-actions .btn { flex: 1 1 auto; white-space: normal; text-align: center; }
+  .judge-actions-note { flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .judge-card,
+  .judge-row-score,
+  .judge-mic-dot,
+  .judge-reading-sheet span { animation: none; }
+  .judge-timer-fill,
+  .judge-timer-clock { transition: none; }
+}

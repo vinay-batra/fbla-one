@@ -110,6 +110,10 @@ export default function Landing() {
                   Browse all {COMPETITION_STATS.total} events <span aria-hidden="true">→</span>
                 </Link>
               </div>
+              <p className="ed-finder">
+                Not sure which event is yours?{" "}
+                <Link href="/find-your-event">Take the one-minute quiz</Link>
+              </p>
             </div>
           </div>
 
