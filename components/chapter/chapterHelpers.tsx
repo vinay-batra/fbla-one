@@ -91,7 +91,7 @@ export function roleBadgeStyle(role: string): React.CSSProperties {
 export const LB_TH: React.CSSProperties = {
   textAlign: "left",
   padding: "8px 12px",
-  fontSize: 9,
+  fontSize: 11,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   color: "var(--text-muted)",
@@ -109,13 +109,13 @@ export const SORTED_COMPETITIONS = [...COMPETITIONS].sort((a, b) => a.name.local
 export function MiniStat({ label, value, sub, small }: { label: string; value: string; sub?: string; small?: boolean }) {
   return (
     <div style={{ padding: "14px 14px", borderRadius: 10, border: "0.5px solid var(--border)", background: "var(--bg2)" }}>
-      <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.16em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+      <p className="font-mono" style={{ fontSize: 11, letterSpacing: "0.16em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
         {label}
       </p>
       <p className="font-mono" style={{ fontSize: small ? 14 : 22, fontWeight: 700, color: "var(--text)", marginTop: 8, lineHeight: 1.15, wordBreak: "break-word" }}>
         {value}
       </p>
-      {sub && <p style={{ fontSize: 10, color: "var(--text3)", marginTop: 3 }}>{sub}</p>}
+      {sub && <p style={{ fontSize: 11.5, color: "var(--text3)", marginTop: 3 }}>{sub}</p>}
     </div>
   );
 }

@@ -57,17 +57,17 @@ export function ChapterDeadlines({ c }: { c: ChapterController }) {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label htmlFor="dl-title" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Title *</label>
+            <label htmlFor="dl-title" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Title *</label>
             <input id="dl-title" type="text" value={c.dlTitle} onChange={(e) => c.setDlTitle(e.target.value)} placeholder="e.g. Accounting I sign-up due" className="input-field" required />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label htmlFor="dl-date" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Due date *</label>
+            <label htmlFor="dl-date" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Due date *</label>
             <input id="dl-date" type="date" value={c.dlDate} onChange={(e) => c.setDlDate(e.target.value)} className="input-field" required />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label htmlFor="dl-comp" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Competition (optional)</label>
+            <label htmlFor="dl-comp" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Competition (optional)</label>
             <select id="dl-comp" value={c.dlSlug} onChange={(e) => c.setDlSlug(e.target.value)} className="input-field">
               <option value="">No specific event</option>
               {compOptions.map((cmp) => (
@@ -77,7 +77,7 @@ export function ChapterDeadlines({ c }: { c: ChapterController }) {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <label htmlFor="dl-note" className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Note (optional)</label>
+            <label htmlFor="dl-note" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>Note (optional)</label>
             <input id="dl-note" type="text" value={c.dlNote} onChange={(e) => c.setDlNote(e.target.value)} placeholder="Any extra context..." className="input-field" />
           </div>
 
@@ -124,7 +124,7 @@ export function ChapterDeadlines({ c }: { c: ChapterController }) {
                   <p className="font-mono" style={{ fontSize: 18, fontWeight: 700, lineHeight: 1, color: isPast ? "var(--text3)" : "var(--text)" }}>
                     {dl.dueAt.split("-")[2]}
                   </p>
-                  <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 2 }}>
+                  <p className="font-mono" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginTop: 2 }}>
                     {formatDate(dl.dueAt).split(" ")[0]}
                   </p>
                 </div>
@@ -132,11 +132,11 @@ export function ChapterDeadlines({ c }: { c: ChapterController }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <p style={{ fontSize: 14, fontWeight: 600, color: isPast ? "var(--text3)" : "var(--text)" }}>{dl.title}</p>
-                    {comp && <span className="chip chip-brand" style={{ fontSize: 10 }}>{comp.name}</span>}
+                    {comp && <span className="chip chip-brand" style={{ fontSize: 11.5 }}>{comp.name}</span>}
                     <span
                       className="font-mono"
                       style={{
-                        fontSize: 10,
+                        fontSize: 11.5,
                         padding: "2px 7px",
                         borderRadius: 999,
                         background: isToday ? "rgba(var(--green-rgb), 0.12)" : isPast ? "rgba(90, 107, 138, 0.1)" : "var(--accent-dim)",

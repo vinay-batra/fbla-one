@@ -8,15 +8,13 @@
  * mock_review only once time is called. Columns are always named explicitly
  * because the `questions` and `answers` columns carry no select grant.
  *
- * Question generation reuses /api/practice-test. The NDJSON parsing, numeric
- * re-keying and option shuffle mirror app/app/coach/page.tsx, whose helpers are
- * module-private; keep the two in step if either changes.
+ * Question generation shares the coach's pipeline (components/coach/engine):
+ * the same parsing, calculator re-key, second-model answer check and shuffle.
  */
 
 import { getSupabase } from "./supabase";
-import { evaluateExpression } from "./calc";
 import { getMyProfile, getChapterById, type ChapterInfo, type ChapterProfile } from "./chapter";
-import { tidyQuestion } from "@/lib/text";
+import { buildPaper } from "@/components/coach/engine";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -174,48 +172,16 @@ export function chapterAverage(list: MockParticipant[], total: number): number |
   return Math.round((scores.reduce((a, b) => a + b, 0) / scores.length / total) * 100);
 }
 
-// ── Question generation (mirrors the coach) ───────────────────
-
-function optionNumber(text: string): number | null {
-  const m = text.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
-  return m ? Number(m[0]) : null;
-}
-
-/** Re-key a computed-number question to the option matching its calc, or drop it. */
-function verifyNumericAnswer(q: MockQuestion): MockQuestion | null {
-  const calc = q.calc;
-  if (typeof calc !== "string" || !calc.trim()) return q;
-  let target: number;
-  try { target = evaluateExpression(calc); } catch { return q; }
-  const tol = Math.abs(target) * 0.01 + 0.01;
-  const hits = OPTION_KEYS.filter((k) => {
-    const n = optionNumber(q.options[k]);
-    return n !== null && Math.abs(n - target) <= tol;
-  });
-  if (hits.length === 1) return { ...q, correct: hits[0] };
-  if (hits.length === 0) return null;
-  return q;
-}
-
-function shuffleQuestionOptions(q: MockQuestion): MockQuestion {
-  const entries = OPTION_KEYS.map((L) => ({ orig: L, text: q.options[L] }));
-  for (let i = entries.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [entries[i], entries[j]] = [entries[j], entries[i]];
-  }
-  const options = {} as Record<Option, string>;
-  let correct: Option = q.correct;
-  entries.forEach((e, idx) => {
-    options[OPTION_KEYS[idx]] = e.text;
-    if (e.orig === q.correct) correct = OPTION_KEYS[idx];
-  });
-  return { ...q, options, correct };
-}
+// ── Question generation (the coach's pipeline) ────────────────
 
 /**
- * Stream a test from /api/practice-test. Calls onProgress with the running
- * count. Resolves with verified, shuffled questions (a few may be dropped by
- * the numeric check, so the result can be shorter than `count`).
+ * Write a paper through the coach's pipeline (components/coach/engine): the
+ * generator streams from /api/practice-test, the calculator re-keys computed
+ * answers, and a second model (/api/verify-questions, claude-sonnet-5) solves
+ * each question blind and audits its key. Dropped questions are replaced by
+ * top-up batches. onProgress receives the number of questions on the paper so
+ * far. If the checker is unavailable, the paper falls back to the calculator
+ * check alone rather than failing the advisor.
  */
 export async function generateMockQuestions(
   slug: string,
@@ -223,68 +189,29 @@ export async function generateMockQuestions(
   onProgress: (n: number) => void,
   signal?: AbortSignal
 ): Promise<MockQuestion[]> {
-  const res = await fetch("/api/practice-test", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ slug, count }),
-    signal,
-  });
-  if (!res.ok || !res.body) {
-    let msg = "Could not start generating questions.";
-    try {
-      const j = await res.json();
-      if (j?.error) msg = String(j.error);
-    } catch {}
-    throw new Error(msg);
+  const ctrl = new AbortController();
+  const forward = () => ctrl.abort();
+  if (signal?.aborted) ctrl.abort();
+  signal?.addEventListener("abort", forward);
+  try {
+    const { questions } = await buildPaper({
+      slug,
+      target: count,
+      // Ask for a little extra up front: the checker sets some aside.
+      batches: [{ count: Math.min(50, count + Math.ceil(count * 0.2)) }],
+      signal: ctrl.signal,
+      onProgress: (p) => onProgress(p.kept),
+    });
+    return questions.slice(0, count).map((q) => ({
+      question: q.question,
+      options: q.options,
+      correct: q.correct,
+      explanation: q.explanation,
+      topic: q.topic,
+    }));
+  } finally {
+    signal?.removeEventListener("abort", forward);
   }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  const parsed: MockQuestion[] = [];
-
-  const handle = (line: string) => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-    let raw: Record<string, unknown>;
-    try {
-      raw = JSON.parse(trimmed) as Record<string, unknown>;
-    } catch {
-      return; // malformed line, skip it
-    }
-    if (raw.error) throw new Error(String(raw.error));
-    const opts = raw.options as Record<string, unknown> | undefined;
-    const optionsOk = !!opts && OPTION_KEYS.every((k) => typeof opts[k] === "string" && (opts[k] as string).trim());
-    const correct = raw.correct as string;
-    if (typeof raw.question !== "string" || !raw.question.trim() || !optionsOk || !OPTION_KEYS.includes(correct as Option)) return;
-    const q: MockQuestion = {
-      question: raw.question,
-      options: { A: String(opts!.A), B: String(opts!.B), C: String(opts!.C), D: String(opts!.D) },
-      correct: correct as Option,
-      explanation: typeof raw.explanation === "string" ? raw.explanation : "",
-      topic: typeof raw.topic === "string" ? raw.topic : undefined,
-      calc: typeof raw.calc === "string" ? raw.calc : undefined,
-    };
-    const verified = verifyNumericAnswer(tidyQuestion(q));
-    if (!verified) return;
-    const { calc: _calc, ...rest } = shuffleQuestionOptions(verified);
-    void _calc;
-    parsed.push(rest);
-    onProgress(parsed.length);
-  };
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) handle(line);
-  }
-  handle(buffer);
-
-  if (parsed.length === 0) throw new Error("No questions were generated. Try again.");
-  return parsed.slice(0, count);
 }
 
 // ── Context ───────────────────────────────────────────────────

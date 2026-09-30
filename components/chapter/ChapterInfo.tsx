@@ -56,7 +56,7 @@ export function ChapterInfo({ c }: { c: ChapterController }) {
         <span
           className="font-mono"
           style={{
-            fontSize: 10,
+            fontSize: 11.5,
             padding: "4px 10px",
             borderRadius: 999,
             fontWeight: 700,

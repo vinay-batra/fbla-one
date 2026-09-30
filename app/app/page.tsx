@@ -17,16 +17,18 @@ import {
   type PracticeLog,
 } from "@/lib/storage";
 import { relativeTime, dayKeyET } from "@/lib/format";
+import { isScoredTest, parseJudgeNote, judgeModeLabel } from "@/lib/chapter";
 import type { Competition } from "@/lib/competitions";
 
 // ── Score trend chart ──────────────────────────────────────────
 
 function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; registeredCompetitions: Competition[] }) {
-  // Per-competition: last 8 scored logs, only comps with 2+ scored logs
+  // Per-competition: last 8 scored tests, only comps with 2+ scored tests.
+  // Judge rounds are rubric points, not test percentages, so they stay out.
   const entries = registeredCompetitions
     .map((comp) => {
       const compLogs = logs
-        .filter((l) => l.competitionSlug === comp.slug && l.score != null && l.outOf != null && l.outOf > 0)
+        .filter((l) => l.competitionSlug === comp.slug && isScoredTest(l))
         .slice(0, 8);
       if (compLogs.length < 2) return null;
       const pcts = compLogs.map((l) => Math.round((l.score! / l.outOf!) * 100)).reverse();
@@ -82,10 +84,10 @@ function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; re
                   <p className="font-mono" style={{ fontSize: 20, fontWeight: 700, lineHeight: 1, color: latest >= 80 ? "var(--green)" : latest >= 60 ? "var(--accent)" : "var(--red)" }}>
                     {latest}<span style={{ fontSize: 12 }}>%</span>
                   </p>
-                  <p style={{ fontSize: 10, color: "var(--text3)", marginTop: 2 }}>avg {avg}%</p>
+                  <p style={{ fontSize: 11.5, color: "var(--text3)", marginTop: 2 }}>avg {avg}%</p>
                 </div>
               </div>
-              <p style={{ fontSize: 10, color: "var(--text3)" }}>{pcts.length} test{pcts.length !== 1 ? "s" : ""} logged</p>
+              <p style={{ fontSize: 11.5, color: "var(--text3)" }}>{pcts.length} test{pcts.length !== 1 ? "s" : ""} logged</p>
             </div>
           </Link>
         ))}
@@ -158,10 +160,13 @@ export default function Dashboard() {
   // dashboard (there is no separate "My event" tab anymore).
   const myEvent = registeredCompetitions[0] ?? null;
   const myEventLogs = myEvent ? logs.filter((l) => l.competitionSlug === myEvent.slug) : [];
-  const myEventScored = myEventLogs.filter((l) => l.score != null && l.outOf != null && l.outOf > 0);
+  // Test average only: a Judge round is a separate, rubric-based score, so it
+  // is surfaced on its own (latest round) instead of being averaged in.
+  const myEventScored = myEventLogs.filter((l) => isScoredTest(l));
   const myEventAvg = myEventScored.length
     ? Math.round(myEventScored.reduce((sum, l) => sum + (l.score! / l.outOf!) * 100, 0) / myEventScored.length)
     : null;
+  const myEventJudge = myEventLogs.find((l) => parseJudgeNote(l.notes) && l.score != null) ?? null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 1240 }}>
@@ -217,7 +222,7 @@ export default function Dashboard() {
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
-            <span className="eyebrow" style={{ fontSize: 9, color: "var(--accent-text)" }}>Upcoming</span>
+            <span className="eyebrow" style={{ fontSize: 11, color: "var(--accent-text)" }}>Upcoming</span>
           </div>
           <div style={{ display: "flex", gap: 10, flex: 1, flexWrap: "wrap" }}>
             {upcomingDeadlines.map((dl) => {
@@ -242,7 +247,7 @@ export default function Dashboard() {
                   <span
                     className="font-mono"
                     style={{
-                      fontSize: 10,
+                      fontSize: 11.5,
                       fontWeight: 700,
                       color: days === 0 ? "var(--green)" : "var(--accent)",
                     }}
@@ -292,7 +297,7 @@ export default function Dashboard() {
             className="dash-event-row"
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto auto auto auto",
+              gridTemplateColumns: `1fr ${myEventJudge ? "auto " : ""}auto auto auto auto`,
               gap: 14,
               alignItems: "center",
               padding: "16px 18px",
@@ -318,7 +323,10 @@ export default function Dashboard() {
             </div>
 
             <EventStat label="LOGS" value={String(myEventLogs.length)} />
-            <EventStat label="AVG" value={myEventAvg != null ? `${myEventAvg}%` : "-"} accent={myEventAvg != null} />
+            <EventStat label="AVG" value={myEventAvg != null ? `${myEventAvg}%` : "-"} accent={myEventAvg != null} title="Average of your scored practice tests (Judge rounds not included)" />
+            {myEventJudge && (
+              <EventStat label="JUDGE" value={`${myEventJudge.score}/100`} title="Latest AI Judge round, rubric points out of 100" />
+            )}
 
             <Link href={`/competitions/${myEvent.slug}`} className="btn btn-accent btn-sm btn-pill cta-shimmer">
               Prep
@@ -331,7 +339,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Score trends (only shown once there are 3+ scored logs) */}
-      {logs.filter((l) => l.score != null && l.outOf != null && l.outOf > 0).length >= 3 && (
+      {logs.filter((l) => isScoredTest(l)).length >= 3 && (
         <ScoreTrends logs={logs} registeredCompetitions={registeredCompetitions} />
       )}
 
@@ -351,6 +359,7 @@ export default function Dashboard() {
             <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
               {logs.slice(0, 5).map((l) => {
                 const c = getCompetition(l.competitionSlug);
+                const judge = parseJudgeNote(l.notes);
                 return (
                   <li
                     key={l.id}
@@ -369,7 +378,14 @@ export default function Dashboard() {
                       <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
                         {c?.name ?? l.competitionSlug}
                       </p>
-                      <p style={{ fontSize: 11, color: "var(--text3)" }}>{relativeTime(l.loggedAt)}</p>
+                      <p style={{ fontSize: 11, color: "var(--text3)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                        {relativeTime(l.loggedAt)}
+                        {judge && (
+                          <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
+                            AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
+                          </span>
+                        )}
+                      </p>
                     </div>
                     {l.score != null && l.outOf != null && (
                       <span
@@ -414,10 +430,10 @@ export default function Dashboard() {
   );
 }
 
-function EventStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function EventStat({ label, value, accent, title }: { label: string; value: string; accent?: boolean; title?: string }) {
   return (
-    <div style={{ textAlign: "right", minWidth: 56 }}>
-      <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+    <div style={{ textAlign: "right", minWidth: 56 }} title={title}>
+      <p className="font-mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
         {label}
       </p>
       <p className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: accent ? "var(--accent)" : "var(--text)" }}>
@@ -433,7 +449,7 @@ function Stat({ label, value, sub, href }: { label: string; value: string; sub?:
       <p
         className="font-mono"
         style={{
-          fontSize: 10,
+          fontSize: 11.5,
           letterSpacing: "0.18em",
           color: "var(--text3)",
           textTransform: "uppercase",

@@ -31,7 +31,7 @@ export function MemberView({ c }: { c: ChapterController }) {
                       <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>{ev} · {a.target_count} test{a.target_count !== 1 ? "s" : ""}{a.due_at ? ` · due ${formatDate(a.due_at)}` : ""}</p>
                     </div>
                     {complete && (
-                      <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: "rgba(var(--green-rgb),0.14)", color: "var(--green)", whiteSpace: "nowrap" }}>DONE</span>
+                      <span className="font-mono" style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 9px", borderRadius: 6, background: "rgba(var(--green-rgb),0.14)", color: "var(--green)", whiteSpace: "nowrap" }}>DONE</span>
                     )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
@@ -72,9 +72,9 @@ export function MemberView({ c }: { c: ChapterController }) {
                     {row.name}{me && <span style={{ color: "var(--accent-text)", fontWeight: 700 }}> · You</span>}
                   </span>
                   {row.last7 > 0 && (
-                    <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: "rgba(var(--green-rgb),0.12)", color: "var(--green)", whiteSpace: "nowrap" }}>+{row.last7} this week</span>
+                    <span className="font-mono" style={{ fontSize: 11.5, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: "rgba(var(--green-rgb),0.12)", color: "var(--green)", whiteSpace: "nowrap" }}>+{row.last7} this week</span>
                   )}
-                  <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", minWidth: 60, textAlign: "right" }}>{row.tests} <span style={{ fontSize: 10, color: "var(--text3)", fontWeight: 400 }}>tests</span></span>
+                  <span className="font-mono" style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", minWidth: 60, textAlign: "right" }}>{row.tests} <span style={{ fontSize: 11.5, color: "var(--text3)", fontWeight: 400 }}>tests</span></span>
                 </div>
               );
             })}

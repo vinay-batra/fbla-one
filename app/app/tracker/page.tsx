@@ -11,6 +11,7 @@ import {
   getRegistered,
   onStorageChange,
 } from "@/lib/storage";
+import { isJudgeNote, parseJudgeNote, judgeModeLabel } from "@/lib/chapter";
 
 const LOG_CAP = 100;
 
@@ -20,6 +21,8 @@ export default function Tracker() {
   void tick;
 
   const logs = getPracticeLogs();
+  const judgeCount = logs.filter((l) => isJudgeNote(l.notes)).length;
+  const testCount = logs.length - judgeCount;
   const registered = getRegistered();
   const options = registered.length > 0 ? COMPETITIONS.filter((c) => registered.includes(c.slug)) : COMPETITIONS;
 
@@ -134,7 +137,11 @@ export default function Tracker() {
         <Card>
           <CardHeader
             title="History"
-            tagline={`${logs.length} ${logs.length === 1 ? "entry" : "entries"} total`}
+            tagline={
+              judgeCount > 0
+                ? `${testCount} ${testCount === 1 ? "test" : "tests"} and ${judgeCount} Judge ${judgeCount === 1 ? "round" : "rounds"}. Judge scores are rubric points out of 100, shown apart from test percentages.`
+                : `${logs.length} ${logs.length === 1 ? "entry" : "entries"} total`
+            }
           />
           {logs.length === 0 ? (
             <div className="empty-state" style={{ marginTop: 8 }}>
@@ -159,7 +166,10 @@ export default function Tracker() {
                 <tbody>
                   {(showAllLogs ? logs : logs.slice(0, LOG_CAP)).map((l) => {
                     const c = getCompetition(l.competitionSlug);
-                    const pct = l.score != null && l.outOf != null && l.outOf > 0
+                    const judge = parseJudgeNote(l.notes);
+                    // A Judge round is rubric points, not a percentage of questions
+                    // right, so it gets no % (and never feeds a test average).
+                    const pct = !judge && l.score != null && l.outOf != null && l.outOf > 0
                       ? Math.round((l.score / l.outOf) * 100)
                       : null;
                     return (
@@ -178,12 +188,22 @@ export default function Tracker() {
                           ) : (
                             l.competitionSlug
                           )}
+                          {judge && (
+                            <span style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 4 }}>
+                              <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
+                                AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
+                              </span>
+                              {judge.qaTotal != null && (
+                                <span style={{ fontSize: 11.5, color: "var(--text3)" }}>Q&amp;A {judge.qaTotal}/100</span>
+                              )}
+                            </span>
+                          )}
                         </Td>
                         <Td right mono>
                           {l.score != null && l.outOf != null ? `${l.score} / ${l.outOf}` : "-"}
                         </Td>
                         <Td right mono accent={pct != null && pct >= 80}>
-                          {pct != null ? `${pct}%` : "-"}
+                          {pct != null ? `${pct}%` : judge ? <span style={{ fontSize: 11, color: "var(--text3)" }}>pts</span> : "-"}
                         </Td>
                         <Td right mono>{l.durationMin ?? "-"}</Td>
                         <Td right>
@@ -241,7 +261,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         className="font-mono"
         style={{
           display: "block",
-          fontSize: 9,
+          fontSize: 11,
           letterSpacing: "0.18em",
           color: "var(--text-muted)",
           textTransform: "uppercase",
@@ -262,7 +282,7 @@ function Th({ children, right }: { children?: React.ReactNode; right?: boolean }
       className="font-mono"
       style={{
         textAlign: right ? "right" : "left",
-        fontSize: 9,
+        fontSize: 11,
         letterSpacing: "0.14em",
         color: "var(--text-muted)",
         textTransform: "uppercase",

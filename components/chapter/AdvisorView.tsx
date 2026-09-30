@@ -18,10 +18,12 @@ import {
   exportRosterCSV,
 } from "./chapterHelpers";
 import type { ChapterController } from "./useChapterData";
+import { ReadinessReport } from "./ReadinessReport";
+import { judgeModeLabel } from "@/lib/chapter";
 
 // Advisor-only chapter sections: invite/share, assignments (create + completion
-// board), chapter stats, leaderboard, member roster (+ CSV exports), and the
-// recent-activity feed. Extracted from app/app/chapter/page.tsx (issue #47).
+// board), the regionals readiness report, chapter stats, leaderboard, member
+// roster (+ CSV exports), and the recent-activity feed. Extracted from app/app/chapter/page.tsx (issue #47).
 
 export function AdvisorView({ c }: { c: ChapterController }) {
   const { isAdvisor, hasChapter, chapter, board, stats, members, activity } = c;
@@ -39,7 +41,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           <CardHeader eyebrow="Grow your chapter" title="Invite your members" tagline="Share one link. Members open it, sign up, and they're in your chapter automatically. No code to type." />
           <div className="invite-share" style={{ display: "flex", gap: 24, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
             <div style={{ flex: "1 1 280px", minWidth: 0 }}>
-              <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Invite link</p>
+              <p className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Invite link</p>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input readOnly value={c.joinLink} onFocus={(e) => e.currentTarget.select()} className="input-field" style={{ flex: 1, fontSize: 13, minWidth: 0 }} aria-label="Chapter invite link" />
               </div>
@@ -138,7 +140,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                   {b.perMember.length > 0 && (
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 12 }}>
                       {b.perMember.map((m) => (
-                        <span key={m.id} className="font-mono" style={{ fontSize: 10.5, padding: "3px 8px", borderRadius: 6, fontWeight: 600, background: m.complete ? "rgba(var(--green-rgb),0.12)" : "var(--bg3)", color: m.complete ? "var(--green)" : "var(--text3)", border: `0.5px solid ${m.complete ? "rgba(var(--green-rgb),0.3)" : "var(--border)"}` }}>
+                        <span key={m.id} className="font-mono" style={{ fontSize: 12, padding: "3px 8px", borderRadius: 6, fontWeight: 600, background: m.complete ? "rgba(var(--green-rgb),0.12)" : "var(--bg3)", color: m.complete ? "var(--green)" : "var(--text3)", border: `0.5px solid ${m.complete ? "rgba(var(--green-rgb),0.3)" : "var(--border)"}` }}>
                           {m.name} {m.done}/{b.assignment.target_count}
                         </span>
                       ))}
@@ -150,6 +152,9 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           </div>
         )}
       </Card>
+
+      {/* ── READINESS REPORT ── */}
+      <ReadinessReport c={c} />
 
       {/* ── CHAPTER STATS ── */}
       {stats && (
@@ -165,7 +170,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           >
             <MiniStat label="Practice tests" value={String(stats.totalTests)} sub="all-time" />
             <MiniStat label="Active this week" value={`${stats.activeThisWeek}/${stats.members.length}`} sub="members" />
-            <MiniStat label="Chapter average" value={stats.chapterAvgPct != null ? `${stats.chapterAvgPct}%` : "-"} sub="across scored tests" />
+            <MiniStat label="Chapter average" value={stats.chapterAvgPct != null ? `${stats.chapterAvgPct}%` : "-"} sub="across scored tests, Judge rounds excluded" />
             <MiniStat
               small
               label="Top event"
@@ -239,7 +244,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                         <td style={LB_TD}>
                           <span style={{ fontWeight: 600, color: "var(--text)" }}>{m.name}</span>
                           {m.role !== "member" && (
-                            <span className="font-mono" style={{ marginLeft: 6, fontSize: 9, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                            <span className="font-mono" style={{ marginLeft: 6, fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>
                               {m.role}
                             </span>
                           )}
@@ -350,7 +355,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                       style={{
                         textAlign: "left",
                         padding: "8px 12px",
-                        fontSize: 9,
+                        fontSize: 11,
                         letterSpacing: "0.16em",
                         textTransform: "uppercase",
                         color: "var(--text-muted)",
@@ -377,7 +382,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                       <span
                         className="font-mono"
                         style={{
-                          fontSize: 9,
+                          fontSize: 11,
                           padding: "3px 8px",
                           borderRadius: 999,
                           fontWeight: 700,
@@ -400,13 +405,13 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                           {m.registrations.slice(0, 4).map((slug) => {
                             const comp = getCompetition(slug);
                             return (
-                              <span key={slug} className="chip" style={{ fontSize: 10, padding: "2px 8px" }}>
+                              <span key={slug} className="chip" style={{ fontSize: 11.5, padding: "2px 8px" }}>
                                 {comp?.name ?? slug}
                               </span>
                             );
                           })}
                           {m.registrations.length > 4 && (
-                            <span className="chip" style={{ fontSize: 10, padding: "2px 8px", color: "var(--text3)" }}>
+                            <span className="chip" style={{ fontSize: 11.5, padding: "2px 8px", color: "var(--text3)" }}>
                               +{m.registrations.length - 4} more
                             </span>
                           )}
@@ -432,7 +437,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 14 }}>
             {activity.map((item) => {
               const comp = getCompetition(item.competitionSlug);
-              const pct = item.score != null && item.outOf != null && item.outOf > 0
+              const pct = !item.judgeMode && item.score != null && item.outOf != null && item.outOf > 0
                 ? Math.round((item.score / item.outOf) * 100)
                 : null;
               return (
@@ -452,10 +457,20 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                         {item.memberName ?? item.memberEmail?.split("@")[0] ?? "Member"}
                       </span>
                       <span style={{ fontSize: 12, color: "var(--text3)" }}>
-                        practiced {comp?.name ?? item.competitionSlug}
+                        {item.judgeMode ? "was judged in" : "practiced"} {comp?.name ?? item.competitionSlug}
                       </span>
+                      {item.judgeMode && (
+                        <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
+                          Judge: {judgeModeLabel(item.judgeMode).toLowerCase()}
+                        </span>
+                      )}
                     </div>
                   </div>
+                  {item.judgeMode && item.score != null && (
+                    <span className="font-mono" style={{ fontSize: 12, fontWeight: 700, color: "var(--text)", flexShrink: 0 }}>
+                      {item.score}/100
+                    </span>
+                  )}
                   {pct != null && (
                     <span
                       className="font-mono"
@@ -469,7 +484,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                       {pct}%
                     </span>
                   )}
-                  <span className="font-mono" style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
+                  <span className="font-mono" style={{ fontSize: 11.5, color: "var(--text-muted)", flexShrink: 0 }}>
                     {relativeTime(item.loggedAt)}
                   </span>
                 </div>

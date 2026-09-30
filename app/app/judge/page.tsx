@@ -4,7 +4,8 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { COMPETITIONS, FORMAT_LABEL, getCompetition, type Competition } from "@/lib/competitions";
-import { getRegistered } from "@/lib/storage";
+import { addPracticeLog, getRegistered, updatePracticeLog } from "@/lib/storage";
+import { judgeLogNote } from "@/lib/chapter";
 import {
   criteriaFor,
   formatClock,
@@ -35,6 +36,7 @@ import { ResponseInput } from "@/components/judge/ResponseInput";
 import { RolePlayCardView } from "@/components/judge/RolePlayCardView";
 import { RatingSheet } from "@/components/judge/RatingSheet";
 import { FollowUpRound } from "@/components/judge/FollowUpRound";
+import { JudgeHistory } from "@/components/judge/JudgeHistory";
 import "./judge.css";
 
 // ── Events the judge covers (every format with a judged performance) ──
@@ -102,6 +104,11 @@ function JudgeInner() {
   const [polite, setPolite] = useState("");
 
   const requestId = useRef(0);
+  // Practice history: when this run started (for the logged duration) and the
+  // id of the log written for the current result, so the Q&A round can be
+  // added to that same entry instead of creating a second one.
+  const runStartRef = useRef<number | null>(null);
+  const savedLogIdRef = useRef<string | null>(null);
   const sheetHeadingRef = useRef<HTMLHeadingElement>(null);
   const followHeadingRef = useRef<HTMLHeadingElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -140,6 +147,8 @@ function JudgeInner() {
     setFollowBusy(false);
     setFollowError("");
     setFollowResult(null);
+    runStartRef.current = null;
+    savedLogIdRef.current = null;
     announcedRef.current = new Set();
   }
 
@@ -165,6 +174,7 @@ function JudgeInner() {
       if (id !== requestId.current) return;
       setCard(data.card);
       setDrawCount((n) => n + 1);
+      runStartRef.current = Date.now(); // prep counts as practice time
       announcedRef.current = new Set();
       setPrepEndAt(Date.now() + timing.prepMin * 60 * 1000);
       setPhase("prep");
@@ -192,6 +202,7 @@ function JudgeInner() {
 
   function performAgain() {
     requestId.current += 1;
+    runStartRef.current = Date.now();
     setResult(null);
     setResponse("");
     setSpoken(false);
@@ -257,6 +268,7 @@ function JudgeInner() {
       });
       if (id !== requestId.current) return;
       setResult(data.result);
+      saveRound(comp.slug, data.result);
       setFollowResult(null);
       setFollowError("");
       setPhase("results");
@@ -274,6 +286,25 @@ function JudgeInner() {
     }
   }
 
+  /**
+   * Save a scored round to the practice history (localStorage, then Supabase
+   * via lib/storage), so it shows in the tracker, the dashboard, the advisor's
+   * readiness report and "Your last judged rounds". Each rating-sheet row is
+   * kept as points earned of 10.
+   */
+  function saveRound(eventSlug: string, r: JudgeResult) {
+    const started = runStartRef.current;
+    const entry = addPracticeLog({
+      competitionSlug: eventSlug,
+      score: r.total,
+      outOf: 100,
+      durationMin: started ? Math.max(1, Math.round((Date.now() - started) / 60000)) : null,
+      notes: judgeLogNote(r.mode, r.total),
+      topicResults: r.criteria.map((c) => ({ topic: c.name, correct: c.score, total: 10 })),
+    });
+    savedLogIdRef.current = entry.id;
+  }
+
   async function scoreFollowUp(answers: string[]) {
     if (!comp || !result) return;
     const id = requestId.current;
@@ -289,6 +320,9 @@ function JudgeInner() {
       });
       if (id !== requestId.current) return;
       setFollowResult(data.followup);
+      if (savedLogIdRef.current) {
+        updatePracticeLog(savedLogIdRef.current, { notes: judgeLogNote(result.mode, result.total, data.followup.total) });
+      }
       setPolite(`Q and A scored ${data.followup.total} out of 100.`);
     } catch (e) {
       if (id !== requestId.current) return;
@@ -300,6 +334,7 @@ function JudgeInner() {
 
   function reviseSubmission() {
     requestId.current += 1;
+    savedLogIdRef.current = null;
     setResponse(submitted);
     setResult(null);
     setFollowResult(null);
@@ -707,6 +742,8 @@ function SetupPanel({
               </div>
             </div>
           )}
+
+          <JudgeHistory slug={comp.slug} eventName={comp.name} />
         </>
       )}
     </div>

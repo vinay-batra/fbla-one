@@ -67,11 +67,16 @@ QUESTION QUALITY:
 - Match real FBLA national difficulty: challenging but fair.
 - Use plain hyphens, never em dashes or en dashes. No emojis or decorative symbols in any field.`;
 
-function buildUserPrompt(slug: string, count: number, focusTopic?: string): string {
+type Section = { topics: string[]; part: number; parts: number };
+
+function buildUserPrompt(slug: string, count: number, focusTopic?: string, section?: Section): string {
   const c = getCompetition(slug);
   if (!c) throw new Error("Competition not found");
 
-  const topicList = (c.topics ?? []).map((t, i) => `${i + 1}. ${t}`).join("\n");
+  // A full simulation is written as several parallel sections, each handed its
+  // own slice of the outline so coverage is even and sections rarely overlap.
+  const listed = section && section.topics.length ? section.topics : c.topics ?? [];
+  const topicList = listed.map((t, i) => `${i + 1}. ${t}`).join("\n");
   const durationLine = c.duration ? `Duration: ${c.duration}` : "";
 
   // Targeted drill: focus every question on one weak topic (still tag it).
@@ -80,10 +85,14 @@ function buildUserPrompt(slug: string, count: number, focusTopic?: string): stri
     ? `FOCUS: every question must test the single topic "${validFocus}" in depth (different angles and difficulties). Set "topic" to "${validFocus}" on every question.`
     : "Topics to cover (distribute questions proportionally across all topics):";
 
+  const sectionLine = section
+    ? `\nThis is section ${section.part} of ${section.parts} of a full-length paper. The other sections are written separately and cover the rest of the outline, so stay on the topics listed here, and favor less obvious concepts and angles within them so this section does not repeat the classic textbook questions another section might also ask.\n`
+    : "";
+
   return `Generate exactly ${count} practice questions for the FBLA ${c.name} event.
 
 Format: ${FORMAT_LABEL[c.format]}${durationLine ? `\n${durationLine}` : ""}
-
+${sectionLine}
 ${coverageLine}
 ${topicList || "General business knowledge relevant to this event"}
 
@@ -132,11 +141,13 @@ export async function POST(req: Request): Promise<Response> {
   let slug: string;
   let count: number;
   let focusTopic: string | undefined;
+  let rawSection: { topics?: unknown; part?: unknown; parts?: unknown } | undefined;
   try {
     const body = await req.json();
     slug = body.slug;
     count = Math.min(Math.max(Number(body.count) || 10, 5), 50);
     focusTopic = typeof body.focusTopic === "string" ? body.focusTopic.slice(0, 200) : undefined;
+    rawSection = body.section && typeof body.section === "object" ? body.section : undefined;
   } catch {
     return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
@@ -152,6 +163,19 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
+  // Optional section of a full simulation: only topics that really are on this
+  // event's outline survive, and the part numbers are clamped.
+  let section: Section | undefined;
+  if (rawSection) {
+    const known = comp.topics ?? [];
+    const topics = Array.isArray(rawSection.topics)
+      ? rawSection.topics.filter((t): t is string => typeof t === "string" && known.includes(t)).slice(0, 40)
+      : [];
+    const parts = Math.min(Math.max(Math.round(Number(rawSection.parts)) || 1, 1), 8);
+    const part = Math.min(Math.max(Math.round(Number(rawSection.part)) || 1, 1), parts);
+    if (parts > 1) section = { topics, part, parts };
+  }
+
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const encoder = new TextEncoder();
@@ -164,7 +188,7 @@ export async function POST(req: Request): Promise<Response> {
         // line buffer reassembles any line split across a calculator call. Bounded
         // so a misbehaving model can never loop forever.
         const messages: Anthropic.MessageParam[] = [
-          { role: "user", content: buildUserPrompt(slug, count, focusTopic) },
+          { role: "user", content: buildUserPrompt(slug, count, focusTopic, section) },
         ];
         for (let turn = 0; turn < 8; turn++) {
           const turnStream = client.messages.stream({

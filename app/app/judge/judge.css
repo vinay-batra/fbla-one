@@ -336,7 +336,7 @@
   padding-bottom: 10px;
   border-bottom: 3px double var(--text);
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text2);
@@ -734,7 +734,7 @@
   .judge-steps { grid-template-columns: minmax(0, 1fr); }
   .judge-criteria ul { columns: 1; }
   .judge-card { padding: 18px 18px 16px; }
-  .judge-card-head { font-size: 9.5px; letter-spacing: 0.1em; }
+  .judge-card-head { font-size: 11px; letter-spacing: 0.1em; }
   .judge-card-roles { grid-template-columns: minmax(0, 1fr); }
   .judge-sheet { padding: 18px 16px 20px; }
   .judge-total { flex-direction: column; align-items: flex-start; gap: 14px; }

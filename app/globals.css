@@ -355,7 +355,7 @@ p { color: var(--text2); line-height: 1.62; }
   margin-top: 14px;
 }
 
-.text-xs   { font-size: 10px; }
+.text-xs   { font-size: 11.5px; }
 .text-sm   { font-size: 12px; }
 .text-base { font-size: 14px; }
 .text-lg   { font-size: 16px; }
@@ -383,7 +383,7 @@ p { color: var(--text2); line-height: 1.62; }
 .tracking-wide { letter-spacing: 0.05em; }
 .tracking-wider { letter-spacing: 0.1em; }
 .uppercase-label {
-  font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3);
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3);
 }
 .metric-number {
   /* Big figures are set in the display serif, like numbers in a printed report. */
@@ -556,7 +556,7 @@ p { color: var(--text2); line-height: 1.62; }
 .input-wrap input:focus ~ label,
 .input-wrap input:not(:placeholder-shown) ~ label {
   top: 0;
-  font-size: 10px;
+  font-size: 11.5px;
   color: var(--accent);
   transform: translateY(-50%);
 }
@@ -1332,4 +1332,167 @@ p { color: var(--text2); line-height: 1.62; }
   .coach-sheet .sheet-q { font-size: 18px; }
   .coach-topic-row { grid-template-columns: minmax(0, 1fr) 40px 48px; }
   .coach-topic-bar { display: none; }
+}
+
+/* ── Coach: answer check, mistake bank, full simulation (app/app/coach) ── */
+.coach-setup { padding: 28px; }
+
+/* Test type: three paper tabs. */
+.coach-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.coach-mode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 44px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.coach-mode:hover:not(:disabled) { background: var(--bg2); }
+.coach-mode[aria-pressed="true"] { border: 1.5px solid var(--accent); background: var(--accent-dim); }
+.coach-mode:disabled { cursor: not-allowed; opacity: 0.6; }
+.coach-mode-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.coach-mode-sub { font-size: 12px; line-height: 1.4; color: var(--text3); }
+.coach-mode-note { font-size: 12.5px; line-height: 1.55; color: var(--text3); }
+
+/* Generating: the honest two-step progress sheet. */
+.coach-gen-wrap { max-width: 560px; padding-top: 24px; }
+.coach-gen-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.coach-gen-sub { margin-top: 6px; font-size: 14px; color: var(--text3); }
+.coach-gen-sub strong { color: var(--text); font-weight: 600; }
+.coach-gen-steps { list-style: none; margin: 18px 0 0; padding: 0; border-top: 1px solid var(--border); }
+.coach-gen-steps li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 0 11px 22px;
+  border-bottom: 1px dashed var(--border);
+  position: relative;
+  color: var(--text3);
+}
+.coach-gen-steps li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 16px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text3);
+}
+.coach-gen-steps li.is-active { color: var(--text); }
+.coach-gen-steps li.is-active::before { border-color: var(--pen); background: var(--pen); animation: coach-pulse 1.4s ease-in-out infinite; }
+.coach-gen-steps li.is-done { color: var(--text2); }
+.coach-gen-steps li.is-done::before { border-color: var(--text); background: var(--text); }
+.coach-gen-step-name { font-size: 14.5px; font-weight: 600; }
+.coach-gen-step-count { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text3); }
+.coach-gen-note { margin-top: 12px; font-size: 13px; line-height: 1.55; color: var(--text3); }
+.coach-gen-bar { margin-top: 18px; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.coach-gen-bar span { display: block; height: 100%; background: var(--text); border-radius: 3px; transition: width 0.3s ease; }
+.coach-gen-count { margin-top: 8px; font-size: 13px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.coach-gen-count strong { color: var(--text); }
+.coach-gen-foot { flex-wrap: wrap; }
+@keyframes coach-pulse { 50% { opacity: 0.35; } }
+
+/* Taking a test. */
+.coach-take-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.coach-take-tools { display: flex; align-items: center; gap: 10px; }
+.coach-clock.is-low { color: var(--red); }
+.coach-time-warning {
+  padding: 10px 14px;
+  border-left: 2px solid var(--red);
+  background: rgba(var(--red-rgb), 0.08);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red);
+}
+.coach-building-note { font-size: 12.5px; color: var(--text3); }
+.coach-grid-cell.is-pending { border-style: dashed; opacity: 0.45; cursor: default; }
+.coach-grid-cell.is-pending:hover { border-color: var(--text3); }
+.coach-grid-fold { border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); }
+.coach-grid-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.coach-grid-fold-count { font-weight: 500; font-size: 12.5px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.coach-grid-fold[open] > .coach-grid { padding: 4px 14px 14px; }
+
+/* A banked question back on the paper: a small red-pen note in the margin. */
+.coach-from-bank {
+  display: inline-block;
+  margin: -6px 0 10px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pen-text);
+  border-bottom: 1.5px solid var(--pen);
+  transform: rotate(-1.5deg);
+  transform-origin: left center;
+}
+
+.coach-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.coach-nav .btn { min-height: 44px; }
+.coach-turn-in { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.coach-turn-in .btn { min-height: 44px; }
+.coach-turn-in-q { font-size: 14px; color: var(--text); max-width: 440px; }
+.coach-turn-in-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* Report card: the mistake bank line. */
+.coach-bank-line {
+  margin-top: 4px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--border);
+  font-size: 14px;
+  color: var(--text2);
+}
+.coach-link {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--pen-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .coach-setup { padding: 18px; }
+  .coach-modes { grid-template-columns: 1fr; }
+  .coach-gen-wrap { padding-top: 8px; }
+  .coach-gen-title { font-size: 22px; }
+  /* Round 44px bubbles on touch screens. */
+  .coach-grid-cell { width: 44px; height: 44px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-gen-steps li.is-active::before { animation: none; }
+  .coach-from-bank { transform: none; }
 }

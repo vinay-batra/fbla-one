@@ -28,6 +28,7 @@ import {
   getChapterStats,
   getChapterAssignments,
   getChapterAssignmentBoard,
+  getChapterReadiness,
   createAssignment,
   deleteAssignment,
   AI_LOG_PREFIX,
@@ -39,6 +40,7 @@ import {
   type ChapterStats,
   type Assignment,
   type AssignmentProgress,
+  type ChapterReadiness,
 } from "@/lib/chapter";
 import { getLeaderboardCached, invalidateLeaderboard } from "@/lib/leaderboard-cache";
 import { ALL_COMP_OPTIONS } from "./chapterHelpers";
@@ -58,6 +60,7 @@ export function useChapterData() {
   const [stats, setStats] = useState<ChapterStats | null>(null);
   const [assignments, setAssignments] = useState<Assignment[]>([]); // member view
   const [board, setBoard] = useState<AssignmentProgress[]>([]); // advisor view
+  const [readiness, setReadiness] = useState<ChapterReadiness | null>(null); // advisor view
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
   const [supaLoading, setSupaLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -114,16 +117,18 @@ export function useChapterData() {
       const ch = await getChapterById(prof.chapter_id);
       setChapter(ch);
       if (prof.role === "advisor" && ch) {
-        const [m, act, st, bd] = await Promise.all([
+        const [m, act, st, bd, rd] = await Promise.all([
           getChapterMembers(ch.id),
           getChapterActivity(ch.id),
           getChapterStats(ch.id),
           getChapterAssignmentBoard(ch.id),
+          getChapterReadiness(ch.id),
         ]);
         setMembers(m);
         setActivity(act);
         setStats(st);
         setBoard(bd);
+        setReadiness(rd);
       } else if (ch) {
         const [asg, lb] = await Promise.all([getChapterAssignments(ch.id), getLeaderboardCached()]);
         setAssignments(asg);
@@ -265,7 +270,7 @@ export function useChapterData() {
 
   return {
     // identity / loaded data
-    userId, profile, chapter, members, activity, stats, assignments, board, leaderboard, supaLoading,
+    userId, profile, chapter, members, activity, stats, assignments, board, readiness, leaderboard, supaLoading,
     // setup forms
     createName, setCreateName, createError, createLoading, handleCreateChapter,
     joinCode, setJoinCode, joinError, joinLoading, handleJoinChapter,
