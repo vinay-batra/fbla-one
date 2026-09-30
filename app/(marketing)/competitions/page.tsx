@@ -64,8 +64,8 @@ function CompetitionsList() {
         <div className="container" style={{ maxWidth: 900, marginInline: "auto", textAlign: "center" }}>
           <HeroBadge>{COMPETITION_STATS.total} events tracked</HeroBadge>
           <h1 style={{ marginTop: 20 }}>
-            Every FBLA event,{" "}
-            <PenUnderline>one click away.</PenUnderline>
+            {COMPETITION_STATS.total} events.{" "}
+            <PenUnderline>Find yours.</PenUnderline>
           </h1>
           <p
             style={{

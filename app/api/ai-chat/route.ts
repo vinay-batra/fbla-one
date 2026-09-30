@@ -1,18 +1,26 @@
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { COMPETITIONS, FORMAT_LABEL } from "@/lib/competitions";
+
+// The real event list, so the chat never has to guess which events are tests,
+// role plays or presentations (it once called Business Ethics a role play).
+const EVENT_LIST = COMPETITIONS.map((c) => `- ${c.name}: ${FORMAT_LABEL[c.format]}.${c.duration ? ` ${c.duration}` : ""}`).join("\n");
 
 const SYSTEM = `You are a helpful assistant for ChapterPrep, a free all-in-one prep platform for FBLA (Future Business Leaders of America) chapters at chapterprep.com. Answer questions about FBLA competitive events, how to prepare, study strategies, the competition guides, AI practice tests, deadlines, chapter management, and general business concepts that show up on FBLA objective tests (accounting, business law, economics, marketing, etc).
 
 Keep every reply short: 2 to 4 sentences, under 70 words. Lead with the answer, skip preamble and filler. Be encouraging and practical. No em dashes. No asterisks. No emojis.
 
-IMPORTANT: ChapterPrep is an independent student project. It is NOT affiliated with, endorsed by, or sponsored by Future Business Leaders of America, Inc. If anyone asks whether you are official, affiliated with FBLA, or speak for FBLA, say plainly that you are not and point them to fbla.org for official information. Never imply endorsement or affiliation. For anything binding (eligibility, rules, deadlines, advancement), tell the user to confirm with their chapter advisor and FBLA's official event guidelines.`;
+IMPORTANT: ChapterPrep is an independent student project. It is NOT affiliated with, endorsed by, or sponsored by Future Business Leaders of America, Inc. If anyone asks whether you are official, affiliated with FBLA, or speak for FBLA, say plainly that you are not and point them to fbla.org for official information. Never imply endorsement or affiliation. For anything binding (eligibility, rules, deadlines, advancement), tell the user to confirm with their chapter advisor and FBLA's official event guidelines.
 
-// Per-IP cap for unauthenticated public AI chat: 5 messages / IP / 24h
+Here is every high school event and how it is judged. Use only this list for event names and formats; never call an event a role play, test or presentation unless this list says so. If something is not covered here, say you are not sure and point to the event's page on chapterprep.com/competitions.
+${EVENT_LIST}`;
+
+// Per-IP cap for unauthenticated public AI chat: 7 messages / IP / 24h
 // (signed-in users are unlimited). Simple in-memory sliding window - the same
 // limiter Corvo and Lark use (lib/rate-limit). Per serverless instance, which is
 // enough for Vercel's single region to stop runaway abuse.
-const IP_LIMIT = 5;
+const IP_LIMIT = 7;
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
 // Keep the conversation we forward to Anthropic small and well-formed: a public
@@ -68,7 +76,7 @@ export async function POST(req: NextRequest) {
   if (!signedIn) {
     if (!rateLimit(`aichat:${getClientIP(req)}`, IP_LIMIT, WINDOW_MS)) {
       return Response.json(
-        { content: "You've used all 5 free messages for today. Sign up for free to keep going." },
+        { content: "You've used all 7 free messages for today. Sign up for free to keep going." },
         { status: 429 }
       );
     }

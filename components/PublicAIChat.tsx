@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { BrandMark } from "@/components/BrandMark";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-// Public chat is capped at 5 messages/IP/day server-side (/api/ai-chat). We
+// Public chat is capped at 7 messages/IP/day server-side (/api/ai-chat). We
 // mirror that with a client-side daily counter so the header can show
-// "X / 5 today" and we stop wasting calls once the cap is hit.
-const DAILY_LIMIT = 5;
+// "X / 7 today" and we stop wasting calls once the cap is hit.
+const DAILY_LIMIT = 7;
 const SUGGESTIONS = [
   "Which FBLA event should I pick?",
   "How do I prep for an objective test?",
@@ -125,13 +124,13 @@ function PublicAIChatInner() {
     if (!q || loading) return;
     setInput("");
 
-    // Local cap: once today's 5 are used, surface the same nudge the server
+    // Local cap: once today's 7 are used, surface the same nudge the server
     // would return without spending a call.
     if (atLimit) {
       setMessages((m) => [
         ...m,
         { role: "user", content: q },
-        { role: "assistant", content: "You've used all 5 free messages for today. Sign up for free to keep going." },
+        { role: "assistant", content: "You've used all 7 free messages for today. Sign up for free to keep going." },
       ]);
       return;
     }
@@ -180,48 +179,39 @@ function PublicAIChatInner() {
           width: 58,
           height: 58,
           borderRadius: "50%",
-          // Simple: a clean white disc with the logo. White reads in both themes
-          // (the blue mark always pops) and stands out on the dark page.
-          background: open ? "var(--bg3)" : "#ffffff",
-          border: open
-            ? "0.5px solid var(--border2)"
-            : dark
-              ? "0.5px solid rgba(255,255,255,0.14)"
-              : "0.5px solid var(--border)",
+          // A plain ink disc with a chat bubble, so it reads as "chat" at a
+          // glance (the logo made people think it was a link home).
+          background: open ? "var(--bg3)" : "var(--btn-bg)",
+          border: open ? "0.5px solid var(--border2)" : "none",
+          color: open ? "var(--text)" : "var(--btn-fg)",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          // Gold glow so the button has presence (and a hover-amplified ring).
-          boxShadow: open
-            ? "0 4px 14px rgba(0,0,0,0.18)"
-            : dark
-              ? "0 8px 24px rgba(0,0,0,0.5), 0 0 22px rgba(var(--accent-rgb),0.4), 0 0 0 1px rgba(var(--accent-rgb),0.25)"
-              : "0 8px 24px rgba(11,26,51,0.14), 0 0 20px rgba(var(--accent-rgb),0.32)",
+          boxShadow: open ? "0 4px 14px rgba(0,0,0,0.18)" : "0 8px 22px rgba(0,0,0,0.22)",
           transition: "box-shadow 0.2s, transform 0.2s, background 0.2s",
           transform: open ? "scale(0.96)" : "scale(1)",
         }}
         onMouseEnter={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = dark
-            ? "0 12px 32px rgba(0,0,0,0.6), 0 0 30px rgba(var(--accent-rgb),0.55), 0 0 0 5px rgba(var(--accent-rgb),0.2)"
-            : "0 12px 32px rgba(11,26,51,0.2), 0 0 28px rgba(var(--accent-rgb),0.45), 0 0 0 5px rgba(var(--accent-rgb),0.16)";
+          e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.28)";
         }}
         onMouseLeave={(e) => {
           if (open) return;
           e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = dark
-            ? "0 8px 24px rgba(0,0,0,0.5), 0 0 22px rgba(var(--accent-rgb),0.4), 0 0 0 1px rgba(var(--accent-rgb),0.25)"
-            : "0 8px 24px rgba(11,26,51,0.14), 0 0 20px rgba(var(--accent-rgb),0.32)";
+          e.currentTarget.style.boxShadow = "0 8px 22px rgba(0,0,0,0.22)";
         }}
       >
         {open ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={dark ? "#ffffff" : "#0a1322"} strokeWidth="2.5" strokeLinecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          <span style={{ pointerEvents: "none", display: "inline-flex" }}><BrandMark size={32} /></span>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ pointerEvents: "none" }}>
+            <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z" />
+            <path d="M8.5 12h.01M12 12h.01M15.5 12h.01" strokeWidth="2.6" />
+          </svg>
         )}
       </button>
 
@@ -347,11 +337,11 @@ function PublicAIChatInner() {
                       maxWidth: "82%",
                       padding: "10px 14px",
                       borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                      background: msg.role === "user" ? "var(--accent)" : "var(--bg3)",
+                      background: msg.role === "user" ? "var(--btn-bg)" : "var(--bg3)",
                       border: msg.role === "assistant" ? "0.5px solid var(--border)" : "none",
                       fontSize: 13.5,
                       lineHeight: 1.6,
-                      color: msg.role === "user" ? "#0a1322" : "var(--text)",
+                      color: msg.role === "user" ? "var(--btn-fg)" : "var(--text)",
                       fontWeight: msg.role === "user" ? 500 : 400,
                       whiteSpace: "pre-wrap",
                       wordBreak: "break-word",
@@ -408,7 +398,7 @@ function PublicAIChatInner() {
                 width: 46,
                 height: 46,
                 borderRadius: 12,
-                background: loading || !input.trim() || atLimit ? "var(--bg3)" : "var(--accent)",
+                background: loading || !input.trim() || atLimit ? "var(--bg3)" : "var(--btn-bg)",
                 border: `1px solid ${loading || !input.trim() || atLimit ? "var(--border)" : "transparent"}`,
                 cursor: loading || !input.trim() || atLimit ? "default" : "pointer",
                 display: "flex",
@@ -418,7 +408,7 @@ function PublicAIChatInner() {
                 transition: "background 0.15s",
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={loading || !input.trim() || atLimit ? "var(--text3)" : "#0a1322"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={loading || !input.trim() || atLimit ? "var(--text3)" : "var(--btn-fg)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
               </svg>
             </button>

@@ -62,7 +62,7 @@ const SLIDES: Slide[] = [
   {
     id: "simulation",
     tab: "The real clock",
-    title: "Practice like it's regionals.",
+    title: "Practice under pressure.",
     body: "100 questions in 50 minutes, on your event's official topics, turned in automatically when time runs out.",
     elsewhere: "you get questions, but not a timed, full-length paper that turns itself in and grades itself.",
     cta: { href: "/app/coach", label: "Take a full simulation" },

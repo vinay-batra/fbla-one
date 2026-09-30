@@ -20,16 +20,6 @@ export function FeedbackButton() {
   const dialogRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Watch the global data-theme attribute so the open-state X reads in both themes.
-  const [dark, setDark] = useState(true);
-  useEffect(() => {
-    const sync = () => setDark(document.documentElement.getAttribute("data-theme") !== "light");
-    sync();
-    const obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
   const close = useCallback(() => {
     if (submitting) return;
     setOpen(false);
@@ -145,8 +135,8 @@ export function FeedbackButton() {
         }}
       >
         {open ? (
-          // Close X - white in dark mode so it reads on the dark disc (matches the AI bubble).
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={dark ? "#ffffff" : "#0a1322"} strokeWidth="2.5" strokeLinecap="round">
+          // Close X, drawn in the button text color.
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
