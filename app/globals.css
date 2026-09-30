@@ -1115,3 +1115,62 @@ p { color: var(--text2); line-height: 1.62; }
   font-weight: 600;
   color: var(--text);
 }
+
+/* ── Sample test report card (landing ExamSheet, after question 5) ── */
+.report-score {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 18px 0 20px;
+}
+.report-big {
+  position: relative;
+  flex-shrink: 0;
+  padding: 10px 22px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--red);
+  transform: rotate(-5deg);
+  font-variant-numeric: lining-nums;
+}
+.report-slash { font-weight: 400; margin: 0 2px; opacity: 0.8; }
+.report-big > span { position: relative; z-index: 1; }
+.report-circle { width: 150px; height: 100px; left: -12px; top: -14px; stroke-width: 2.6; }
+.report-circle path { stroke-dasharray: 330; stroke-dashoffset: 330; animation-delay: 0.35s; }
+.report-verdict {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+  text-wrap: pretty;
+}
+.report-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.report-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border);
+}
+.report-mark { position: relative; display: inline-flex; width: 24px; height: 24px; flex-shrink: 0; }
+.report-mark .pen { position: static; width: 22px; height: 22px; }
+.report-topic { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text); }
+.report-event { display: block; font-size: 12px; font-weight: 500; color: var(--text3); }
+.report-list li.is-right .report-topic { color: var(--text2); }
+.report-study { font-size: 13px; flex-shrink: 0; }
+.report-foot { margin-top: 20px; }
+.report-cta { border-radius: 999px; min-height: 40px; }
+@media (max-width: 768px) {
+  .report-score { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .report-big { font-size: 44px; }
+}

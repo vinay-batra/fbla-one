@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSignedIn } from "@/components/useSignedIn";
 import { PenCircle, PenCheck, PenCross } from "@/components/PenMarks";
 
 /**
@@ -12,12 +13,17 @@ import { PenCircle, PenCheck, PenCross } from "@/components/PenMarks";
  * Every answer here was checked by hand, and the arithmetic ones by computation
  * ($4,800 x 3/12 = $1,200; 20% / 10% = 2.0; $1,000 x 1.06^2 = $1,123.60). The
  * distractors are the mistakes students actually make, not filler.
+ *
+ * It is a real five-question test: after the last answer the sheet turns into
+ * a graded report card with the score circled in red, what you missed, and a
+ * way into a full-length test.
  */
 
 type Q = {
   event: string;
   slug: string;
-  number: number;
+  /** What the question tests, shown on the report card. */
+  topic: string;
   prompt: string;
   options: [string, string, string, string];
   correct: 0 | 1 | 2 | 3;
@@ -28,7 +34,7 @@ const QUESTIONS: Q[] = [
   {
     event: "Accounting",
     slug: "accounting-i",
-    number: 7,
+    topic: "Adjusting entries",
     prompt:
       "On October 1, a company prepays $4,800 for a 12-month insurance policy. What adjusting entry does it record on December 31?",
     options: [
@@ -43,7 +49,7 @@ const QUESTIONS: Q[] = [
   {
     event: "Economics",
     slug: "economics",
-    number: 12,
+    topic: "Price elasticity",
     prompt:
       "Concert ticket prices rise 10%, and the quantity demanded falls 20%. What is the price elasticity of demand?",
     options: ["0.5, inelastic", "0.5, elastic", "2.0, inelastic", "2.0, elastic"],
@@ -53,7 +59,7 @@ const QUESTIONS: Q[] = [
   {
     event: "Business Law",
     slug: "business-law",
-    number: 3,
+    topic: "Contracts with minors",
     prompt:
       "A 16-year-old signs a contract to buy a used car, then changes their mind a week later. The contract is generally:",
     options: [
@@ -68,13 +74,33 @@ const QUESTIONS: Q[] = [
   {
     event: "Personal Finance",
     slug: "personal-finance",
-    number: 21,
+    topic: "Compound interest",
     prompt:
       "You deposit $1,000 at 6% interest, compounded annually. What is the balance after 2 years?",
     options: ["$1,120.00", "$1,060.00", "$1,123.60", "$1,191.02"],
     correct: 2,
     why: "Compounding earns interest on the interest: $1,000 × 1.06 × 1.06 = $1,123.60. Simple interest stops at $1,120, and $1,191.02 is three years, not two.",
   },
+  {
+    event: "Cybersecurity",
+    slug: "cyber-security",
+    topic: "Least privilege",
+    prompt:
+      "A company gives each employee access to only the systems their job requires, and nothing more. Which security principle is this?",
+    options: ["Defense in depth", "Least privilege", "Separation of duties", "Non-repudiation"],
+    correct: 1,
+    why: "Least privilege gives every account the minimum access its job needs, so a stolen login can do less damage. Separation of duties is different: it splits one sensitive task between people so no one can finish it alone.",
+  },
+];
+
+/** The teacher's note at the bottom of the report card, by score out of 5. */
+const VERDICT = [
+  "Everyone starts somewhere. This is exactly what practice is for.",
+  "A rough first pass. Every miss below is a topic you now know to study.",
+  "A start. Two or three topics to work on before competition day.",
+  "Solid. Tighten up the topics you missed and you are close.",
+  "Strong paper. One topic away from perfect.",
+  "Perfect paper. Now try a full-length test.",
 ];
 
 const LETTERS = ["A", "B", "C", "D"] as const;
@@ -101,6 +127,11 @@ export function ExamSheet() {
   const [tally, setTally] = useState({ right: 0, done: 0 });
   // "out" lifts the sheet off the stack; "in" lays the next one down.
   const [turn, setTurn] = useState<"idle" | "out" | "in">("idle");
+  // Per question: true = right, false = wrong, null = skipped or not reached.
+  const [results, setResults] = useState<(boolean | null)[]>(() => QUESTIONS.map(() => null));
+  const [finished, setFinished] = useState(false);
+  const signedIn = useSignedIn();
+  const isLast = qi === QUESTIONS.length - 1;
   const liveRef = useRef<HTMLParagraphElement>(null);
   const q = QUESTIONS[qi];
   const answered = picked !== null;
@@ -118,12 +149,23 @@ export function ExamSheet() {
     if (picked !== null) return;
     setPicked(i);
     setTally((t) => ({ right: t.right + (i === q.correct ? 1 : 0), done: t.done + 1 }));
+    setResults((r) => r.map((v, k) => (k === qi ? i === q.correct : v)));
   };
 
   const swapQuestion = () => {
     advanced.current = true;
     setPicked(null);
-    setQi((i) => (i + 1) % QUESTIONS.length);
+    if (isLast) setFinished(true);
+    else setQi((i) => i + 1);
+  };
+
+  const restart = () => {
+    setPicked(null);
+    setTally({ right: 0, done: 0 });
+    setResults(QUESTIONS.map(() => null));
+    setFinished(false);
+    advanced.current = true;
+    setQi(0);
   };
 
   const next = () => {
@@ -144,6 +186,65 @@ export function ExamSheet() {
     }, 280);
   };
 
+  if (finished) {
+    const right = results.filter((r) => r === true).length;
+    const missed = QUESTIONS.filter((_, i) => results[i] !== true);
+    return (
+      <div className="sheet-stack">
+        <div className="sheet sheet-report turn-in" aria-label="Your graded sample test">
+          <div className="sheet-head">
+            <span className="sheet-meta">Graded</span>
+            <span className="sheet-event">Sample test</span>
+          </div>
+
+          <div className="report-score">
+            <div className="report-big" aria-label={`${right} out of ${QUESTIONS.length}`}>
+              <span>
+                {right}
+                <span className="report-slash">/</span>
+                {QUESTIONS.length}
+              </span>
+              <svg className="pen report-circle" viewBox="0 0 120 80" aria-hidden="true">
+                <path d="M18 30C28 10 70 4 94 14c18 8 22 30 8 46-16 16-56 18-76 6C6 56 6 38 20 24c8-8 22-12 34-12" />
+              </svg>
+            </div>
+            <p className="report-verdict">{VERDICT[right]}</p>
+          </div>
+
+          <ol className="report-list">
+            {QUESTIONS.map((item, i) => (
+              <li key={item.slug} className={results[i] === true ? "is-right" : "is-missed"}>
+                <span className="report-mark" aria-hidden="true">
+                  {results[i] === true ? <PenCheck /> : <PenCross />}
+                </span>
+                <span className="report-topic">
+                  {item.topic}
+                  <span className="report-event">{item.event}</span>
+                </span>
+                {results[i] !== true && (
+                  <Link href={`/competitions/${item.slug}`} className="sheet-link report-study">
+                    Study this
+                  </Link>
+                )}
+                <span className="sr-only">{results[i] === true ? "correct" : "missed"}</span>
+              </li>
+            ))}
+          </ol>
+
+          <div className="sheet-foot report-foot">
+            <Link href={signedIn ? "/app/coach" : "/auth?mode=signup"} className="btn btn-accent report-cta">
+              {missed.length ? "Drill what you missed" : "Take a full-length test"}{" "}
+              <span aria-hidden="true">→</span>
+            </Link>
+            <button type="button" className="sheet-next" onClick={restart}>
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sheet-stack">
     <div
@@ -153,7 +254,7 @@ export function ExamSheet() {
       {tally.done > 0 && <PenScore right={tally.right} done={tally.done} />}
       <div className="sheet-head">
         <span className="sheet-meta">
-          Question {q.number} <span className="sheet-of">of 50</span>
+          Question {qi + 1} <span className="sheet-of">of {QUESTIONS.length}</span>
         </span>
         <span className="sheet-event">{q.event}</span>
       </div>
@@ -209,7 +310,8 @@ export function ExamSheet() {
           )}
         </span>
         <button type="button" className="sheet-next" onClick={next}>
-          {answered ? "Next question" : "Skip"} <span aria-hidden="true">→</span>
+          {isLast ? (answered ? "See your score" : "Skip and finish") : answered ? "Next question" : "Skip"}{" "}
+          <span aria-hidden="true">→</span>
         </button>
       </div>
 
