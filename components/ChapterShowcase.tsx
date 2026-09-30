@@ -2,7 +2,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 
 /**
  * Landing-page bento that shows the chapter-level features as small live-looking
- * UI previews rather than feature bullets. Written for officers and advisers:
+ * UI previews rather than feature bullets. Written for officers and advisors:
  * the rest of the landing page speaks to individual students, and the features
  * that make a chapter adopt a tool (assignments, the leaderboard, the regional
  * registration export) were a single sentence.
@@ -43,7 +43,7 @@ export function ChapterShowcase() {
         <ScrollReveal>
           <div className="showcase-head">
             <p className="eyebrow">For the whole chapter</p>
-            <h2 id="showcase-title">Built for officers and advisers, too.</h2>
+            <h2 id="showcase-title">Built for officers and advisors, too.</h2>
             <p className="showcase-sub">
               Set goals, see who is putting in the work, and stop rebuilding the
               registration spreadsheet by hand every season.

@@ -10,7 +10,7 @@ The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed
 - **A redesigned home page**, set like a well-made study book: warm paper in light mode, warm ink in dark, serif headlines and red-pen marks.
 - **Try a question before you sign up.** The home page now has a real practice question you can answer. It gets graded in red pen and explained, across Accounting, Economics, Business Law and Personal Finance.
 - **Every event at a glance**, typeset like the index of a book, with the ones that support practice tests marked.
-- **A section for officers and advisers** showing the leaderboard, assignments, weak-spot drills, shared deadlines and the regional registration export.
+- **A section for officers and advisors** showing the leaderboard, assignments, weak-spot drills, shared deadlines and the regional registration export.
 - The headline now appears the instant the page loads, instead of waiting for the rest of the page's code.
 - First-time visitors are no longer greeted by a setup popup meant for people who already have an account.
 

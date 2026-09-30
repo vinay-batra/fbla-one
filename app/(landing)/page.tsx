@@ -73,7 +73,7 @@ const CONTENTS = [
     n: "IV",
     title: "Bring your chapter",
     value: "free, always",
-    body: "Your adviser sets goals, sees who is practicing, and exports regional registration in one file.",
+    body: "Your advisor sets goals, sees who is practicing, and exports regional registration in one file.",
   },
 ];
 
@@ -170,7 +170,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* --- OFFICERS + ADVISERS ----------------------------------------- */}
+      {/* --- OFFICERS + ADVISORS ----------------------------------------- */}
       <ChapterShowcase />
 
       {/* --- INDEX: every event ------------------------------------------ */}
