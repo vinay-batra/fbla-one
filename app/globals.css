@@ -1496,3 +1496,19 @@ p { color: var(--text2); line-height: 1.62; }
   .coach-gen-steps li.is-active::before { animation: none; }
   .coach-from-bank { transform: none; }
 }
+
+/* FAQ: "Ask the AI in the bottom right corner." opens the chat. Styled as a
+   link so it reads as part of the sentence. */
+.faq-ask-ai {
+  font: inherit;
+  color: var(--pen-text);
+  font-weight: 600;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+.faq-ask-ai:hover { color: var(--text); }

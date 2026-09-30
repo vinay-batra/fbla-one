@@ -148,12 +148,19 @@ export default function FAQ() {
           </ScrollReveal>
           <ScrollReveal delay={0.05}>
             <h1 style={{ marginTop: 22 }}>
-              Questions, <PenUnderline>answered.</PenUnderline>
+              What students and advisors <PenUnderline>ask first.</PenUnderline>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p style={{ marginTop: 18, fontSize: 17, color: "var(--text2)", lineHeight: 1.6 }}>
-              Don't see your question? <a href="mailto:hello@chapterprep.com?subject=ChapterPrep%20question" className="animated-link" style={{ color: "var(--accent)" }}>Email us.</a>
+              Don&apos;t see your question?{" "}
+              <button
+                type="button"
+                className="faq-ask-ai"
+                onClick={() => window.dispatchEvent(new Event("chapterprep:open-chat"))}
+              >
+                Ask the AI in the bottom right corner.
+              </button>
             </p>
           </ScrollReveal>
         </div>

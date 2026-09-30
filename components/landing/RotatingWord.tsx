@@ -18,7 +18,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
  * readers except the word currently showing. With reduced motion the first
  * word just stays put.
  */
-const HOLD_MS = 2600;
+const HOLD_MS = 3500;
 const MOVE_MS = 650;
 
 export function RotatingWord({ words }: { words: string[] }) {
