@@ -16,6 +16,7 @@
 import { getSupabase } from "./supabase";
 import { evaluateExpression } from "./calc";
 import { getMyProfile, getChapterById, type ChapterInfo, type ChapterProfile } from "./chapter";
+import { tidyQuestion } from "@/lib/text";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -264,7 +265,7 @@ export async function generateMockQuestions(
       topic: typeof raw.topic === "string" ? raw.topic : undefined,
       calc: typeof raw.calc === "string" ? raw.calc : undefined,
     };
-    const verified = verifyNumericAnswer(q);
+    const verified = verifyNumericAnswer(tidyQuestion(q));
     if (!verified) return;
     const { calc: _calc, ...rest } = shuffleQuestionOptions(verified);
     void _calc;

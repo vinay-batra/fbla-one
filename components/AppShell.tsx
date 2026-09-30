@@ -161,9 +161,6 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           display: "flex",
           flexDirection: "column",
           gap: 4,
-          position: "sticky",
-          top: 0,
-          height: "100vh",
           overflowY: "auto",
         }}
       >
@@ -382,6 +379,11 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
 
       <style>{`
         .app-backdrop { display: none; }
+        /* Desktop: the sidebar sticks beside the content. This lives here, not
+           in the inline style, because an inline position always beat the
+           mobile rule below, so on phones the hidden sidebar still took its
+           248px and squeezed every app page into a narrow column. */
+        .app-sidebar { position: sticky; top: 0; height: 100vh; }
         @media (max-width: 900px) {
           .app-sidebar {
             position: fixed;

@@ -232,7 +232,14 @@ export function ExamSheet() {
           </ol>
 
           <div className="sheet-foot report-foot">
-            <Link href={signedIn ? "/app/coach" : "/auth?mode=signup"} className="btn btn-accent report-cta">
+            <Link
+              href={
+                signedIn
+                  ? `/app/coach${missed.length ? `?slug=${missed[0].slug}` : ""}`
+                  : `/auth?mode=signup&next=${encodeURIComponent(missed.length ? `/app/coach?slug=${missed[0].slug}` : "/app/coach")}`
+              }
+              className="btn btn-accent report-cta"
+            >
               {missed.length ? "Drill what you missed" : "Take a full-length test"}{" "}
               <span aria-hidden="true">→</span>
             </Link>

@@ -9,6 +9,7 @@ import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, onSto
 import { evaluateExpression } from "@/lib/calc";
 import { AI_LOG_PREFIX } from "@/lib/chapter";
 import { PenCircle, PenCheck, PenCross } from "@/components/PenMarks";
+import { tidyQuestion } from "@/lib/text";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ function shuffleQuestionOptions(q: Question): Question {
 
 function CoachInner() {
   const searchParams = useSearchParams();
-  const initialSlug = searchParams.get("slug") ?? "";
+  const initialSlug = searchParams.get("slug") ?? searchParams.get("event") ?? "";
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedSlug, setSelectedSlug] = useState(initialSlug);
@@ -205,62 +206,83 @@ function CoachInner() {
     abortRef.current = abort;
 
     try {
-      const res = await fetch("/api/practice-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: selectedSlug, count: questionCount, focusTopic }),
-        signal: abort.signal,
-      });
-
-      if (!res.ok || !res.body) {
-        throw new Error("Failed to start generation");
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
       const parsed: Question[] = [];
+      const seen = new Set<string>();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
+      // One streamed batch from the generator. Questions that fail validation or
+      // the numeric answer check are dropped, which is why a batch can come back
+      // short; the loop below tops up so the student gets the count they chose.
+      const streamBatch = async (count: number) => {
+        const res = await fetch("/api/practice-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: selectedSlug, count, focusTopic }),
+          signal: abort.signal,
+        });
+        if (!res.ok || !res.body) {
+          let msg = "Failed to start generation";
           try {
-            const raw = JSON.parse(trimmed) as Record<string, unknown>;
-            if (raw.error) throw new Error(String(raw.error));
-            const q = raw as unknown as Question;
-            // Validate fully: question text, all four options present, and a
-            // correct key that is exactly one of A-D. Skipping this let a
-            // lowercase or malformed "correct" silently mis-score the test.
-            const opts = q.options as Record<string, string> | undefined;
-            const KEYS = ["A", "B", "C", "D"];
-            const optionsOk = !!opts && KEYS.every((k) => typeof opts[k] === "string" && opts[k].trim());
-            const correctOk = KEYS.includes(q.correct as string);
-            if (q.question && optionsOk && correctOk) {
+            const j = await res.json();
+            if (j?.error) msg = String(j.error);
+          } catch {}
+          throw new Error(msg);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || parsed.length >= questionCount) continue;
+            try {
+              const raw = JSON.parse(trimmed) as Record<string, unknown>;
+              if (raw.error) throw new Error(String(raw.error));
+              const q = raw as unknown as Question;
+              // Validate fully: question text, all four options present, and a
+              // correct key that is exactly one of A-D. Skipping this let a
+              // lowercase or malformed "correct" silently mis-score the test.
+              const opts = q.options as Record<string, string> | undefined;
+              const KEYS = ["A", "B", "C", "D"];
+              const optionsOk = !!opts && KEYS.every((k) => typeof opts[k] === "string" && opts[k].trim());
+              const correctOk = KEYS.includes(q.correct as string);
+              if (!q.question || !optionsOk || !correctOk) continue;
+              // A top-up batch can repeat a question from the first batch.
+              const key = q.question.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+              if (seen.has(key)) continue;
               // Verify any computed numeric answer against the model's calc
               // expression: re-key to the matching option, or drop the question
               // if the right answer is not even present.
-              const verified = verifyNumericAnswer(q);
+              const verified = verifyNumericAnswer(tidyQuestion(q));
               if (verified) {
+                seen.add(key);
                 parsed.push(shuffleQuestionOptions({ ...verified, id: parsed.length + 1 }));
                 setGeneratedSoFar(parsed.length);
                 setQuestions([...parsed]);
               }
-            }
-          } catch (parseErr) {
-            // Skip malformed lines, keep going
-            if ((parseErr as Error).message && !(parseErr instanceof SyntaxError)) {
-              throw parseErr;
+            } catch (parseErr) {
+              // Skip malformed lines, keep going
+              if ((parseErr as Error).message && !(parseErr instanceof SyntaxError)) {
+                throw parseErr;
+              }
             }
           }
         }
+      };
+
+      await streamBatch(questionCount);
+      // Up to two top-ups for questions dropped by validation. The API's
+      // minimum batch is 5, so ask for at least that and keep only what fits.
+      for (let attempt = 0; attempt < 2 && parsed.length > 0 && parsed.length < questionCount; attempt++) {
+        await streamBatch(Math.max(5, questionCount - parsed.length + 2));
       }
 
       if (parsed.length === 0) throw new Error("No questions were generated. Try again.");
