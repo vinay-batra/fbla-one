@@ -11,10 +11,14 @@ import type { NextConfig } from "next";
 // 'unsafe-eval' is added in DEVELOPMENT ONLY: `next dev` (React Refresh) needs
 // eval() for dev tooling, while production never uses it. This keeps the prod CSP
 // strict without breaking local development.
+//
+// Vercel Web Analytics serves its script same-origin (/_vercel/insights) in
+// production, but in development it loads a debug build from
+// va.vercel-scripts.com, so that origin is allowed in DEVELOPMENT ONLY too.
 const isDev = process.env.NODE_ENV !== "production";
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ""}`,
   // Fonts are self-hosted via next/font, so the Google Fonts origins are gone.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
