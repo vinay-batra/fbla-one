@@ -487,8 +487,8 @@ begin
   select coalesce(jsonb_object_agg(e.key, e.value), '{}'::jsonb)
     into v_clean
     from jsonb_each_text(case when jsonb_typeof(p_answers) = 'object' then p_answers else '{}'::jsonb end) as e
-   where e.key ~ '^[0-9]{1,2}$'
-     and e.key::int < v_n
+   -- CASE guards the cast: SQL does not promise the regex runs before ::int.
+   where (case when e.key ~ '^[0-9]{1,2}$' then e.key::int else 999 end) < v_n
      and e.value in ('A', 'B', 'C', 'D');
 
   v_score := public.mock_grade(s.questions, v_clean);
