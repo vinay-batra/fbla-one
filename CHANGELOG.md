@@ -4,6 +4,21 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.11.0 - September 30, 2026 - Practice that actually teaches
+
+- **The whole site is paper and ink now**, not just the home page, with one accent color: the red pen. New red bookmark logo and serif wordmark.
+- **Every event checked against FBLA's official guidelines.** Each event now says exactly how it is judged: a test, a test and then a role play for finalists, a presentation, and so on. International Business, Marketing and similar events are correctly listed as a test first. No event says "coming soon".
+- **Every AI question is checked by a second model** before you see it. It solves the question on its own without the answer key, and anything it cannot confirm is thrown out and replaced.
+- **A mistake bank.** Questions you miss come back in later tests until you get them right twice. You can also review just your mistakes, instantly.
+- **Full-length simulation:** 100 questions in 50 minutes, like the real test, turned in automatically when time runs out.
+- **AI Judge** for role play, presentation and interview events: draw a role play card or hand in your script, then get scored against the rating sheet with specific notes. Your rounds are saved to your history.
+- **Mock Regionals:** an advisor runs a live timed test for the whole chapter, with a join code, a projector leaderboard and a podium.
+- **Readiness report for advisors:** every member's event, practice, average, judge score and weakest topics, with a clear ready status and a spreadsheet export.
+- **"Which event is for me?"** A short quiz that recommends three events and explains why.
+- **Much better on phones.** App pages were squeezed into a narrow strip on phones; they now use the full screen, and buttons and labels are sized for fingers and eyes.
+- The home page sample test is five questions and ends with a graded report card.
+- The changelog page was removed from the site. This file is still the record.
+
 ## v1.10.0 - September 29, 2026 - A new look
 
 - **New logo.** A bookmark with a check: it marks a chapter, and it reads as ready. Rebuilt as a crisp vector mark at every size, from the 16-pixel browser tab icon up.

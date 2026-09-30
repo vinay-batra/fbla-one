@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# CLAUDE.md - FBLA One
+# CLAUDE.md - ChapterPrep (repo still named fbla-one)
 
 All-in-one platform for FBLA chapters: competition guides, study resources, prep tracker, deadline calendar, and chapter management. Pilot at Council Rock High School South (Vinay is Competition Chair), built generic so any chapter can use it.
 
@@ -8,24 +8,39 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 
 ## Deadline
 
-**Aug 25, 2026** - present at FBLA officer meeting.
+The Aug 25, 2026 officer-meeting demo has passed. No fixed deadline now; the goal is real chapter use this season.
 
 ---
 
 ## Current focus
 
-**LIVE at [chapterprep.com](https://chapterprep.com). Last shipped: v1.10.0 (Sept 29, 2026) - new bookmark logo + editorial "exam paper" landing page.** **Migrations: 0001-0017, ALL applied + verified live.** Read the v1.9.0 and v1.8.0 blocks first; the v1.7.0/v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history from when the product was called FBLA One at fbla.one. **Do not rewrite that history.** The old name shipped and the record of it stays intact.
+**LIVE at [chapterprep.com](https://chapterprep.com). Last shipped: v1.11.0 (Sept 30, 2026). Migrations: 0001-0019, ALL applied + verified live.** Read the v1.11.0 block first: it is the current feature inventory and design system, and it supersedes the reference sections' older descriptions wherever they conflict. Then v1.10.0, v1.9.0, v1.8.0; the v1.7.0/v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history from when the product was called FBLA One at fbla.one. **Do not rewrite that history.** The old name shipped and the record of it stays intact.
+
+> **v1.11.0 - site-wide redesign + practice that teaches (Sept 29-30, 2026), DONE + deployed + verified live.**
+> - **Design system is now site-wide "paper and ink"** (it was landing-only in v1.10). Tokens in `app/globals.css`: paper `--bg #f5f1e8` / ink `#13110e`; `--accent` IS ink (`#17181c` / `#f0e9da`), `--brand` is deep red pen (`#9e2a1b` / `#ff9b8c`), `--pen` (lighter red for drawn lines), `--pen-text` (red labels). **No blue or teal anywhere.** `--green`/`--red` stay semantic (correct/incorrect). Fraunces (`--font-serif`) loads in the root layout and sets every h1-h3; `.font-mono` is now Inter with tabular figures (80 call sites); real Space Mono survives only on the exam sheet. Logo = solid red ribbon bookmark with a paper check (`#b8362a` / `#fbf8f1`, fixed, not themed), wordmark in Fraunces ink with italic "Prep". `components/PenUnderline.tsx` measures each rendered line (`getClientRects`) and draws one flat stroke per line, so underlined phrases can wrap. Glow orbs, shimmer, pulsing badges, and the `/changelog` page are gone (`/changelog` 308s to `/`). Every page: 0 AA contrast failures in both themes (automated DOM sweep).
+> - **Competition data verified against FBLA's official guideline PDFs.** Formats now include `test-then-role-play` (100-question test, top 15 do a role play: International Business, Marketing, Entrepreneurship, etc.), `test-and-presentation`, `production`, `chapter-event`. All 45 judged events' rating-sheet chips and timings checked item by item (38 confirmed, 7 fixed). New `judgedOn?: string[]` on `Competition` holds a presentation rating sheet when `topics` holds test areas (Future Business Leader, Business Ethics). Tests are 50 minutes, not 60. `hasObjectiveTest()` drives AI-test eligibility (45 events). Guideline PDF text extracts lived in the session scratchpad; the PDFs are in FBLA's public bucket `greektrack-fbla-public` under `High School Competitive Events Resources/Individual Guidelines/`.
+> - **AI practice test** (`app/app/coach/page.tsx`, pipeline in `components/coach/engine.ts`, shared with Mock Regionals): exam-paper UI (scantron grid, page turns, red-pen graded review, report card by topic). **Every question is checked by a second model** (`/api/verify-questions`, claude-sonnet-5: blind solve + key audit; kept only if the blind answer matches and nothing is flagged; ~25% rejection on Business Law) and dropped questions are topped up so the chosen count is exact. **Mistake bank** (`lib/mistakes.ts`, localStorage `fbla_mistake_bank`): misses return until right in two different tests; up to 30% of a test; instant "Mistakes" review. **Full simulation**: 100 questions, 50:00 countdown, auto turn-in. `lib/text.ts` `tidyDashes` strips dash punctuation from AI text.
+> - **AI Judge** (`/app/judge`, `/api/judge`, `components/judge/`): role play cards with official prep/performance clocks, or presentation/interview scripts scored against the rating sheet, typed or spoken (Web Speech API). claude-sonnet-5, strict JSON validated server side; the total is computed from criteria. Rounds save as practice logs (`JUDGE_LOG_PREFIX` "AI Judge:") and are never averaged with test percentages (`isScoredTest` in `lib/chapter.ts` also excludes "Mistake review").
+> - **Mock Regionals** (`/app/mock`, `lib/mock.ts`, `components/mock/`, migration 0018): advisor hosts a live chapter test with a projector lobby (join code + QR via public `/mock/CODE`), server clock, podium, hardest question. Answer key never readable by students during the test (column grants + SECURITY DEFINER RPCs), graded server side. `_mock_test.mjs` 47/47.
+> - **Advisor readiness report** (`components/chapter/ReadinessReport.tsx`, migration 0019 `practice_logs.topic_results` jsonb with a validating check constraint): per member event, volume, average, trend, judge score, weakest topics, Ready / On track / Needs attention (`READINESS_RULE` in `lib/chapter.ts`), CSV export. `_readiness_test.mjs` 36/36.
+> - **Event finder quiz** (`/find-your-event`, `components/eventfinder/`): 7 questions, deterministic weighted scoring (`scoring.ts` weight tables), grade-gates Introduction events.
+> - **Landing**: 5-question sample test ending in a graded report card. `ExamSheet`, `.sheet*` and `.report-*` styles are global now.
+> - **Phones:** the AppShell sidebar had an inline `position: sticky` that always beat its mobile `position: fixed` rule, so every /app page rendered in a ~127px column on phones since v1. Positioning now lives in the stylesheet. A 375px audit of every page fixed 17 sub-44px tap targets and 63 sub-11px labels.
+> - **Verification habits that paid off this release:** run the automated contrast sweep after any palette change; audit phones by measuring (overflow, tap targets, input font size), not by eye; spot-check AI answer keys by hand; live RLS scripts after every migration.
+> - **Process lesson:** while background agents are editing, commit with explicit paths, never `git add -A` (it once shipped half-written agent files; reverted within a minute).
+> - **Copy rules:** "advisor", never "adviser". No em dashes, no emojis, no " - " used as a dash, in UI, prompts, SQL and comments.
 
 > **v1.10.0 - bookmark logo + editorial landing (Sept 29, 2026), DONE + deployed + verified live.** Built for Vinay's FBLA officer-meeting demo; the old landing read as a default dark-SaaS template.
 > - **Logo:** a bookmark with a check (marks a chapter, reads as "prepped"). The old mark was a "1" for FBLA *One*, a name that no longer exists. **Source of truth is `scripts/logo-mark.svg`**; `components/BrandMark.tsx` renders the same geometry as inline SVG (gradient id via `useId()`). To change the logo: edit the SVG, keep BrandMark in sync, rasterize `public/logo-mark.png` (512x512, transparent; headless Chrome with `--default-background-color=00000000` works), then `python3 scripts/regenerate-logo-assets.py` for favicons/PWA/OG. `public/logo.png` is deleted, do not recreate it.
-> - **Landing lives in its own route group `app/(landing)/`** so it can wear the editorial identity nav-to-footer without restyling the rest of the marketing site (`app/(marketing)/` keeps the blue/teal system). URL is still `/`. `.ed` (set in `(landing)/layout.tsx`) **re-declares the shared tokens** in `(landing)/editorial.css`, so PublicNav/Footer/ChapterShowcase/EmailCta restyle themselves. Paper palette in light, warm "ink" palette in dark. Fraunces is loaded only by the landing layout (`--font-serif`).
+> - *(Superseded by v1.11.0: the paper/ink tokens and Fraunces are site-wide now; `(landing)/editorial.css` holds only landing layout.)* **Landing lives in its own route group `app/(landing)/`** so it can wear the editorial identity nav-to-footer without restyling the rest of the marketing site (`app/(marketing)/` keeps the blue/teal system). URL is still `/`. `.ed` (set in `(landing)/layout.tsx`) **re-declares the shared tokens** in `(landing)/editorial.css`, so PublicNav/Footer/ChapterShowcase/EmailCta restyle themselves. Paper palette in light, warm "ink" palette in dark. Fraunces is loaded only by the landing layout (`--font-serif`).
 > - **Sections:** hero + live `components/landing/ExamSheet.tsx` (answerable, graded in red pen; 4 questions, every answer hand-checked and the arithmetic computed; distractors are real student mistakes. **If you edit a question, re-verify the answer.**) -> ledger sentence -> table-of-contents "How it works" -> `ChapterShowcase` -> `components/landing/EventIndex.tsx` (all 76 as a book index, dot = `isAiTestable`) -> "Regionals don't wait." close.
 > - **Hero uses CSS `.ed-rise` keyframes, NOT ScrollReveal.** ScrollReveal server-renders at `opacity:0` and reveals only after hydration, which left the h1 (the LCP element) invisible until JS ran (confirmed in prod HTML). Never wrap above-the-fold content in ScrollReveal.
 > - **Never statically import `@/lib/supabase` in a marketing component.** Use `components/useSignedIn.ts` (cache seed + dynamic import). HeroCta and EmailCta had each re-added the ~65KB auth SDK to the landing that way.
 > - **Onboarding modal auto-opens only for signed-in users.** It used to open 700ms after landing for every first-time visitor, covering the hero on any fresh browser (i.e. every demo laptop).
 > - Contrast: every paper/ink token checked on every surface; automated DOM sweep = 0 failures in both themes. Paper needed its own `--medal-silver` (#5f6470); light `--green` is now #11703f site-wide.
 
-> ### ⚠️ ONE MANUAL STEP REQUIRED, or sign-in stays broken
+> ### RESOLVED (Sept 30, 2026): Supabase captcha appears to be off. Password sign-in works again (verified from scripts and from the site on localhost against production). Kept below as history.
+> ### (history) ONE MANUAL STEP REQUIRED, or sign-in stays broken
 > **Cloudflare Turnstile has been removed from the codebase entirely** (widget, hook, CSP entries, env var) because its hostname allowlist still pointed at `fbla.one` and it was hard-blocking all authentication.
 > **Supabase Auth still has captcha protection enabled server-side against the old Turnstile secret.** Until that is turned OFF in the Supabase dashboard (Authentication -> Attack Protection -> disable captcha), sign-in and sign-up will keep failing, now with a "captcha verification process failed" style error from GoTrue instead of the client-side widget error. Removing the client without disabling the server check does not fix anything on its own.
 > The site therefore currently has **no bot protection on signup**. That is a deliberate, reversible trade against auth being 100% broken. If it gets abused, re-add Turnstile (or hCaptcha) and register `chapterprep.com` as an allowed hostname this time.
@@ -107,7 +122,7 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Google OAuth: live (consent screen branded "FBLA One")
 - All 3 env vars set locally (`.env.local`) and on Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
-**What's built and verified working:**
+**What's built and verified working (v1.3-era inventory, kept as history; the v1.11.0 block above is current):**
 - Full marketing site: `/`, `/about`, `/faq`, `/privacy`, `/terms`. **Always free** - no pricing page. About + FAQ fully rewritten for advisor audience.
 - 55-event competition registry (`lib/competitions.ts`). **55 complete, 0 partial, 0 coming-soon.** All events have longDescription + topics + studyResources.
 - **AI Practice Test Engine** (`/app/coach` + `/api/practice-test`): Claude claude-haiku-4-5 streams NDJSON questions calibrated to each event's topic outline. 4-phase UI: idle, generating (live progress), taking (keyboard shortcuts), reviewing (explanations + score logging). 34 eligible objective-test events.
@@ -134,9 +149,10 @@ All-in-one platform for FBLA chapters: competition guides, study resources, prep
 - Build clean (79 routes), lint clean. No em dashes in source. No CommandPalette (removed).
 
 ### Next up
-1. Branded auth emails: Resend account + verify `fbla.one` + point Supabase Auth -> SMTP. `lib/email.ts` scaffolded, no-ops without `RESEND_API_KEY`.
-2. Push notification reminders for deadlines (service worker + VAPID).
-3. Export competition sign-ups in FBLA's exact regional registration format.
+1. Get real students using it (3 or 4 chapter members on their own phones) and fix what confuses them.
+2. Sync the mistake bank to accounts (it is localStorage only, so it does not follow a student between devices).
+3. Emails and reminders: needs a Resend account + DNS for chapterprep.com. `lib/email.ts` is scaffolded and no-ops without `RESEND_API_KEY`.
+4. `hello@` / `privacy@chapterprep.com` still have no MX records.
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
@@ -145,142 +161,85 @@ There's a self-contained integration test pattern (used twice this session to ca
 
 ## Stack
 
-- **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19
-- **Styling**: CSS variables only (no Tailwind). Inter + Space Mono + Space Grotesk via Google Fonts `@import` in globals.css.
-- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref: `osxoygndwazbygiqyjhu`. URL: `https://osxoygndwazbygiqyjhu.supabase.co`.
-- **Animation**: framer-motion (UserMenu dropdown); ScrollReveal uses pure IntersectionObserver per Corvo audit.
-- **Hosting**: Vercel (live). Domain: `fbla.one` (SSL active). Push to `main` auto-deploys.
-- **GitHub**: `github.com/vinay-batra/fbla-one`
-- **Local path**: `~/Downloads/fbla-one/`
-- **git note**: commits land under `vinaybatra@Vinays-MacBook-Air.local` (git identity not globally configured; harmless). School/proxy network sometimes blocks `git push` with an SSL cert error - retry on a different network.
+- **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19. Read `node_modules/next/dist/docs` before assuming an API (see AGENTS.md).
+- **Styling**: CSS variables only (no Tailwind). Fonts via `next/font` in `app/layout.tsx` (self-hosted): Inter (body), Fraunces (`--font-serif`, all headings), Space Mono (exam sheet only), Space Grotesk (loaded, barely used).
+- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0019 in `supabase/migrations/`, all applied to prod.
+- **AI**: Anthropic SDK. claude-haiku-4-5 generates practice questions (calculator tool loop) and runs the public chat; claude-sonnet-5 verifies every question and powers the AI Judge.
+- **Animation**: CSS only (framer-motion was removed in v1.9). ScrollReveal is IntersectionObserver-based and never hides above-the-fold content.
+- **Hosting**: Vercel, apex `chapterprep.com` (www 308s to it). Push to `main` auto-deploys.
+- **GitHub**: `github.com/vinay-batra/fbla-one` (public repo: keep legal detail out of it).
+- **Local path**: `~/Downloads/fbla-one/`. For a production-like local preview: `npm run build` then `npm run start -- -p 3100` (the preview tool's `fbla-one-prod` config). The dev server's `.next/dev` cache can exceed 450MB; disk on this Mac runs low, so prefer the prod build.
 
 ---
 
 ## Critical rules - never break these
 
-- **CSS variables only**, never hardcode hex colors in components. Theme palette lives in `app/globals.css`.
-- **Space Mono** for accents, numbers, eyebrows, chips (via `.eyebrow`, `.font-mono`, `.metric-number`).
-- **`data-theme="dark"|"light"` on `<html>`** is the source of truth. Never read theme from React state in CSS.
-- **localStorage key is `fbla_theme`** - never `corvo_theme` (that's the other project), never `lark_theme`.
-- **No emojis in UI**. SVG icons only.
-- **No em dashes in source files** (use hyphens or rephrase). Exception: this CLAUDE.md may use them for readability.
-- **No `onMouseEnter` / `onMouseLeave` in server components** - use CSS `:hover` via classes like `.resource-link`, `.category-tile`, `.related-link`, `.footer-link`. Client components are fine.
-- **`useSearchParams()` must be wrapped in `<Suspense>`** at the page level. See `app/(marketing)/competitions/page.tsx` for the pattern.
-- **`generateStaticParams` typed as Promise**. Next.js 16 changed `params` to a Promise - every dynamic page must `await params`.
-- **`proxy.ts`, not `middleware.ts`** - Next.js 16 renamed it. Exported function is also `proxy`, not `middleware`.
-- **Always commit + push after changes**. Per Vinay's workflow.
-- **0.5px borders** are intentional - they read as hairlines and match Corvo's aesthetic. Don't bump to 1px.
-- **New public.* tables need explicit GRANTs to `authenticated`** or every insert fails with "permission denied for table" (RLS is never even reached). Raw `CREATE TABLE` in the SQL editor does NOT auto-grant. See `0003_grants_and_trigger_fix.sql`; `alter default privileges` now covers future tables.
-- **Don't create triggers on `auth.users`** - the SQL editor runs as `postgres` which doesn't own that table, so `CREATE TRIGGER` silently no-ops. Profile rows are created app-side via `ensureProfile()` in `lib/storage.ts`, called from `DataSync` on sign-in (insert-only upsert, never clobbers edits).
-- **Google brand colors** (`#4285f4` etc.) in the OAuth button SVG and the `#fff` checkmark are intentional exceptions to the no-hardcoded-color rule.
+- **CSS variables only**, never hardcode hex colors in components (exceptions: the fixed logo colors in `BrandMark`, Google's brand colors in the OAuth button, and the white QR plate). Palette lives in `app/globals.css`.
+- **The theme is paper and ink with one chromatic color, the red pen.** Do not reintroduce blue, teal or glow effects. `--accent` is ink; red (`--brand`, `--pen-text`) is for labels, emphasis and grading marks; `--green`/`--red` only mean correct/incorrect.
+- **Headings are Fraunces** (automatic for h1-h3). Emphasis inside a headline is italic, not a second color. Small labels above headlines use `.eyebrow` (red, sentence case, a short rule).
+- **After any palette change, rerun the automated contrast sweep** on every page in both themes. Target: 0 AA failures.
+- **Phones are a first-class target:** no horizontal scroll at 375px, tap targets at least 44px, text at least 11px, inputs at least 16px (a global mobile rule enforces this). Measure, do not eyeball.
+- **Never inline `position` on elements that a media query must change** (the AppShell sidebar bug).
+- **`data-theme="dark"|"light"` on `<html>`** is the source of truth. localStorage key is `fbla_theme`.
+- **No emojis, no em dashes, no " - " used as a dash**: UI text, AI prompts, SQL, comments, commits. AI output passes through `tidyDashes`. Spell it **"advisor"**.
+- **Derive every count** from `COMPETITION_STATS` / the registry. Hardcoded counts are this project's recurring bug.
+- **Any fact about an FBLA event must come from FBLA's official guidelines.** If a detail cannot be confirmed, leave it out.
+- **No `onMouseEnter` / `onMouseLeave` in server components** - use CSS `:hover` classes.
+- **`useSearchParams()` inside `<Suspense>`**; dynamic `params` are Promises in Next 16; the middleware file is `proxy.ts`.
+- **Never statically import `@/lib/supabase` in a marketing component** (use `components/useSignedIn.ts`).
+- **New public.* tables need explicit GRANTs to `authenticated`**; never call pgcrypto from a `search_path = public` SECURITY DEFINER function; verify every migration with a live RLS script (`_*_test.mjs`, gitignored). `service_role` has no table grants here, so scripts act as signed-in users.
+- **Profiles**: a signup trigger may already create the row, so `ensureProfile`'s insert-if-missing can be a no-op; set fields with an update.
+- **Always commit + push after changes** (Vinay's workflow), with explicit paths when anything else is editing the tree.
 
 ---
 
 ## Theme system
 
-- CSS variables defined twice in `app/globals.css`: `:root, [data-theme="light"]` and `[data-theme="dark"]`.
-- `ThemeProvider` (`components/ThemeProvider.tsx`) wraps the app, exposes `useTheme()` -> `{ theme, toggle, setTheme }`.
-- Persists to `localStorage.fbla_theme`.
-- SSR-safe inline script in `<head>` of `app/layout.tsx` reads localStorage and sets `data-theme` before paint to prevent FOUC.
-- Default: dark.
-- `ThemeToggle` is a 36×36 sun/moon icon button.
-
-### Dark vars
-`--bg: #060c16` (near-black navy), `--accent: #2dd4bf` (teal), `--brand: #60a5fa` (lighter blue for contrast), `--text: #e9eef7` (cool off-white).
-
-### Light vars
-`--bg: #ffffff`, `--accent: #0d9488` (teal; `--accent-text: #0f766e` for AA body text), `--brand: #1d4ed8` (blue, taken from the logo mark), `--text: #0b1a33` (deep navy text).
+- Tokens defined twice in `app/globals.css`: `:root, [data-theme="light"]` (paper) and `[data-theme="dark"]` (ink). Landing-only layout lives in `app/(landing)/editorial.css`.
+- `ThemeProvider` / `useTheme()`; SSR-safe inline script in `app/layout.tsx` sets `data-theme` before paint.
+- Paper: `--bg #f5f1e8`, `--card-bg #fbf8f1`, `--text #17181c`, `--accent #17181c`, `--brand #9e2a1b`, `--pen #dc5f50`. Ink: `--bg #13110e`, `--card-bg #1c1a15`, `--text #f0e9da`, `--accent #f0e9da`, `--brand #ff9b8c`, `--pen #f07f70`.
+- Paper texture: `--paper-tooth` (inline SVG noise) on `<body>`.
 
 ---
 
-## File structure
+## Where things live
 
 ```
-fbla-one/
-  app/
-    layout.tsx                  <- root: ThemeProvider + ConditionalAmbientOrbs + FOUC script
-    globals.css                 <- ~600 lines: tokens, animations, buttons, inputs, cards, mobile rules
-    favicon.ico
-    (marketing)/                <- route group: PublicNav + Footer wrap
-      layout.tsx
-      page.tsx                  <- / landing (hero, bento, competitions preview, how-it-works, categories, CTA)
-      about/page.tsx            <- /about (origin story + 3 principles)
-      faq/page.tsx              <- /faq (4 sections accordion)
-      privacy/page.tsx          <- /privacy
-      terms/page.tsx            <- /terms
-      competitions/
-        page.tsx                <- /competitions (filterable grid, useSearchParams in Suspense)
-        [slug]/page.tsx         <- /competitions/[slug] (SSG, generateStaticParams over registry)
-    auth/page.tsx               <- /auth (sign in / sign up / magic link / OAuth, graceful degradation)
-    app/                        <- authenticated section (preview mode if no Supabase)
-      layout.tsx                <- AppShell wrapper
-      page.tsx                  <- /app dashboard
-      competitions/page.tsx     <- /app/competitions (registered events table)
-      tracker/page.tsx          <- /app/tracker (practice log form + history table)
-      chapter/page.tsx          <- /app/chapter (thin orchestrator; logic in components/chapter/)
-      settings/page.tsx         <- /app/settings
-  components/
-    PublicNav.tsx               <- fixed nav, scroll-accumulator hide/show, mobile drawer
-    Footer.tsx                  <- 3-col + brand + disclaimer + bottom bar
-    AppShell.tsx                <- sidebar + topbar, mobile drawer, auth-aware footer
-    ThemeProvider.tsx           <- context + useTheme + localStorage persist
-    ThemeToggle.tsx             <- sun/moon icon button
-    Logo.tsx                    <- text wordmark "FBLA One" (blue + gold)
-    ScrollReveal.tsx            <- IntersectionObserver fade-up (use this, not framer whileInView)
-    AmbientOrbs.tsx             <- two fixed-position gradient orbs (dark mode only)
-    ConditionalAmbientOrbs.tsx  <- mounts AmbientOrbs everywhere except /app + /auth
-    SectionHeader.tsx           <- eyebrow + headline + tagline (with optional accentLastWord)
-    HeroBadge.tsx               <- pulsing gold-dot pill
-    Card.tsx                    <- shared card primitive + CardHeader
-    IconBtn.tsx                 <- icon button with mi-btn micro-interactions
-    RegisterButton.tsx          <- client-side competition register toggle (localStorage)
-    chapter/                    <- /app/chapter module (#47 split): useChapterData hook +
-                                   chapterHelpers + ChapterSetup/ChapterInfo/MemberView/
-                                   AdvisorView/ChapterDeadlines/MyEvents
-  lib/
-    competitions.ts             <- 55-event FBLA registry, types, helpers
-    storage.ts                  <- localStorage-first state (registered, practice_logs, saved_resources, profile)
-    supabase.ts                 <- browser singleton (graceful degradation)
-    supabase-server.ts          <- server component client (cookies, RLS)
-  proxy.ts                      <- Next 16 middleware: Supabase session refresh + hardened cookies
-  supabase/
-    migrations/
-      0001_init.sql             <- profiles, chapters, registrations, practice_logs, saved_resources, deadlines
-  public/
-    logo.png                    <- AI-generated brand mark (white BG, replace with transparent)
-    favicon.ico
-  .env.example                  <- env var template
-  next.config.ts                <- security headers
-  eslint.config.mjs             <- Next 16 base + 3 disabled rules (no-unescaped-entities, set-state-in-effect, purity)
+app/
+  layout.tsx                 root: fonts, ThemeProvider, GlobalShell (chat + feedback FABs)
+  globals.css                tokens, buttons, chips, cards, exam sheet (.sheet/.opt/.bubble/.pen),
+                             report card (.report-*), coach (.coach-*), pen underline, motion
+  (landing)/                 "/" : page.tsx, editorial.css (landing layout only)
+  (marketing)/               competitions/, competitions/[slug]/, find-your-event/, faq, privacy, terms
+  auth/                      sign in / sign up / magic link / Google
+  mock/[code]/               public QR target for Mock Regionals (survives sign-in)
+  app/                       auth-gated (preview cookie bypass): page (dashboard), coach, judge, mock,
+                             tracker, chapter, resources, settings, admin
+  api/                       practice-test, verify-questions, judge, ai-chat, preview, admin, health
+components/
+  AppShell, PublicNav, Footer, Logo, BrandMark, PenUnderline, PenMarks, ScrollReveal, HeroCta
+  landing/ (ExamSheet, EventIndex)   coach/ (engine, GeneratingView)   judge/   mock/
+  chapter/ (useChapterData, AdvisorView, MemberView, ReadinessReport, ...)   eventfinder/
+lib/
+  competitions.ts            76-event registry (formats, topics, judgedOn, timings), COMPETITION_STATS
+  storage.ts                 localStorage-first data layer + Supabase sync (practice logs carry topicResults)
+  chapter.ts                 chapter RLS helpers, leaderboard, assignments, readiness, log prefixes
+  mistakes.ts  mock.ts  text.ts  calc.ts  format.ts  url.ts  rate-limit.ts  version.ts
+scripts/                     logo-mark.svg (logo source) + regenerate-logo-assets.py
+supabase/migrations/         0001-0019
 ```
 
 ---
 
 ## Component patterns
 
-### Eyebrow
-`<p className="eyebrow">SOME LABEL</p>` - Space Mono 10px, 0.22em letter-spacing, accent color, uppercase, 700.
-
-### Pulsing badge
-`<HeroBadge>For FBLA Chapters</HeroBadge>` - gold-dot pill, used above marketing section headlines and hero copy.
-
-### Section header
-`<SectionHeader eyebrow="What's inside" title="Three things, done right." tagline="No fluff." accentLastWord />` - drop-in for marketing sections. ScrollReveal-wrapped.
-
-### Scroll reveal
-`<ScrollReveal delay={0.1}>...</ScrollReveal>` - IntersectionObserver-based fade-up. Threshold 0.12, rootMargin -8% bottom. Use everywhere on marketing pages.
-
-### Card
-`<Card variant="hover">...</Card>` - variants: default | hover | elevated | accent | glass. Use `CardHeader` for the standard eyebrow + title + tagline + right-slot pattern.
-
-### Buttons
-- `.btn .btn-accent` - gold pill with glow shadow (primary CTA)
-- `.btn .btn-brand` - navy pill (alternative primary)
-- `.btn .btn-ghost` - transparent + border, hover accent
-- `.btn .btn-outline` - gold border, hover full fill
-- `.btn .btn-danger` - red-tinted
-- Modifiers: `.btn-lg`, `.btn-sm`, `.btn-pill`, `.btn-loading`
-- Add `.cta-shimmer` to any primary button for the gold sweep hover
+- **Eyebrow**: `<p className="eyebrow">Practice tests</p>` (red, 13px, sentence case, short rule before it). `HeroBadge` renders the same thing.
+- **Headline underline**: `<PenUnderline>already knowing the test.</PenUnderline>`; may wrap.
+- **Exam paper**: `.sheet` inside `.sheet-stack` (stack + page turn), `.sheet-head`, `.sheet-q`, `.opt` with `.bubble`; grade with `PenCircle` / `PenCheck` / `PenCross` from `components/PenMarks.tsx`; margin note `.sheet-why.is-open`; score card `.report-big` + `.report-circle`.
+- **Buttons**: `.btn .btn-accent` (ink, primary), `.btn .btn-brand` (red pen), `.btn .btn-ghost`, `.btn .btn-outline`, `.btn .btn-danger`; `.btn-sm`, `.btn-lg`, `.btn-pill`.
+- **Chips**: `.chip` (sentence-case sans), `.chip-format` (ink, used for event formats), `.chip-brand`.
+- **Card**: `<Card variant="hover">` + `CardHeader` (eyebrow + title + tagline).
+- **Scroll reveal**: `<ScrollReveal>` only for below-the-fold content; hero entrances use CSS `.rise`.
 
 ---
 
@@ -342,10 +301,10 @@ Open http://localhost:3000.
 
 ## Deployment
 
-- **Frontend**: push to `main` → Vercel auto-deploys (once GitHub + Vercel are connected, see README).
-- **Env vars on Vercel**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- **Domain**: `fbla.one` (bought 2026-05-27, DNS not yet pointed at Vercel).
-- **Supabase migrations**: paste `supabase/migrations/0001_init.sql` into the Supabase SQL Editor. Idempotent.
+- **Frontend**: push to `main` and Vercel auto-deploys to `chapterprep.com`.
+- **Env vars on Vercel and in `.env.local`**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_ADMIN_EMAIL`.
+- **Supabase migrations**: Vinay pastes each new file into the Supabase SQL Editor (Claude prints it in chat). All are idempotent. After applying, run that migration's `_*_test.mjs` live check.
+- **Version**: bump `lib/version.ts` and add a CHANGELOG entry each release.
 
 ---
 

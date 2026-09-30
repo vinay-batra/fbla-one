@@ -1,6 +1,6 @@
 # ChapterPrep
 
-AI-powered all-in-one platform for FBLA chapters: competition guides, AI practice tests, prep tracker, deadline calendar, and advisor dashboard.
+AI-powered all-in-one platform for FBLA chapters: every competitive event verified against FBLA's guidelines, AI practice tests checked by a second model, an AI judge for role plays and presentations, a mistake bank, Mock Regionals for chapter meetings, and an advisor readiness report.
 
 **Live at [chapterprep.com](https://chapterprep.com)** · Pilot: Council Rock High School South
 
@@ -8,9 +8,9 @@ AI-powered all-in-one platform for FBLA chapters: competition guides, AI practic
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `chapterprep.com` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0017, all applied + verified live: RLS 18/18, leaderboard 8/8, audit-remediation 0017 verified). |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0019, all applied + verified live; Mock Regionals 47/47, readiness 36/36). |
 | Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
-| AI | Anthropic `claude-haiku-4-5` -- practice-test generation (`/api/practice-test`, streamed) + public chat (`/api/ai-chat`), via `ANTHROPIC_API_KEY` |
+| AI | Anthropic via `ANTHROPIC_API_KEY`: `claude-haiku-4-5` writes practice questions (`/api/practice-test`) and runs the public chat; `claude-sonnet-5` checks every question (`/api/verify-questions`) and powers the AI Judge (`/api/judge`) |
 
 See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHANGELOG.md) for version history.
 
@@ -41,7 +41,7 @@ Sign up (as a student or advisor), pick your event, then everything lives in the
 ## Stack
 
 - **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19
-- **Styling**: CSS variables only (no Tailwind), Inter + Space Mono + Space Grotesk via `@import`
+- **Styling**: CSS variables only (no Tailwind), paper-and-ink theme; Inter + Fraunces (headings) via `next/font`
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`)
 - **AI**: `@anthropic-ai/sdk` -- streaming practice test generation via `/api/practice-test`
 - **Hosting**: Vercel (frontend + edge functions), Supabase Postgres (DB)
@@ -204,8 +204,8 @@ See `CLAUDE.md` for the full list. Non-negotiable:
 
 - CSS variables only - never hardcode hex colors.
 - Theme via `data-theme="dark"|"light"` on `<html>`. localStorage key: `fbla_theme`.
-- No emojis in UI. No em dashes in source files.
-- Space Mono for numbers, eyebrows, chips.
+- No emojis. No em dashes anywhere. Spell it "advisor".
+- Paper and ink with one accent, the red pen. Fraunces for headings. No blue, teal or glow.
 - `proxy.ts` not `middleware.ts` (Next.js 16).
 - `await params` in every dynamic route (Next.js 16).
 - New `public.*` tables need explicit GRANTs (see migration 0003).
