@@ -61,7 +61,7 @@ const SLIDES: Slide[] = [
   },
   {
     id: "simulation",
-    tab: "Practice under pressure",
+    tab: "Under pressure",
     title: "Practice under pressure.",
     body: "100 custom event questions in 50 minutes. It turns itself in at zero.",
     elsewhere: "you get questions, not a timed paper that grades itself.",
