@@ -161,7 +161,7 @@ export default function ResourcesPage() {
                             <Link
                               href={`/competitions/${comp.slug}`}
                               className="chip chip-brand"
-                              style={{ fontSize: 10, padding: "2px 8px", textDecoration: "none" }}
+                              style={{ fontSize: 11.5, padding: "2px 8px", textDecoration: "none" }}
                             >
                               {comp.name}
                             </Link>
@@ -173,7 +173,7 @@ export default function ResourcesPage() {
                       </div>
 
                       {/* Date */}
-                      <span className="font-mono" style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>
+                      <span className="font-mono" style={{ fontSize: 11.5, color: "var(--text-muted)", flexShrink: 0 }}>
                         {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
 

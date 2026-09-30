@@ -216,7 +216,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
                 <p
                   className="font-mono"
                   style={{
-                    fontSize: 10,
+                    fontSize: 11.5,
                     letterSpacing: "0.14em",
                     color: "var(--text-muted)",
                     textTransform: "uppercase",
@@ -233,7 +233,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
               <p
                 className="font-mono"
                 style={{
-                  fontSize: 10,
+                  fontSize: 11.5,
                   letterSpacing: "0.14em",
                   color: "var(--text-muted)",
                   textTransform: "uppercase",
@@ -288,8 +288,8 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
             aria-controls="app-sidebar"
             className="mi-btn app-burger"
             style={{
-              width: 36,
-              height: 36,
+              width: 44,
+              height: 44,
               borderRadius: 999,
               display: "none",
               alignItems: "center",

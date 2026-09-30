@@ -51,7 +51,7 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
               className="font-mono"
               style={{
                 flexShrink: 0,
-                fontSize: 9,
+                fontSize: 11,
                 letterSpacing: "0.14em",
                 color: "var(--accent)",
                 fontWeight: 700,
@@ -84,7 +84,7 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
             </a>
 
             {/* External link icon */}
-            <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label="Open link" style={{ flexShrink: 0, color: "var(--text3)", display: "flex" }}>
+            <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label="Open link" style={{ flexShrink: 0, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <path d="M15 3h6v6" />
@@ -104,6 +104,9 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
                 border: "none",
                 cursor: "pointer",
                 padding: 4,
+                minWidth: 44,
+                minHeight: 44,
+                justifyContent: "center",
                 color: isSaved ? "var(--accent)" : "var(--text3)",
                 transition: "color 0.15s",
                 display: "flex",

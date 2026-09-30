@@ -25,6 +25,7 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
       style={{
         display: "inline-flex",
         alignItems: "center",
+        minHeight: 44,
         gap: s.gap,
         fontFamily: "var(--font-serif)",
         fontWeight: 600,

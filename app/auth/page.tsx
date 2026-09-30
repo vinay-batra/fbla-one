@@ -204,6 +204,9 @@ function AuthForm() {
           <Link
             href="/"
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              minHeight: 44,
               fontSize: 13,
               color: "var(--text3)",
               textDecoration: "none",
@@ -457,7 +460,7 @@ function AuthForm() {
                 <span
                   className="font-mono"
                   style={{
-                    fontSize: 9,
+                    fontSize: 11,
                     color: "var(--text3)",
                     letterSpacing: "0.22em",
                     fontWeight: 600,
@@ -592,7 +595,7 @@ function AuthForm() {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 5,
-                    fontSize: 10,
+                    fontSize: 11.5,
                     color: "var(--text3)",
                     fontWeight: 500,
                     letterSpacing: 0.2,

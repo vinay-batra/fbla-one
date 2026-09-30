@@ -124,7 +124,7 @@ export default function AdminSignupsPage() {
 const th: React.CSSProperties = {
   textAlign: "left",
   padding: "10px 14px",
-  fontSize: 9,
+  fontSize: 11,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   color: "var(--text-muted)",

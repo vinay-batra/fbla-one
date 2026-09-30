@@ -111,7 +111,7 @@ export function DeadlineAlert() {
 
             <span
               className="font-mono"
-              style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}
+              style={{ fontSize: 11.5, fontWeight: 700, color, flexShrink: 0 }}
             >
               {isToday ? "TODAY" : `${days}d left`}
             </span>

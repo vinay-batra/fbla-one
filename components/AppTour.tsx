@@ -185,7 +185,7 @@ export function AppTour() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-          <span className="font-mono" style={{ fontSize: 10, letterSpacing: "0.18em", color: "var(--accent)", fontWeight: 700, textTransform: "uppercase" }}>
+          <span className="font-mono" style={{ fontSize: 11.5, letterSpacing: "0.18em", color: "var(--accent)", fontWeight: 700, textTransform: "uppercase" }}>
             {step + 1} / {STEPS.length}
           </span>
           <button type="button" onClick={finish} aria-label="Skip tour" style={{ fontSize: 12, color: "var(--text3)", cursor: "pointer" }}>

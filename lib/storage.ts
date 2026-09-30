@@ -10,6 +10,14 @@
 import { getSupabase } from "./supabase";
 import { getCompetition } from "./competitions";
 
+/**
+ * Per-topic tally carried on a practice log (practice_logs.topic_results,
+ * migration 0019). For an AI practice test: questions right / questions asked
+ * per topic. For an AI Judge round: rating-sheet points earned / points
+ * possible per criterion (judge rows are never mixed into weak-topic analysis).
+ */
+export type TopicResult = { topic: string; correct: number; total: number };
+
 export type PracticeLog = {
   id: string;
   competitionSlug: string;
@@ -18,6 +26,8 @@ export type PracticeLog = {
   durationMin: number | null;
   notes: string;
   loggedAt: string;
+  /** Optional; absent on manual tracker rows and on logs written before 0019. */
+  topicResults?: TopicResult[] | null;
 };
 
 export type SavedResource = {
@@ -144,7 +154,7 @@ export async function pullFromSupabase(userId: string): Promise<void> {
       { data: saved, error: savedErr },
     ] = await Promise.all([
       supa.from("registrations").select("competition_slug").eq("user_id", userId),
-      supa.from("practice_logs").select("id, competition_slug, score, out_of, duration_min, notes, logged_at").eq("user_id", userId).order("logged_at", { ascending: false }),
+      selectOwnLogs(userId),
       supa.from("saved_resources").select("id, competition_slug, title, url, note, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
     ]);
     if (regsErr || logsErr || savedErr) devError("pullFromSupabase queries:", regsErr || logsErr || savedErr);
@@ -168,19 +178,24 @@ export async function pullFromSupabase(userId: string): Promise<void> {
     }
 
     // ── Practice logs: union by id, push local-only up ──
-    const remoteLogs: PracticeLog[] = (logs ?? []).map(dbToLog);
-    const remoteLogIds = new Set(remoteLogs.map((l) => l.id));
     const localLogs = getPracticeLogs();
+    const localById = new Map(localLogs.map((l) => [l.id, l]));
+    // A tally recorded while 0019 was not applied yet only exists locally; keep
+    // it rather than letting the column-less remote copy erase it.
+    const remoteLogs: PracticeLog[] = ((logs ?? []) as unknown as Record<string, unknown>[]).map((r) => {
+      const remote = dbToLog(r);
+      const local = localById.get(remote.id);
+      if (!remote.topicResults && local?.topicResults?.length) remote.topicResults = local.topicResults;
+      return remote;
+    });
+    const remoteLogIds = new Set(remoteLogs.map((l) => l.id));
     const onlyLocalLogs = localLogs.filter((l) => !remoteLogIds.has(l.id));
     if (onlyLocalLogs.length) {
       // upsert (not insert) so an id already present remotely - e.g. a just-added
       // log whose async insert raced this pull, or a concurrent DataSync run -
       // is a no-op instead of failing the whole batch (23505) and dropping the
       // genuinely-new rows with it.
-      await supa.from("practice_logs").upsert(
-        onlyLocalLogs.map((l) => logToDb(l, userId)),
-        { onConflict: "id", ignoreDuplicates: true }
-      );
+      await writeLogsToDb(onlyLocalLogs, userId, "upsert");
     }
     const mergedLogs = [...remoteLogs, ...onlyLocalLogs].sort(
       (a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
@@ -248,7 +263,7 @@ export function clearSyncedData(): void {
 }
 
 function dbToLog(r: Record<string, unknown>): PracticeLog {
-  return {
+  const log: PracticeLog = {
     id: String(r.id),
     competitionSlug: String(r.competition_slug),
     score: r.score == null ? null : Number(r.score),
@@ -257,10 +272,13 @@ function dbToLog(r: Record<string, unknown>): PracticeLog {
     notes: (r.notes as string) ?? "",
     loggedAt: String(r.logged_at),
   };
+  const topics = parseTopicResults(r.topic_results);
+  if (topics) log.topicResults = topics;
+  return log;
 }
 
-function logToDb(l: PracticeLog, userId: string) {
-  return {
+function logToDb(l: PracticeLog, userId: string, withTopics: boolean) {
+  const row: Record<string, unknown> = {
     id: l.id,
     user_id: userId,
     competition_slug: l.competitionSlug,
@@ -270,6 +288,87 @@ function logToDb(l: PracticeLog, userId: string) {
     notes: l.notes,
     logged_at: l.loggedAt,
   };
+  if (withTopics) row.topic_results = l.topicResults?.length ? l.topicResults : null;
+  return row;
+}
+
+/* ───── topic_results column (migration 0019), with graceful fallback ─────
+   The app ships before 0019 is applied. Until then PostgREST rejects any read
+   or write that names topic_results (42703 on select, PGRST204 on insert). We
+   detect that once, remember it for the session, and retry without the column,
+   so a log is never lost and a pull never fails because of it. */
+
+const LOG_COLS = "id, competition_slug, score, out_of, duration_min, notes, logged_at";
+let topicColumnMissing = false;
+
+type PgErr = { code?: string; message?: string } | null | undefined;
+
+/** True when an error means the topic_results column does not exist yet. */
+export function isMissingTopicColumn(err: PgErr): boolean {
+  if (!err) return false;
+  const msg = (err.message ?? "").toLowerCase();
+  if (!msg.includes("topic_results")) return false;
+  return (
+    err.code === "42703" || err.code === "PGRST204" ||
+    msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("could not find")
+  );
+}
+
+/** A check-constraint rejection (23514): the tally was malformed or oversized. */
+function isCheckViolation(err: PgErr): boolean {
+  return !!err && err.code === "23514";
+}
+
+async function selectOwnLogs(userId: string) {
+  const supa = getSupabase()!;
+  const run = (cols: string) =>
+    supa.from("practice_logs").select(cols).eq("user_id", userId).order("logged_at", { ascending: false });
+  if (!topicColumnMissing) {
+    const res = await run(`${LOG_COLS}, topic_results`);
+    if (!isMissingTopicColumn(res.error)) return res;
+    topicColumnMissing = true;
+  }
+  return run(LOG_COLS);
+}
+
+/** Insert (or upsert-ignore) practice logs, falling back to no topic_results. */
+async function writeLogsToDb(logs: PracticeLog[], userId: string, mode: "insert" | "upsert"): Promise<void> {
+  const supa = getSupabase();
+  if (!supa || logs.length === 0) return;
+  const send = (withTopics: boolean) => {
+    const rows = logs.map((l) => logToDb(l, userId, withTopics));
+    return mode === "insert"
+      ? supa.from("practice_logs").insert(rows)
+      : supa.from("practice_logs").upsert(rows, { onConflict: "id", ignoreDuplicates: true });
+  };
+  const anyTopics = logs.some((l) => l.topicResults?.length);
+  let { error } = await send(anyTopics && !topicColumnMissing);
+  if (error && anyTopics && !topicColumnMissing && (isMissingTopicColumn(error) || isCheckViolation(error))) {
+    if (isMissingTopicColumn(error)) topicColumnMissing = true;
+    ({ error } = await send(false));
+  }
+  if (error) devError(`practice_logs ${mode} sync:`, error);
+}
+
+const TOPIC_MAX_ITEMS = 40;
+const TOPIC_MAX_LEN = 120;
+
+/** Validate + clamp a topic_results value (from the DB or a caller) into a safe array. */
+export function parseTopicResults(v: unknown): TopicResult[] | null {
+  if (!Array.isArray(v)) return null;
+  const out: TopicResult[] = [];
+  for (const item of v) {
+    if (!item || typeof item !== "object") continue;
+    const r = item as Record<string, unknown>;
+    const topic = typeof r.topic === "string" ? r.topic.trim().slice(0, TOPIC_MAX_LEN) : "";
+    const total = Math.round(Number(r.total));
+    const correct = Math.round(Number(r.correct));
+    if (!topic || !Number.isFinite(total) || !Number.isFinite(correct)) continue;
+    if (total < 1 || total > 1000 || correct < 0 || correct > total) continue;
+    out.push({ topic, correct, total });
+    if (out.length >= TOPIC_MAX_ITEMS) break;
+  }
+  return out.length ? out : null;
 }
 
 function dbToSaved(r: Record<string, unknown>): SavedResource {
@@ -353,16 +452,63 @@ export function getPracticeLogs(): PracticeLog[] {
   return read<PracticeLog[]>(KEYS.practice, []);
 }
 
+/**
+ * Record a practice session. `topicResults` is optional: pass a per-topic
+ * tally (see toTopicResults) and it is stored locally and synced to
+ * practice_logs.topic_results, where the advisor readiness report reads it.
+ * Before migration 0019 the tally stays local and the row still syncs.
+ */
 export function addPracticeLog(log: Omit<PracticeLog, "id" | "loggedAt">): PracticeLog {
-  const entry: PracticeLog = { ...log, id: cryptoId(), loggedAt: new Date().toISOString() };
+  const { topicResults, ...rest } = log;
+  const topics = parseTopicResults(topicResults);
+  const entry: PracticeLog = { ...rest, id: cryptoId(), loggedAt: new Date().toISOString() };
+  if (topics) entry.topicResults = topics;
   write(KEYS.practice, [entry, ...getPracticeLogs()]);
-  if (syncUserId) {
-    const supa = getSupabase();
-    supa?.from("practice_logs")
-      .insert(logToDb(entry, syncUserId))
-      .then(({ error }) => error && devError("addPracticeLog sync:", error));
-  }
+  if (syncUserId) void writeLogsToDb([entry], syncUserId, "insert");
   return entry;
+}
+
+/**
+ * Patch an existing log in place (used to add the Judge Q&A round to the log
+ * written when the main score came back). Only notes / score / duration /
+ * topicResults can change; id, event and timestamp are fixed.
+ */
+export function updatePracticeLog(
+  id: string,
+  patch: Partial<Pick<PracticeLog, "notes" | "score" | "outOf" | "durationMin" | "topicResults">>
+): void {
+  const logs = getPracticeLogs();
+  const cur = logs.find((l) => l.id === id);
+  if (!cur) return;
+  const next: PracticeLog = { ...cur, ...patch };
+  if ("topicResults" in patch) {
+    const topics = parseTopicResults(patch.topicResults);
+    if (topics) next.topicResults = topics;
+    else delete next.topicResults;
+  }
+  write(KEYS.practice, logs.map((l) => (l.id === id ? next : l)));
+  if (!syncUserId) return;
+  const supa = getSupabase();
+  if (!supa) return;
+  const row: Record<string, unknown> = {};
+  if ("notes" in patch) row.notes = next.notes;
+  if ("score" in patch) row.score = next.score;
+  if ("outOf" in patch) row.out_of = next.outOf;
+  if ("durationMin" in patch) row.duration_min = next.durationMin;
+  const withTopics = "topicResults" in patch && !topicColumnMissing;
+  if (withTopics) row.topic_results = next.topicResults ?? null;
+  const uid = syncUserId;
+  const send = (r: Record<string, unknown>) =>
+    supa.from("practice_logs").update(r).eq("user_id", uid).eq("id", id);
+  send(row).then(async ({ error }) => {
+    if (error && withTopics && (isMissingTopicColumn(error) || isCheckViolation(error))) {
+      if (isMissingTopicColumn(error)) topicColumnMissing = true;
+      delete row.topic_results;
+      if (Object.keys(row).length === 0) return;
+      ({ error } = await send(row));
+    }
+    if (error) devError("updatePracticeLog sync:", error);
+  });
 }
 
 export function removePracticeLog(id: string): void {
@@ -404,6 +550,25 @@ export function recordTopicResults(slug: string, results: { topic: string; corre
     forSlug[t] = { correct: cur.correct + (r.correct ? 1 : 0), total: cur.total + 1 };
   }
   write(KEYS.topicStats, { ...all, [slug]: forSlug });
+}
+
+/**
+ * Collapse per-question results into one tally per topic, canonicalized the
+ * same way as recordTopicResults, ready for addPracticeLog({ topicResults }).
+ */
+export function toTopicResults(slug: string, results: { topic: string; correct: boolean }[]): TopicResult[] {
+  const known = getCompetition(slug)?.topics ?? [];
+  const canon = (t: string) => known.find((k) => k.toLowerCase() === t.trim().toLowerCase()) ?? t.trim();
+  const byTopic = new Map<string, TopicResult>();
+  for (const r of results) {
+    const t = canon(r.topic || "").slice(0, TOPIC_MAX_LEN);
+    if (!t) continue;
+    const cur = byTopic.get(t) ?? { topic: t, correct: 0, total: 0 };
+    cur.total += 1;
+    if (r.correct) cur.correct += 1;
+    byTopic.set(t, cur);
+  }
+  return Array.from(byTopic.values()).slice(0, TOPIC_MAX_ITEMS);
 }
 
 export type WeakTopic = { topic: string; correct: number; total: number; pct: number };

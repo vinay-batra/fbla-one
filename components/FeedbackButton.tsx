@@ -217,14 +217,14 @@ export function FeedbackButton() {
               ) : (
                 <>
                   <div style={{ marginBottom: 14 }}>
-                    <label htmlFor="feedback-type" className="font-mono" style={{ display: "block", fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Type</label>
+                    <label htmlFor="feedback-type" className="font-mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Type</label>
                     <select id="feedback-type" value={type} onChange={(e) => setType(e.target.value as FeedbackType)} className="input-field" style={{ width: "100%", cursor: "pointer" }}>
                       {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
-                    <label htmlFor="feedback-message" className="font-mono" style={{ display: "block", fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Message</label>
+                    <label htmlFor="feedback-message" className="font-mono" style={{ display: "block", fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Message</label>
                     <textarea
                       ref={textareaRef}
                       id="feedback-message"

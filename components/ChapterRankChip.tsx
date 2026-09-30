@@ -48,7 +48,7 @@ export function ChapterRankChip() {
         </svg>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p className="font-mono" style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700 }}>Chapter rank</p>
+        <p className="font-mono" style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700 }}>Chapter rank</p>
         <p style={{ fontSize: 15, fontWeight: 600, color: "var(--text)", marginTop: 2 }}>
           #{info.rank} <span style={{ color: "var(--text3)", fontWeight: 400 }}>of {info.total}</span>
           <span style={{ color: "var(--text3)", fontWeight: 400, fontSize: 13 }}> · {top ? "leading your chapter" : "keep climbing"}</span>

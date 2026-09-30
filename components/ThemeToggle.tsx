@@ -11,8 +11,9 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
       style={{
-        width: 36,
-        height: 36,
+        width: 44,
+        height: 44,
+        flexShrink: 0,
         borderRadius: 999,
         display: "inline-flex",
         alignItems: "center",

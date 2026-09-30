@@ -174,8 +174,8 @@ export function PublicNav() {
               aria-controls="mobile-nav-drawer"
               className="nav-burger mi-btn"
               style={{
-                width: 36,
-                height: 36,
+                width: 44,
+                height: 44,
                 borderRadius: 999,
                 display: "none",
                 alignItems: "center",

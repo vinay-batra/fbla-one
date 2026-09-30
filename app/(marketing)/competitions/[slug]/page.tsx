@@ -105,7 +105,8 @@ export default async function CompetitionDetail({ params }: Props) {
               fontSize: 13,
               color: "var(--text3)",
               fontWeight: 600,
-              marginBottom: 24,
+              minHeight: 44,
+              marginBottom: 12,
               transition: "color 0.15s ease",
             }}
           >

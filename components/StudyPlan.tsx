@@ -85,7 +85,7 @@ export function StudyPlan() {
                 background: isNext ? "var(--accent-dim)" : "var(--bg2)",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, fontFamily: "var(--font-mono)", background: passed ? "var(--green)" : isNext ? "var(--accent)" : "var(--bg3)", color: passed || isNext ? "#0a1322" : "var(--text3)" }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-mono)", background: passed ? "var(--green)" : isNext ? "var(--accent)" : "var(--bg3)", color: passed || isNext ? "#0a1322" : "var(--text3)" }}>
                     {passed ? (
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0a1322" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
                     ) : (
@@ -99,10 +99,10 @@ export function StudyPlan() {
                   value={iso ?? ""}
                   onChange={(e) => setMilestone(s.level, e.target.value || null)}
                   className="input-field"
-                  style={{ width: "100%", fontSize: 12, padding: "6px 8px", colorScheme: "dark" }}
+                  style={{ width: "100%", fontSize: 12, padding: "6px 8px", minHeight: 44 }}
                   aria-label={`${s.label} date`}
                 />
-                <p style={{ fontSize: 10.5, color: "var(--text3)", marginTop: 6 }}>{iso ? (passed ? "Done" : `${fmt(iso)} · ${daysUntil(iso)}d`) : s.note}</p>
+                <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>{iso ? (passed ? "Done" : `${fmt(iso)} · ${daysUntil(iso)}d`) : s.note}</p>
               </div>
             );
           })}

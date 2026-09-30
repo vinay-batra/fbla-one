@@ -119,6 +119,9 @@
   box-shadow: 0 10px 24px -12px rgba(23, 24, 28, 0.6);
 }
 .ed-textlink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
