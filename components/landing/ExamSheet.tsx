@@ -103,9 +103,28 @@ function PenCross() {
   );
 }
 
+/** The score, written in the top margin and circled, the way a teacher grades. */
+function PenScore({ right, done }: { right: number; done: number }) {
+  return (
+    <div className="sheet-score" aria-hidden="true">
+      <span>
+        {right}/{done}
+      </span>
+      {/* keyed on `done` so the circle is redrawn each time the score changes */}
+      <svg key={done} className="pen pen-score-circle" viewBox="0 0 64 44">
+        <path d="M10 16C16 6 38 3 50 8c10 5 11 17 3 25-9 8-30 9-40 2C5 30 5 21 12 14c4-4 11-6 17-6" />
+      </svg>
+    </div>
+  );
+}
+
 export function ExamSheet() {
   const [qi, setQi] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
+  // Running tally across questions, shown as a red-pen score once you answer.
+  const [tally, setTally] = useState({ right: 0, done: 0 });
+  // "out" lifts the sheet off the stack; "in" lays the next one down.
+  const [turn, setTurn] = useState<"idle" | "out" | "in">("idle");
   const liveRef = useRef<HTMLParagraphElement>(null);
   const q = QUESTIONS[qi];
   const answered = picked !== null;
@@ -119,14 +138,43 @@ export function ExamSheet() {
     if (advanced.current) firstOptRef.current?.focus();
   }, [qi]);
 
-  const next = () => {
+  const pick = (i: number) => {
+    if (picked !== null) return;
+    setPicked(i);
+    setTally((t) => ({ right: t.right + (i === q.correct ? 1 : 0), done: t.done + 1 }));
+  };
+
+  const swapQuestion = () => {
     advanced.current = true;
     setPicked(null);
     setQi((i) => (i + 1) % QUESTIONS.length);
   };
 
+  const next = () => {
+    if (turn !== "idle") return;
+    const reduced =
+      typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      swapQuestion();
+      return;
+    }
+    // Lift the sheet off, swap the question while it is out of view, then lay
+    // the new page down. Timings match the sheet-out / sheet-in keyframes.
+    setTurn("out");
+    window.setTimeout(() => {
+      swapQuestion();
+      setTurn("in");
+      window.setTimeout(() => setTurn("idle"), 360);
+    }, 280);
+  };
+
   return (
-    <div className="sheet" aria-label="Sample practice question">
+    <div className="sheet-stack">
+    <div
+      className={`sheet${turn === "out" ? " turn-out" : turn === "in" ? " turn-in" : ""}`}
+      aria-label="Sample practice question"
+    >
+      {tally.done > 0 && <PenScore right={tally.right} done={tally.done} />}
       <div className="sheet-head">
         <span className="sheet-meta">
           Question {q.number} <span className="sheet-of">of 50</span>
@@ -149,7 +197,7 @@ export function ExamSheet() {
               className={`opt${state}`}
               aria-pressed={isPicked}
               disabled={answered}
-              onClick={() => setPicked(i)}
+              onClick={() => pick(i)}
             >
               <span className="bubble">
                 {LETTERS[i]}
@@ -194,6 +242,7 @@ export function ExamSheet() {
           <span key={i} className={i === qi ? "on" : ""} />
         ))}
       </div>
+    </div>
     </div>
   );
 }
