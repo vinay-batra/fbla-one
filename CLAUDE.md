@@ -162,7 +162,8 @@ There's a self-contained integration test pattern (used twice this session to ca
 
 ## Stack
 
-- **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19. Read `node_modules/next/dist/docs` before assuming an API (see AGENTS.md).
+- **Framework**: Next.js 16.3.8 (App Router, Turbopack), TypeScript, React 19. Read `node_modules/next/dist/docs` before assuming an API (see AGENTS.md).
+  - **16.3 notes (upgraded Sept 30, 2026 for the Proxy-bypass/Server Actions/next/og advisories; 16.2.x has no patched release for the next/og RCE):** `next build` now keeps a Turbopack cache in `.next/cache` by default (about 76MB here; `rm -rf .next` is safe when disk is low). `next dev` upserts the `nextjs-agent-rules` block in AGENTS.md when it detects a coding agent; its template contains em dashes, so if it rewrites that block, do not commit the rewrite without asking Vinay. New lint rule `@next/next/no-location-assign-relative-destination` warns on the intentional full reload in AppShell's Exit preview (warning only). The gitignored `_*.mjs` scripts are linted too: never name a helper `use` (react-hooks reads it as React's `use`).
 - **Styling**: CSS variables only (no Tailwind). Fonts via `next/font` in `app/layout.tsx` (self-hosted): Inter (body), Fraunces (`--font-serif`, all headings), Space Mono (exam sheet only), Space Grotesk (loaded, barely used).
 - **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0020 in `supabase/migrations/`, all applied to prod.
 - **AI**: Anthropic SDK. claude-haiku-4-5 generates practice questions (calculator tool loop) and runs the public chat; claude-sonnet-5 verifies every question and powers the AI Judge.
