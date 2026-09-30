@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useSignedIn } from "@/components/useSignedIn";
 
 interface Message {
   role: "user" | "assistant";
@@ -69,8 +70,11 @@ function PublicAIChatInner() {
   const panelRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Signed-in accounts have a larger server-side cap (lib/ai-quota), so the
+  // local 7-message counter only applies to signed-out visitors.
+  const signedIn = useSignedIn() === true;
   const remaining = Math.max(0, DAILY_LIMIT - used);
-  const atLimit = remaining <= 0;
+  const atLimit = !signedIn && remaining <= 0;
 
   // Watch the global data-theme attribute set by the theme toggle.
   const [dark, setDark] = useState(true);
@@ -262,9 +266,11 @@ function PublicAIChatInner() {
               Ask ChapterPrep
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "var(--text3)", letterSpacing: 0.3 }}>
-                {remaining} / {DAILY_LIMIT} today
-              </span>
+              {!signedIn && (
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 12, color: "var(--text3)", letterSpacing: 0.3 }}>
+                  {remaining} / {DAILY_LIMIT} today
+                </span>
+              )}
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close"

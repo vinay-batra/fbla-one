@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
 import { COMPETITIONS, FORMAT_LABEL } from "@/lib/competitions";
 
 // The real event list, so the chat never has to guess which events are tests,
@@ -16,10 +17,9 @@ IMPORTANT: ChapterPrep is an independent student project. It is NOT affiliated w
 Here is every high school event and how it is judged. Use only this list for event names and formats; never call an event a role play, test or presentation unless this list says so. If something is not covered here, say you are not sure and point to the event's page on chapterprep.com/competitions.
 ${EVENT_LIST}`;
 
-// Per-IP cap for unauthenticated public AI chat: 7 messages / IP / 24h
-// (signed-in users are unlimited). Simple in-memory sliding window - the same
-// limiter Corvo and Lark use (lib/rate-limit). Per serverless instance, which is
-// enough for Vercel's single region to stop runaway abuse.
+// Signed out: 7 messages per IP per day; signed in: 60 per account per day.
+// The daily caps live in Supabase (lib/ai-quota, migration 0021). The
+// in-memory window below is only a burst guard per serverless instance.
 const IP_LIMIT = 7;
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -49,16 +49,16 @@ function sanitizeMessages(raw: unknown): ChatMsg[] | null {
   return capped.length ? capped : null;
 }
 
-async function isSignedIn(): Promise<boolean> {
+async function signedInUserId(): Promise<string | null> {
   try {
     const supabase = await getSupabaseServer();
-    if (!supabase) return false;
+    if (!supabase) return null;
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    return !!user;
+    return user?.id ?? null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -70,16 +70,13 @@ export async function POST(req: NextRequest) {
     return Response.json({ content: "Message too large." }, { status: 413 });
   }
 
-  // Signed-in users are unlimited on public AI chat.
-  const signedIn = await isSignedIn();
+  const userId = await signedInUserId();
 
-  if (!signedIn) {
-    if (!rateLimit(`aichat:${getClientIP(req)}`, IP_LIMIT, WINDOW_MS)) {
-      return Response.json(
-        { content: "You've used all 7 free messages for today. Sign up for free to keep going." },
-        { status: 429 }
-      );
-    }
+  if (!userId && !rateLimit(`aichat:${getClientIP(req)}`, IP_LIMIT, WINDOW_MS)) {
+    return Response.json({ content: quotaMessage("chat", false) }, { status: 429 });
+  }
+  if (!(await consumeDailyQuota(userId ? { userId } : { ip: getClientIP(req) }, "chat"))) {
+    return Response.json({ content: quotaMessage("chat", !!userId) }, { status: 429 });
   }
 
   try {

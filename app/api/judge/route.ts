@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition, FORMAT_LABEL, type Competition } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
+import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
 import {
   criteriaFor,
   judgeModeFor,
@@ -542,8 +543,10 @@ export async function POST(req: Request): Promise<Response> {
   const cookieStore = await cookies();
   const inPreview = cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
+  let identity: { userId: string } | { ip: string };
   if (inPreview) {
     rateKey = `judge:preview:${getClientIP(req)}`;
+    identity = { ip: getClientIP(req) };
   } else {
     const supabase = await getSupabaseServer();
     const user = supabase ? (await supabase.auth.getUser()).data.user : null;
@@ -551,6 +554,7 @@ export async function POST(req: Request): Promise<Response> {
       return json({ error: "Sign in to practice with the judge." }, 401);
     }
     rateKey = `judge:user:${user.id}`;
+    identity = { userId: user.id };
   }
   // Caps judge calls per identity in a 10-minute window (lib/rate-limit, the
   // same in-memory sliding window the practice-test route uses). Keys are
@@ -577,6 +581,12 @@ export async function POST(req: Request): Promise<Response> {
   const eventMode = judgeModeFor(comp.format);
   if (!eventMode) {
     return json({ error: "This event is a written test only. Use AI Practice for it." }, 400);
+  }
+
+  // Daily cap, one per judge call (a round is a card plus a score, and a
+  // presentation adds follow-up questions).
+  if (!(await consumeDailyQuota(identity, "judge"))) {
+    return json({ error: quotaMessage("judge", "userId" in identity) }, 429);
   }
 
   // One attempt, bounded under maxDuration. A retry after a slow timeout would

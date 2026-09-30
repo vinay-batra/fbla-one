@@ -5,6 +5,7 @@ import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
 import { evaluateExpression } from "@/lib/calc";
+import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
 
 // A 50-question Haiku generation can run well past Vercel's plan default
 // function timeout (~10-15s), which would sever the stream mid-test. Pin the
@@ -108,8 +109,10 @@ export async function POST(req: Request): Promise<Response> {
   const cookieStore = await cookies();
   const inPreview = cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
+  let identity: { userId: string } | { ip: string };
   if (inPreview) {
     rateKey = `preview:${getClientIP(req)}`;
+    identity = { ip: getClientIP(req) };
   } else {
     const supabase = await getSupabaseServer();
     const user = supabase ? (await supabase.auth.getUser()).data.user : null;
@@ -120,6 +123,7 @@ export async function POST(req: Request): Promise<Response> {
       });
     }
     rateKey = `user:${user.id}`;
+    identity = { userId: user.id };
   }
   // Caps practice-test generations per identity in a 10-minute window. Simple
   // in-memory sliding window (lib/rate-limit) - the same limiter Corvo and Lark
@@ -159,6 +163,15 @@ export async function POST(req: Request): Promise<Response> {
   if (!comp) {
     return new Response(JSON.stringify({ error: "Competition not found" }), {
       status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Daily cap, counted in questions (lib/ai-quota). Checked last so a bad
+  // request never uses up a student's allowance.
+  if (!(await consumeDailyQuota(identity, "questions", count))) {
+    return new Response(JSON.stringify({ error: quotaMessage("questions", "userId" in identity) }), {
+      status: 429,
       headers: { "Content-Type": "application/json" },
     });
   }

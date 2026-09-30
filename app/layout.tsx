@@ -3,6 +3,7 @@ import { Inter, Space_Mono, Space_Grotesk, Fraunces } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DataSync } from "@/components/DataSync";
 import { GlobalShell } from "@/components/GlobalShell";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 /**
@@ -125,6 +126,9 @@ export default function RootLayout({
           {children}
           <GlobalShell />
         </ThemeProvider>
+        {/* Vercel Web Analytics: page views and referrers, no cookies. Served
+            from this origin (/_vercel/insights), so the CSP needs no change. */}
+        <Analytics />
       </body>
     </html>
   );
