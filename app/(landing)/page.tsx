@@ -149,7 +149,7 @@ export default function Landing() {
         <div className="container">
           <ScrollReveal>
             <div className="ed-close-inner">
-              <h2 className="ed-display ed-display-close">Regionals don&apos;t wait.</h2>
+              <h2 className="ed-display ed-display-close">Winners don&apos;t wait.</h2>
               <p className="ed-lede ed-lede-center">
                 Pick your event and take your first practice test in under a minute. Or leave your
                 email for prep tips before competition season.
