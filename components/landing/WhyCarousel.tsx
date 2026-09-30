@@ -31,13 +31,13 @@ type Slide = {
 };
 
 // Ordered by what persuades most: the chapter, then the judge, then trust,
-// the real clock, and the mistake bank.
+// the full timed simulation, and the mistake bank.
 const SLIDES: Slide[] = [
   {
     id: "chapter",
     tab: "Your chapter",
     title: "Run regionals at your next meeting.",
-    body: "One test on the projector. Everyone joins by phone. See who would place, and who needs help.",
+    body: "One test on the projector. Everyone joins, similar to Kahoot. See who would place, and who needs help.",
     elsewhere: "everyone studies alone, and no one sees who is ready.",
     cta: { href: "/app/chapter", label: "Set up your chapter" },
     visual: (active) => <AdvisorVisual active={active} />,
@@ -55,15 +55,15 @@ const SLIDES: Slide[] = [
     id: "checked",
     tab: "Checked answers",
     title: "Every answer, checked twice.",
-    body: "A second AI solves every question blind. If it disagrees, the question is thrown out. In our testing, 1 in 4 never reached a student.",
+    body: "A second AI solves every question on its own, without the answer key. You only see the questions where both agree.",
     elsewhere: "it answers in one pass, and a wrong answer sounds as sure as a right one.",
     visual: () => <CheckedSheet />,
   },
   {
     id: "simulation",
-    tab: "The real clock",
+    tab: "Practice under pressure",
     title: "Practice under pressure.",
-    body: "100 questions. 50 minutes. Your event's topics. It turns itself in at zero.",
+    body: "100 custom event questions in 50 minutes. It turns itself in at zero.",
     elsewhere: "you get questions, not a timed paper that grades itself.",
     cta: { href: "/app/coach", label: "Take a full simulation" },
     visual: (active) => <SimVisual active={active} />,
