@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { getSupabase } from "@/lib/supabase";
+import { useSignedIn } from "@/components/useSignedIn";
 
 /**
  * Landing-page final CTA. Auth-aware primary button (signed in -> dashboard,
@@ -11,25 +11,10 @@ import { getSupabase } from "@/lib/supabase";
  * `fbla_logged_in` cache PublicNav writes so the right button paints instantly.
  */
 export function EmailCta() {
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const loggedIn = useSignedIn();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-
-  useEffect(() => {
-    const supa = getSupabase();
-    if (!supa) { setLoggedIn(false); return; }
-    try {
-      const c = localStorage.getItem("fbla_logged_in");
-      if (c === "1") setLoggedIn(true);
-      else if (c === "0") setLoggedIn(false);
-    } catch {}
-    supa.auth.getUser().then(({ data }) => {
-      const li = !!data.user;
-      setLoggedIn(li);
-      try { localStorage.setItem("fbla_logged_in", li ? "1" : "0"); } catch {}
-    });
-  }, []);
 
   const submit = async () => {
     const value = email.trim().toLowerCase();
@@ -39,6 +24,9 @@ export function EmailCta() {
       setStatus("error");
       return;
     }
+    // Imported on submit, not at module scope, so the landing page does not
+    // ship the auth SDK to every visitor who never types an email.
+    const { getSupabase } = await import("@/lib/supabase");
     const supa = getSupabase();
     if (!supa) { setErrorMsg("Sign-ups are temporarily unavailable."); setStatus("error"); return; }
     setStatus("loading");

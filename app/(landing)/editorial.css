@@ -1,0 +1,663 @@
+/* ─────────────────────────────────────────────────────────────
+   ChapterPrep landing: "exam paper" editorial identity.
+
+   Everything is scoped under .ed (set by app/(landing)/layout.tsx), so the rest
+   of the site keeps its own look. .ed re-declares the shared design tokens, which
+   means PublicNav, Footer, ChapterShowcase and EmailCta restyle themselves with
+   no changes of their own.
+
+   Two palettes, both contrast-checked on every surface they sit on:
+   - paper (light): warm paper, ink type, fountain-pen blue, red pen
+   - ink   (dark):  warm near-black, cream type, the same pens, lightened
+───────────────────────────────────────────────────────────── */
+
+.ed {
+  --bg: #f5f1e8;
+  --bg2: #ede7da;
+  --bg3: #e4ddcd;
+  --card-bg: #fbf8f1;
+  --card-glass: rgba(251, 248, 241, 0.86);
+  --border: #d9d0bf;
+  --border-dim: #e5dece;
+  --border2: rgba(23, 24, 28, 0.14);
+  --input-bg: #fbf8f1;
+  --input-border: rgba(23, 24, 28, 0.22);
+
+  --text: #17181c;
+  --text1: #17181c;
+  --text2: #3b3d44;
+  --text3: #5c5e65;
+  --text-muted: #5c5e65;
+
+  --brand: #1e3a8a;
+  --brand-rgb: 30, 58, 138;
+  --brand-dim: rgba(30, 58, 138, 0.08);
+  --brand-border: rgba(30, 58, 138, 0.26);
+
+  --accent: #0e6f64;
+  --accent-rgb: 14, 111, 100;
+  --accent-text: #0e6f64;
+  --accent-dim: rgba(14, 111, 100, 0.1);
+  --accent-border: rgba(14, 111, 100, 0.3);
+  --accent-glow: none;
+
+  --red: #b42318;
+  --red-rgb: 180, 35, 24;
+  --green: #11703f;
+  --green-rgb: 17, 112, 63;
+
+  --track: rgba(23, 24, 28, 0.1);
+  --nav-bg: rgba(245, 241, 232, 0.86);
+  /* silver is tuned against white; paper is darker, so it needs more weight */
+  --medal-silver: #5f6470;
+
+  --btn-bg: #17181c;
+  --btn-fg: #f5f1e8;
+  --sheet-shadow: 0 1px 0 rgba(23, 24, 28, 0.04), 0 18px 40px -22px rgba(60, 45, 20, 0.45),
+    0 40px 80px -48px rgba(60, 45, 20, 0.35);
+
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  color: var(--text);
+  background-color: var(--bg);
+  /* Paper tooth: faint warm noise, so the page reads as a surface, not a fill. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.18 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .ed {
+  --bg: #13110e;
+  --bg2: #1a1814;
+  --bg3: #23201b;
+  --card-bg: #1c1a15;
+  --card-glass: rgba(28, 26, 21, 0.86);
+  --border: rgba(240, 233, 218, 0.13);
+  --border-dim: rgba(240, 233, 218, 0.08);
+  --border2: rgba(240, 233, 218, 0.16);
+  --input-bg: #1c1a15;
+  --input-border: rgba(240, 233, 218, 0.24);
+
+  --text: #f0e9da;
+  --text1: #f0e9da;
+  --text2: #cfc6b5;
+  --text3: #a39b8b;
+  --text-muted: #a39b8b;
+
+  --brand: #9db7ff;
+  --brand-rgb: 157, 183, 255;
+  --brand-dim: rgba(157, 183, 255, 0.1);
+  --brand-border: rgba(157, 183, 255, 0.28);
+
+  --accent: #5fd6c2;
+  --accent-rgb: 95, 214, 194;
+  --accent-text: #5fd6c2;
+  --accent-dim: rgba(95, 214, 194, 0.1);
+  --accent-border: rgba(95, 214, 194, 0.3);
+
+  --red: #ff8f80;
+  --red-rgb: 255, 143, 128;
+  --green: #7fd3a1;
+  --green-rgb: 127, 211, 161;
+
+  --track: rgba(240, 233, 218, 0.1);
+  --nav-bg: rgba(19, 17, 14, 0.86);
+
+  --btn-bg: #f0e9da;
+  --btn-fg: #13110e;
+  --sheet-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 22px 50px -24px rgba(0, 0, 0, 0.8);
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Shared chrome inside the editorial page ─────────────── */
+
+/* Primary buttons become ink, not glowing teal. Covers the nav's Sign up and
+   EmailCta. Specificity beats the global dark-mode .btn-accent rule. */
+.ed .btn.btn-accent {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: none;
+}
+.ed .btn.btn-accent:hover:not(:disabled) {
+  filter: none;
+  box-shadow: 0 8px 22px -12px rgba(23, 24, 28, 0.55);
+}
+.ed .cta-shimmer::after { display: none; }
+
+/* The mono, letterspaced eyebrow is the signature of a template; here it is a
+   small sans label behind a short rule. */
+.ed .eyebrow,
+.ed-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--accent-text);
+}
+.ed .eyebrow::before,
+.ed-kicker::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+}
+
+.ed .card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--text3);
+  box-shadow: 0 16px 32px -20px rgba(23, 24, 28, 0.4);
+}
+
+/* ── Type ────────────────────────────────────────────────── */
+
+.ed h1.ed-display,
+.ed h2.ed-display {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 40;
+  font-size: clamp(42px, 5.6vw, 76px);
+  line-height: 1.03;
+  /* Fraunces is already tight at display optical sizes; heavy negative tracking
+     made the word spaces collapse. */
+  letter-spacing: -0.015em;
+  word-spacing: 0.02em;
+  /* No orphaned last word ("test." alone on a line). */
+  text-wrap: balance;
+  color: var(--text);
+  margin-top: 20px;
+}
+.ed h2.ed-h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-variation-settings: "opsz" 120, "SOFT" 40;
+  font-size: clamp(34px, 4.2vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.014em;
+  text-wrap: balance;
+  margin-top: 14px;
+}
+.ed .showcase-head h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-variation-settings: "opsz" 120, "SOFT" 40;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.ed .bento-copy h3 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+}
+
+/* Hand-drawn red-pen underline. A background image with box-decoration-break:
+   clone gives every wrapped line its own stroke, which an absolutely
+   positioned SVG cannot do. Draws in left to right on load. */
+.pen-underline {
+  padding-bottom: 0.06em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M3 8C52 3 104 10 152 6s98-5 145-2' fill='none' stroke='%23b42318' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.2em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: pen-sweep 1s cubic-bezier(0.65, 0, 0.35, 1) 0.55s both;
+}
+[data-theme="dark"] .pen-underline {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'%3E%3Cpath d='M3 8C52 3 104 10 152 6s98-5 145-2' fill='none' stroke='%23ff8f80' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+@keyframes pen-sweep {
+  from { background-size: 0% 0.2em; }
+  to   { background-size: 100% 0.2em; }
+}
+
+.ed-lede {
+  text-wrap: pretty;
+  margin-top: 24px;
+  max-width: 540px;
+  font-size: 18px;
+  line-height: 1.62;
+  color: var(--text2);
+}
+.ed-muted {
+  margin-top: 16px;
+  max-width: 440px;
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--text2);
+}
+.ed-fine {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.ed-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-top: 34px;
+}
+.ed-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 26px;
+  border-radius: 10px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.ed-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -12px rgba(23, 24, 28, 0.6);
+}
+.ed-textlink {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--border);
+  text-underline-offset: 6px;
+  transition: text-decoration-color 0.15s ease;
+}
+.ed-textlink:hover { text-decoration-color: var(--text); }
+
+/* ── Hero ────────────────────────────────────────────────── */
+
+.ed-hero { padding: 64px 0 72px; }
+.ed-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
+}
+.ed-hero-copy { max-width: 580px; }
+
+/* ── The exam sheet ──────────────────────────────────────── */
+
+.sheet {
+  position: relative;
+  padding: 26px 28px 20px;
+  border-radius: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--sheet-shadow);
+  transform: rotate(-0.8deg);
+  text-align: left;
+}
+/* dog-eared corner */
+.sheet::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(225deg, var(--bg) 50%, var(--bg3) 50%, var(--card-bg) 100%);
+  box-shadow: -2px 2px 4px -2px rgba(23, 24, 28, 0.25);
+  border-bottom-left-radius: 3px;
+}
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.sheet-of { text-transform: none; letter-spacing: 0.02em; }
+.sheet-event { color: var(--brand); font-weight: 700; margin-right: 22px; }
+.sheet-q {
+  font-family: var(--font-serif), Georgia, serif;
+  font-variation-settings: "opsz" 30;
+  font-size: 19px;
+  line-height: 1.42;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.sheet-opts { display: flex; flex-direction: column; gap: 4px; }
+.opt {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.25s ease;
+}
+.opt:hover:not(:disabled) { background: var(--bg2); }
+.opt:disabled { cursor: default; }
+.opt.is-dim { opacity: 0.5; }
+.opt.is-correct .opt-text { font-weight: 600; }
+.opt.is-wrong .opt-text {
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+}
+
+/* Scantron-style bubble. Filled in when chosen. */
+.bubble {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.opt[aria-pressed="true"] .bubble {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--card-bg);
+}
+
+/* Red pen marks, drawn in with a stroke animation. */
+.pen {
+  position: absolute;
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  overflow: visible;
+}
+.pen path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: pen-draw 0.55s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.pen-circle { width: 52px; height: 46px; left: -13px; top: -10px; }
+.pen-cross { width: 40px; height: 40px; left: -7px; top: -7px; stroke-width: 3; }
+.pen-cross path { stroke-dasharray: 90; stroke-dashoffset: 90; }
+.pen-check { position: relative; width: 26px; height: 21px; stroke-width: 2.8; }
+.pen-check path { stroke-dasharray: 60; stroke-dashoffset: 60; animation-delay: 0.35s; }
+@keyframes pen-draw { to { stroke-dashoffset: 0; } }
+
+/* Margin note: expands smoothly with grid-template-rows 0fr -> 1fr. */
+.sheet-why {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.sheet-why.is-open { grid-template-rows: 1fr; }
+.why-inner {
+  overflow: hidden;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 24;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--text2);
+}
+.sheet-why.is-open .why-inner {
+  margin-top: 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--red);
+}
+.why-mark { color: var(--red); font-weight: 600; }
+
+.sheet-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.sheet-hint { font-size: 12.5px; color: var(--text3); }
+.sheet-link {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sheet-next {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.sheet-next:hover { background: var(--bg2); border-color: var(--text3); }
+.sheet-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+.sheet-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s ease; }
+.sheet-dots span.on { background: var(--text); }
+
+/* ── Ledger ──────────────────────────────────────────────── */
+
+.ed-ledger {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
+}
+.ed-ledger p {
+  font-family: var(--font-serif), Georgia, serif;
+  font-variation-settings: "opsz" 30;
+  font-size: clamp(16px, 1.9vw, 21px);
+  line-height: 1.6;
+  text-align: center;
+  color: var(--text2);
+}
+.ed-ledger strong { color: var(--text); font-weight: 600; }
+.ed-sep { margin: 0 14px; color: var(--text3); }
+
+/* ── Sections ────────────────────────────────────────────── */
+
+.ed-section { padding: 104px 0; }
+.ed-section-head-wide { max-width: 720px; margin-bottom: 44px; }
+.ed-section-head-wide .ed-muted { max-width: 620px; }
+
+.ed-contents-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 72px;
+  align-items: start;
+}
+
+/* Table of contents */
+.toc { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--text); }
+.toc-row { padding: 22px 0; border-bottom: 1px solid var(--border); }
+.toc-line { display: flex; align-items: baseline; gap: 14px; }
+.toc-n {
+  flex: 0 0 34px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--red);
+}
+.toc-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-variation-settings: "opsz" 60;
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--text);
+  white-space: nowrap;
+}
+.toc-leader {
+  flex: 1;
+  min-width: 20px;
+  border-bottom: 2px dotted var(--text3);
+  opacity: 0.55;
+  transform: translateY(-6px);
+}
+.toc-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.toc-body {
+  margin: 8px 0 0 48px;
+  max-width: 540px;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--text2);
+}
+
+/* ── Officers showcase, reset for paper ──────────────────── */
+
+.ed .showcase { padding: 8px 0 104px; }
+.ed .showcase-head { text-align: left; margin: 0 0 40px; max-width: 660px; }
+.ed .bento-card {
+  border-radius: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+}
+.ed .mock { background: var(--bg); border: 1px solid var(--border); }
+
+/* ── Index ───────────────────────────────────────────────── */
+
+.ed-section-index { border-top: 1px solid var(--border); }
+.index { columns: 3 260px; column-gap: 52px; }
+.index-group { break-inside: avoid; margin-bottom: 34px; }
+.index-cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--text);
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text);
+}
+.index-count { font-family: var(--font-body); font-size: 12px; font-weight: 500; color: var(--text3); }
+.index ul { list-style: none; margin: 0; padding: 0; }
+/* block, not flex: the dot must follow the LAST word when a long name wraps. */
+.index li { padding: 4px 0; font-size: 15px; line-height: 1.4; }
+.index-link { color: var(--text2); text-decoration: none; transition: color 0.12s ease; }
+.index-link:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.index-mark {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+.index-mark-inline { margin-left: 2px; }
+
+/* ── Close ───────────────────────────────────────────────── */
+
+.ed-close { padding: 112px 0 120px; border-top: 1px solid var(--border); }
+.ed-close-inner { max-width: 720px; margin: 0 auto; text-align: center; }
+.ed h2.ed-display-close { font-size: clamp(46px, 7.2vw, 92px); margin-top: 0; }
+.ed-lede-center { margin-left: auto; margin-right: auto; text-align: center; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .ed-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 48px; }
+  .ed-hero-copy { max-width: 640px; }
+  .ed-contents-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+}
+@media (max-width: 768px) {
+  /* globals.css forces mobile h1/h2 sizes with !important; the display type
+     needs to stay display type. */
+  .ed h1.ed-display { font-size: clamp(36px, 10.5vw, 48px) !important; }
+  .ed h2.ed-h2 { font-size: clamp(30px, 8.5vw, 40px) !important; }
+  .ed h2.ed-display-close { font-size: clamp(40px, 12vw, 56px) !important; }
+  .ed .showcase-head h2 { font-size: clamp(28px, 8vw, 38px) !important; }
+  .ed-hero { padding: 36px 0 56px; }
+  .ed-section { padding: 72px 0; }
+  .ed-close { padding: 80px 0 88px; }
+  .sheet { padding: 20px 18px 16px; transform: none; }
+  .sheet-q { font-size: 17px; }
+  .ed-sep { margin: 0 8px; }
+  .toc-title { font-size: 20px; white-space: normal; }
+  .toc-body { margin-left: 48px; }
+}
+@media (max-width: 480px) {
+  .toc-value { display: none; }
+  .toc-leader { display: none; }
+  .toc-body { margin-left: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pen-underline { animation: none; }
+  .pen path { animation: none; stroke-dashoffset: 0; }
+  .sheet-why { transition: none; }
+}
+
+/* ── Consistency passes ──────────────────────────────────── */
+
+/* One button shape on this page: the squared ink block, not the global pill. */
+.ed .btn.btn-accent { border-radius: 10px; }
+
+/* EmailCta's "Notify me" used the mono face this page otherwise retires. */
+.ed .email-cta-field .font-mono {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Footer watermark: on paper, render the bookmark in ink with a paper-colored
+   check, so at the footer's low opacity it reads as a printed watermark rather
+   than a grey blob. CSS fill/stroke override the SVG's presentation attributes. */
+.ed .footer-watermark-mark path:first-of-type { fill: var(--text); }
+.ed .footer-watermark-mark path:last-of-type { stroke: var(--bg); }
+
+/* Above-the-fold entrance, CSS only. ScrollReveal server-renders at opacity 0
+   and only reveals after hydration, so the hero headline (the page's LCP
+   element) stayed invisible until JavaScript loaded. A keyframe starts on first
+   paint instead. Below-the-fold sections still use ScrollReveal, which is fine:
+   they are off-screen until the user scrolls. The global reduced-motion reset
+   collapses these to an instant finish. */
+.ed-rise { animation: ed-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.ed-d1 { animation-delay: 0.06s; }
+.ed-d2 { animation-delay: 0.12s; }
+.ed-d3 { animation-delay: 0.18s; }
+.ed-d4 { animation-delay: 0.26s; }
+@keyframes ed-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
