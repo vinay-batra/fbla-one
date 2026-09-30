@@ -116,9 +116,9 @@ export default function Landing() {
             <span className="ed-sep" aria-hidden="true">·</span>
             <strong>{COMPETITION_STATS.judged}</strong> with an AI judge
             <span className="ed-sep" aria-hidden="true">·</span>
-            every answer checked twice
+            Every answer checked twice
             <span className="ed-sep" aria-hidden="true">·</span>
-            always free
+            Always free
           </p>
         </div>
       </section>
