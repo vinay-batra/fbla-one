@@ -118,9 +118,20 @@ export function EventFinder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, done]);
 
+  // The quiz sits partway down the landing page, so its keys only count while
+  // it is actually on screen (otherwise Enter or 1-9 anywhere would answer it).
+  const [onScreen, setOnScreen] = useState(false);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.25 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [done]);
+
   // Page-level keys, active only while the quiz is on screen.
   useEffect(() => {
-    if (done) return;
+    if (done || !onScreen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
       const t = e.target as HTMLElement | null;
@@ -167,7 +178,7 @@ export function EventFinder() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [done, q, step, canContinue, choose, advance, back]);
+  }, [done, onScreen, q, step, canContinue, choose, advance, back]);
 
   const restart = () => {
     clearTimer();

@@ -126,13 +126,21 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
+  text-decoration: none;
+}
+/* Underline the words only, never the arrow after them. */
+.ed-textlink-label {
   text-decoration: underline;
   text-decoration-thickness: 1.5px;
   text-decoration-color: var(--border);
   text-underline-offset: 6px;
   transition: text-decoration-color 0.15s ease;
 }
-.ed-textlink:hover { text-decoration-color: var(--text); }
+.ed-textlink:hover .ed-textlink-label { text-decoration-color: var(--text); }
+
+/* The event finder quiz, embedded above the chatbot section. */
+.ed-finder-section { scroll-margin-top: 16px; }
+.ef-embed { max-width: 860px; }
 
 /* ── Hero ────────────────────────────────────────────────── */
 

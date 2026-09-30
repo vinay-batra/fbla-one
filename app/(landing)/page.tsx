@@ -8,6 +8,10 @@ import { PenUnderline } from "@/components/PenUnderline";
 import { RotatingWord } from "@/components/landing/RotatingWord";
 import { WhyDifferent } from "@/components/landing/WhyDifferent";
 import { EventIndex } from "@/components/landing/EventIndex";
+import { JumpLink } from "@/components/landing/JumpLink";
+import { EventFinder } from "@/components/eventfinder/EventFinder";
+import { QUESTIONS } from "@/components/eventfinder/questions";
+import "@/components/eventfinder/finder.css";
 import { COMPETITION_STATS } from "@/lib/competitions";
 
 const HOME_TITLE = "ChapterPrep: Practice Tests for Every FBLA Objective Event";
@@ -81,12 +85,13 @@ export default function Landing() {
               <div className="ed-actions">
                 <HeroCta wrap={false} signedOutLabel="Start practicing" className="ed-btn" />
                 <Link href="/competitions" className="ed-textlink">
-                  Browse all {COMPETITION_STATS.total} events <span aria-hidden="true">→</span>
+                  <span className="ed-textlink-label">Browse all {COMPETITION_STATS.total} events</span>{" "}
+                  <span aria-hidden="true">→</span>
                 </Link>
               </div>
               <p className="ed-finder">
                 Not sure which event is yours?{" "}
-                <Link href="/find-your-event">Take the one-minute quiz</Link>
+                <JumpLink to="find-your-event">Take the one-minute quiz</JumpLink>
               </p>
             </div>
           </div>
@@ -115,6 +120,25 @@ export default function Landing() {
             <span className="ed-sep" aria-hidden="true">·</span>
             always free
           </p>
+        </div>
+      </section>
+
+      {/* --- FIND YOUR EVENT: the quiz, answerable right here -------------- */}
+      <section className="ed-section ed-finder-section" id="find-your-event">
+        <div className="container">
+          <ScrollReveal>
+            <div className="ed-section-head ed-section-head-wide">
+              <p className="ed-kicker">Find your event</p>
+              <h2 className="ed-h2">Which event is made for you?</h2>
+              <p className="ed-muted">
+                {QUESTIONS.length} quick questions. We score all {COMPETITION_STATS.total} events against
+                your answers and show the three that fit best, with the reason for each. No account needed.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="ef-embed">
+            <EventFinder />
+          </div>
         </div>
       </section>
 
