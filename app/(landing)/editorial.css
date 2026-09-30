@@ -342,20 +342,6 @@
 .checked-sheet { position: relative; }
 .checked-sheet .opt { cursor: default; }
 .checked-sheet .opt:hover { background: transparent; }
-.checked-notes {
-  list-style: none;
-  margin: 18px 0 0;
-  padding: 14px 0 0 14px;
-  border-top: 1px dashed var(--border);
-  border-left: 2px solid var(--pen);
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text2);
-}
-.checked-notes li + li { margin-top: 6px; }
-.checked-n { color: var(--pen-text); font-weight: 600; margin-right: 4px; }
 .checked-stamp {
   position: absolute;
   top: -18px;
@@ -406,153 +392,8 @@
 }
 .mcard-tick .pen-check { width: 22px; height: 18px; }
 
-/* ── AI Judge demo ── */
-.judge-demo {
-  display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: 32px;
-  align-items: start;
-}
-.jd-card, .jd-sheet {
-  position: relative;
-  padding: 24px 26px;
-  border-radius: 4px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  box-shadow: var(--sheet-shadow);
-}
-.jd-card { border-top: 6px double var(--text); transform: rotate(-0.6deg); }
-.jd-card-top, .jd-sheet-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.jd-event { margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--pen-text); }
-.jd-title { margin-top: 4px; font-family: var(--font-serif), Georgia, serif; font-size: 23px; font-weight: 500; line-height: 1.15; letter-spacing: -0.01em; }
-.jd-label {
-  margin-top: 16px;
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.jd-text { margin-top: 6px; font-family: var(--font-serif), Georgia, serif; font-size: 15.5px; line-height: 1.55; color: var(--text); }
-.jd-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.jd-clock { margin-top: 18px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 13.5px; font-weight: 600; color: var(--text2); }
-
-.jd-sheet { border-left: 2px solid var(--pen); }
-.jd-total { display: flex; align-items: center; gap: 22px; margin: 16px 0 6px; }
-.jd-total-num {
-  position: relative;
-  flex-shrink: 0;
-  padding: 8px 20px;
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 46px;
-  line-height: 1;
-  color: var(--red);
-  transform: rotate(-5deg);
-}
-.jd-circle { width: 120px; height: 82px; left: -14px; top: -14px; stroke-width: 2.6; }
-.jd-verdict { font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 15.5px; line-height: 1.45; color: var(--text); }
-.jd-rows { list-style: none; margin: 10px 0 0; padding: 0; }
-.jd-rows li {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 12px;
-  padding: 11px 0;
-  border-top: 1px solid var(--border);
-}
-.jd-score {
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 26px;
-  line-height: 1;
-  color: var(--red);
-  text-align: center;
-}
-.jd-row-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.jd-of { font-weight: 500; color: var(--text3); }
-.jd-note { margin-top: 3px; font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 14.5px; line-height: 1.45; color: var(--pen-text); }
-.jd-strength {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--text);
-}
-.jd-strength .pen-check { flex-shrink: 0; margin-top: 2px; }
-.jd-strength em { color: var(--text2); }
-.jd-foot { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 36px; }
-.jd-foot .ed-fineprint { margin-top: 0; max-width: 460px; }
-/* Red-pen marks on a slide redraw each time the slide comes into view: hidden
-   (undrawn) while off to the side, drawn by the global pen-draw animation when
-   the slide gets .is-active. */
-.wc-slide:not(.is-active) .pen path { animation: none; }
-.jd-circle path { stroke-dasharray: 330; stroke-dashoffset: 330; animation-delay: 0.3s; }
-
-/* ── Which kind of event is yours? ── */
-.et-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 2px solid var(--text); }
-.et-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  min-height: 72px;
-  padding: 14px 16px 16px;
-  border: 0;
-  border-bottom: 4px solid transparent;
-  margin-bottom: -2px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  color: var(--text2);
-}
-.et-tab:hover { background: var(--bg2); }
-.et-tab[aria-selected="true"] { border-bottom-color: var(--pen); color: var(--text); }
-.et-tab-label { font-family: var(--font-serif), Georgia, serif; font-size: 20px; font-weight: 500; line-height: 1.2; }
-.et-tab-count { font-size: 12.5px; font-weight: 600; color: var(--text3); }
-.et-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
-  gap: 48px;
-  padding: 30px 0 8px;
-}
-.et-what { font-family: var(--font-serif), Georgia, serif; font-size: 20px; line-height: 1.45; color: var(--text); max-width: 600px; }
-.et-help { margin: 10px 0 0; padding-left: 20px; }
-.et-help li { margin-top: 8px; font-size: 15.5px; line-height: 1.55; color: var(--text2); }
-.et-help li::marker { color: var(--pen-text); }
-.et-examples { list-style: none; margin: 8px 0 10px; padding: 0; }
-.et-examples a {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  border-bottom: 1px solid var(--border);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-.et-examples a:hover { color: var(--pen-text); }
-.et-quiz { margin-top: 24px; font-size: 15px; color: var(--text3); }
-.et-quiz a { color: var(--pen-text); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-
 /* ── For advisors ── */
-.adv-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 28px; align-items: start; }
+.adv-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 20px; align-items: start; }
 .adv-projector, .adv-roster {
   margin: 0;
   padding: 20px 24px 18px;
@@ -573,14 +414,14 @@
 }
 .adv-bar span:first-child { color: var(--pen-text); }
 .adv-go { margin-top: 18px; font-size: 13px; color: var(--text2); }
-.adv-code { display: flex; gap: 8px; margin-top: 8px; }
+.adv-code { display: flex; gap: 6px; margin-top: 8px; }
 .adv-code span {
   flex: 1;
   padding-bottom: 6px;
   border-bottom: 2px solid var(--text);
   text-align: center;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(34px, 5vw, 56px);
+  font-size: clamp(26px, 3.2vw, 44px);
   font-weight: 500;
   line-height: 1.1;
   color: var(--text);
@@ -629,17 +470,9 @@
 
 /* ── Phones and tablets ── */
 @media (max-width: 960px) {
-  .judge-demo, .adv-grid, .et-panel { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .adv-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
 }
 @media (max-width: 640px) {
-  .jd-roles { grid-template-columns: minmax(0, 1fr); gap: 0; }
-  .jd-card, .jd-sheet { padding: 20px 18px; }
-  .jd-card { transform: none; }
-  .jd-total { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .et-tabs { grid-template-columns: minmax(0, 1fr); border-bottom: 0; }
-  .et-tab { min-height: 56px; border-bottom: 0; border-left: 4px solid transparent; margin-bottom: 0; }
-  .et-tab[aria-selected="true"] { border-left-color: var(--pen); background: var(--bg2); }
-  .et-panel { padding-top: 20px; }
   .mcard-1 { transform: rotate(0.6deg); }
   .mcard-2 { transform: none; }
   .checked-stamp { top: -16px; right: 14px; font-size: 11px; }
@@ -648,13 +481,7 @@
 
 /* ── The walkthrough: "Why not just ask a chatbot?" ── */
 .wd-lede { max-width: 640px; }
-.wc-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 2px solid var(--text);
-}
+.wc-bar { border-bottom: 2px solid var(--text); }
 .wc-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .wc-tabs::-webkit-scrollbar { display: none; }
 .wc-tab {
@@ -714,7 +541,6 @@
 .wc-slide {
   flex: 0 0 100%;
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 56px;
@@ -723,25 +549,67 @@
   /* Clip each slide, so a neighbor easing in or out never peeks across the edge. */
   overflow: hidden;
 }
-.wc-title { font-size: clamp(26px, 3vw, 36px); line-height: 1.1; }
-.wc-body { margin-top: 14px; font-size: 16.5px; line-height: 1.6; color: var(--text2); max-width: 440px; }
+.wc-kicker {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.wc-num {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--pen-text);
+}
+.wc-title { margin-top: 10px; font-size: clamp(30px, 3.4vw, 42px); line-height: 1.06; text-wrap: balance; }
+.wc-body { margin-top: 16px; font-size: 17px; line-height: 1.6; color: var(--text2); max-width: 460px; }
 .wc-else {
-  margin-top: 16px;
-  padding-left: 12px;
-  border-left: 2px solid var(--border);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--bg2);
   font-size: 14.5px;
   line-height: 1.5;
-  color: var(--text3);
-  max-width: 440px;
+  color: var(--text2);
+  max-width: 460px;
 }
-.wc-else-label { font-weight: 700; color: var(--text2); }
+.wc-else-mark { position: relative; flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; }
+.wc-else-mark .pen-cross { width: 22px; height: 22px; left: -2px; top: -2px; stroke-width: 2.6; }
+.wc-else-label { font-weight: 700; color: var(--text); margin-right: 2px; }
+.wc-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 22px; margin-top: 26px; }
+/* The primary control of the walkthrough: big, ink, impossible to miss. */
+.wc-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.wc-next:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -14px rgba(23, 24, 28, 0.6); }
+.wc-next span { font-size: 18px; }
 .wc-cta {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  margin-top: 18px;
-  margin-right: 18px;
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
@@ -750,30 +618,11 @@
   text-decoration-thickness: 2px;
   text-underline-offset: 5px;
 }
-.wc-next {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  margin-top: 18px;
-  padding: 0 16px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--card-bg);
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text2);
-  cursor: pointer;
-}
-.wc-next:hover { border-color: var(--text); color: var(--text); }
 .wc-visual { min-width: 0; }
 /* Slides ease in as they arrive. */
 .wc-slide .wc-visual { transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1); }
 .wc-slide:not(.is-active) .wc-visual { opacity: 0.25; transform: translateX(24px) scale(0.98); }
 
-/* The event-type tabs inside a slide: no outer rule, tighter panel. */
-.wc-visual .et-panel { gap: 28px; }
-.wc-visual .et-what { font-size: 18px; }
 
 /* Simulation slide */
 .sim-top { display: flex; align-items: center; gap: 22px; margin-top: 16px; }
@@ -805,13 +654,10 @@
 
 @media (max-width: 960px) {
   .wc-slide { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 28px; }
-  .wc-arrows .wc-count { display: none; }
 }
 @media (max-width: 640px) {
-  .wc-bar { flex-direction: column-reverse; align-items: stretch; gap: 8px; border-bottom: 0; }
-  .wc-tabs { border-bottom: 2px solid var(--text); }
-  .wc-arrows { justify-content: flex-end; }
-  .wc-arrows .wc-count { display: inline; margin-right: auto; }
+  .wc-next { width: 100%; justify-content: center; }
+  .wc-num { font-size: 28px; }
   .wc-slide { padding: 22px 2px 20px; }
   .sim-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); }
 }
@@ -819,4 +665,164 @@
   .wc-track { scroll-behavior: auto; transition: none; }
   .wc-slide .wc-visual { transition: none; }
   .wc-slide:not(.is-active) .wc-visual { opacity: 1; transform: none; }
+}
+
+/* ── The judge, as a three-step round ── */
+.jf { min-width: 0; }
+.jf-steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.jf-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.jf-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 12px;
+}
+.jf-step.is-done { color: var(--text2); }
+.jf-step.is-on { color: var(--btn-fg); background: var(--btn-bg); border-color: var(--btn-bg); }
+/* All three panels share one grid cell, so the stage never changes height. */
+.jf-stage { display: grid; margin-top: 16px; }
+.jf-panel {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) rotate(0.4deg);
+  transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.45s;
+  padding: 22px 24px;
+  border-radius: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--sheet-shadow);
+}
+.jf-panel.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.jf-card { border-top: 6px double var(--text); }
+.jf-card-top, .jf-sheet-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.jf-card-top span:first-child { color: var(--pen-text); }
+.jf-title { margin-top: 14px; font-family: var(--font-serif), Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.12; }
+.jf-text { margin-top: 10px; font-family: var(--font-serif), Georgia, serif; font-size: 16px; line-height: 1.55; color: var(--text); }
+.jf-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.jf-roles p { font-size: 14px; line-height: 1.5; color: var(--text2); }
+.jf-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 2px;
+}
+.jf-tasks { margin: 14px 0 0; padding-left: 22px; font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.jf-tasks li::marker { color: var(--pen-text); font-weight: 700; }
+.jf-clock-line { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 13.5px; font-weight: 600; color: var(--text2); }
+
+.jf-prep { text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.jf-big-clock {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(64px, 9vw, 104px);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--text);
+}
+.jf-notecard {
+  margin: 20px auto 0;
+  max-width: 380px;
+  padding: 12px 18px;
+  text-align: left;
+  background: repeating-linear-gradient(to bottom, transparent 0 29px, color-mix(in srgb, var(--border) 80%, transparent) 29px 30px), var(--bg);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--pen);
+  border-radius: 4px;
+}
+.jf-notecard p {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 30px;
+  color: var(--text);
+  opacity: 0;
+}
+.jf-prep.is-on .jf-notecard p { animation: jf-write 0.5s ease forwards; }
+@keyframes jf-write { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+.jf-prep-after { margin-top: 16px; font-size: 14px; color: var(--text2); }
+
+.jf-total {
+  position: relative;
+  padding: 4px 16px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
+  color: var(--red);
+  transform: rotate(-5deg);
+}
+.jf-circle { width: 100px; height: 68px; left: -12px; top: -12px; stroke-width: 2.6; }
+.jf-rows { list-style: none; margin: 6px 0 0; padding: 0; }
+.jf-rows li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.jf-sheet.is-on .jf-rows li { animation: jf-write 0.45s ease both; }
+.jf-score {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--red);
+  text-align: center;
+}
+.jf-row-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.jf-row-name span { font-weight: 500; color: var(--text3); }
+.jf-note { margin-top: 2px; font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 14.5px; line-height: 1.4; color: var(--pen-text); }
+.jf-finalist { margin-top: 12px; font-size: 14px; line-height: 1.5; color: var(--text); }
+.jf-caption { margin-top: 12px; font-size: 12.5px; color: var(--text3); }
+
+/* Members arriving in the Mock Regionals lobby */
+.adv-arrive { animation: jf-write 0.4s ease both; }
+
+@media (max-width: 640px) {
+  .jf-panel { padding: 18px 16px; }
+  .jf-roles { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .jf-title { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jf-panel, .jf-panel.is-on { transition: none; transform: none; }
+  .jf-notecard p, .jf-prep.is-on .jf-notecard p { animation: none; opacity: 1; }
+  .jf-sheet.is-on .jf-rows li, .adv-arrive { animation: none; }
 }

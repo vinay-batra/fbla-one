@@ -2,7 +2,7 @@ import { WhyCarousel } from "@/components/landing/WhyCarousel";
 
 /**
  * The case for ChapterPrep in one section: the question every visitor has,
- * answered by a horizontal walkthrough of six things a general chatbot will
+ * answered by a horizontal walkthrough of five things a general chatbot will
  * not do for a competitor, each shown rather than described.
  */
 export function WhyDifferent() {
@@ -13,7 +13,7 @@ export function WhyDifferent() {
         <h2 className="ed-h2">Why not just ask a chatbot?</h2>
         <p className="ed-muted wd-lede">
           Fair question. ChatGPT, Claude and Gemini can answer almost anything, but none of them
-          were built to get you ready for FBLA competition. Here are six things they will not do for
+          were built to get you ready for FBLA competition. Here are five things they will not do for
           you.
         </p>
       </div>

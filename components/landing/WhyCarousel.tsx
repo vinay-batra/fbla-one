@@ -2,16 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import { COMPETITION_STATS } from "@/lib/competitions";
+import { PenCross } from "@/components/PenMarks";
 import { CheckedSheet } from "@/components/landing/CheckedTwice";
 import { MistakeStack } from "@/components/landing/MistakeCards";
-import { JudgeVisual } from "@/components/landing/JudgeDemo";
-import { EventTypes } from "@/components/landing/EventTypes";
+import { JudgeFlow } from "@/components/landing/JudgeFlow";
 import { AdvisorVisual } from "@/components/landing/ForAdvisors";
 import { SimVisual } from "@/components/landing/SimVisual";
 import { AuthLink } from "@/components/landing/AuthLink";
 
 /**
- * "Why not just ask a chatbot?" as one horizontal walkthrough: six slides,
+ * "Why not just ask a chatbot?" as one horizontal walkthrough: five slides,
  * each a short claim, what you get elsewhere, and the thing itself. It replaces
  * five full-length sections, so the page stays short without losing anything.
  *
@@ -30,57 +30,51 @@ type Slide = {
   visual: (active: boolean) => ReactNode;
 };
 
+// Ordered by what persuades most: the chapter, then the judge, then trust,
+// the real clock, and the mistake bank.
 const SLIDES: Slide[] = [
+  {
+    id: "chapter",
+    tab: "Your chapter",
+    title: "Run regionals at your next meeting.",
+    body: "Put one timed test on the projector. Everyone joins from their phone, the clock is the same for everyone, and the room finds out who would place. Then see who is ready for regionals and who needs help.",
+    elsewhere: "each student works alone, and nobody can see who is ready.",
+    cta: { href: "/app/chapter", label: "Set up your chapter" },
+    visual: (active) => <AdvisorVisual active={active} />,
+  },
+  {
+    id: "judge",
+    tab: "The judges",
+    title: "Get judged before the judges do.",
+    body: `${COMPETITION_STATS.judged} of ${COMPETITION_STATS.total} events end in a role play, presentation or interview. Draw a real-format case, prepare on the real clock, and get back a scored rating sheet with notes on exactly what to fix.`,
+    elsewhere: "you can ask it to play judge, but you have to find your event's rating sheet, write the case, and keep the time yourself.",
+    cta: { href: "/app/judge", label: "Try a role play" },
+    visual: (active) => <JudgeFlow active={active} />,
+  },
   {
     id: "checked",
     tab: "Checked answers",
     title: "Every answer, checked twice.",
-    body: "A second model solves every question without seeing the answer key. On a full test in our testing it threw out about 1 in 4 before a student saw them.",
-    elsewhere: "One model, one pass, no independent check.",
+    body: "A second model solves every question without seeing the answer key. In our testing it threw out about 1 in 4 questions before a student ever saw them.",
+    elsewhere: "one model answers in one pass, and a wrong answer sounds just as confident as a right one.",
     visual: () => <CheckedSheet />,
   },
   {
-    id: "event",
-    tab: "Your event",
-    title: "Built on your actual event.",
-    body: `All ${COMPETITION_STATS.total} events checked against FBLA's official 2026-27 guidelines: how each is judged, what it covers, how long you get.`,
-    elsewhere: "Only knows your event's rules if you paste them in.",
-    visual: () => <EventTypes />,
-  },
-  {
-    id: "judge",
-    tab: "Judges",
-    title: "Practice for the judges.",
-    body: `${COMPETITION_STATS.judged} of ${COMPETITION_STATS.total} events end in a role play, presentation or interview. Draw a case with the real clock and get scored on the rating sheet.`,
-    elsewhere: "No rating sheet, no prep clock, no score.",
-    cta: { href: "/app/judge", label: "Practice a role play" },
-    visual: () => <JudgeVisual />,
-  },
-  {
-    id: "mistakes",
-    tab: "Mistakes",
-    title: "What you miss comes back.",
-    body: "Every question you get wrong returns in later tests until you answer it right twice. It follows your account to any device.",
-    elsewhere: "Nothing brings back what you missed last week.",
-    visual: () => <MistakeStack />,
-  },
-  {
     id: "simulation",
-    tab: "The clock",
+    tab: "The real clock",
     title: "Practice like it's regionals.",
-    body: "A full simulation: 100 questions in 50 minutes, turned in automatically when time runs out.",
-    elsewhere: "No clock, no test format, no pressure.",
+    body: "100 questions in 50 minutes, on your event's official topics, turned in automatically when time runs out.",
+    elsewhere: "you get questions, but not a timed, full-length paper that turns itself in and grades itself.",
     cta: { href: "/app/coach", label: "Take a full simulation" },
     visual: (active) => <SimVisual active={active} />,
   },
   {
-    id: "chapter",
-    tab: "Chapter",
-    title: "Bring the whole chapter.",
-    body: "Advisors run Mock Regionals at meetings, see who is ready and who needs help, and export regional registration in one file.",
-    elsewhere: "Everyone studies alone. Nobody knows who is ready.",
-    cta: { href: "/app/chapter", label: "Set up your chapter" },
-    visual: () => <AdvisorVisual />,
+    id: "mistakes",
+    tab: "Your mistakes",
+    title: "What you miss comes back.",
+    body: "Every question you get wrong returns in later tests until you answer it right twice, on your phone or your laptop.",
+    elsewhere: "nothing brings back the questions you missed last week.",
+    visual: () => <MistakeStack />,
   },
 ];
 
@@ -90,7 +84,9 @@ export function WhyCarousel() {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [index, setIndex] = useState(0);
   const indexRef = useRef(0);
-  indexRef.current = index;
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
   const [height, setHeight] = useState<number | null>(null);
 
   // When the carousel's WIDTH changes (window resize, phone rotation), the old
@@ -111,10 +107,15 @@ export function WhyCarousel() {
     return () => ro.disconnect();
   }, []);
 
+  // True while a tab, arrow or Next button is moving the track, so the
+  // in-between scroll positions do not overwrite the slide that was asked for.
+  const steering = useRef(false);
+  const steerTimer = useRef<number | null>(null);
+
   // Track which slide is showing from the scroll position (covers swipes).
   const onScroll = useCallback(() => {
     const t = trackRef.current;
-    if (!t) return;
+    if (!t || steering.current) return;
     const i = Math.round(t.scrollLeft / t.clientWidth);
     setIndex((prev) => (prev === i ? prev : Math.max(0, Math.min(SLIDES.length - 1, i))));
   }, []);
@@ -145,8 +146,17 @@ export function WhyCarousel() {
     if (!t) return;
     const next = Math.max(0, Math.min(SLIDES.length - 1, i));
     const reduced = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    t.scrollTo({ left: next * t.clientWidth, behavior: reduced ? "auto" : "smooth" });
+    steering.current = true;
+    if (steerTimer.current) window.clearTimeout(steerTimer.current);
+    const done = () => {
+      steering.current = false;
+      t.removeEventListener("scrollend", done);
+    };
+    t.addEventListener("scrollend", done);
+    // Browsers without scrollend: release after the smooth scroll has settled.
+    steerTimer.current = window.setTimeout(done, 900);
     setIndex(next);
+    t.scrollTo({ left: next * t.clientWidth, behavior: reduced ? "auto" : "smooth" });
   };
 
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
@@ -159,7 +169,7 @@ export function WhyCarousel() {
   };
 
   return (
-    <div className="wc" role="region" aria-roledescription="carousel" aria-label="Six things a chatbot will not do for you">
+    <div className="wc" role="region" aria-roledescription="carousel" aria-label="Five things a chatbot will not do for you">
       <div className="wc-bar">
         <div className="wc-tabs" role="tablist" aria-label="Jump to">
           {SLIDES.map((s, i) => (
@@ -182,23 +192,6 @@ export function WhyCarousel() {
             </button>
           ))}
         </div>
-        <div className="wc-arrows">
-          <span className="wc-count" aria-live="polite">
-            {index + 1} of {SLIDES.length}
-          </span>
-          <button type="button" className="wc-arrow" onClick={() => go(index - 1)} disabled={index === 0} aria-label="Previous">
-            <span aria-hidden="true">←</span>
-          </button>
-          <button
-            type="button"
-            className="wc-arrow"
-            onClick={() => go(index + 1)}
-            disabled={index === SLIDES.length - 1}
-            aria-label="Next"
-          >
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
       </div>
 
       <div
@@ -220,21 +213,35 @@ export function WhyCarousel() {
             className={`wc-slide${index === i ? " is-active" : ""}`}
           >
             <div className="wc-copy">
+              <p className="wc-kicker">
+                <span className="wc-num">{String(i + 1).padStart(2, "0")}</span> {s.tab}
+              </p>
               <h3 className="wc-title">{s.title}</h3>
               <p className="wc-body">{s.body}</p>
               <p className="wc-else">
-                <span className="wc-else-label">A chatbot:</span> {s.elsewhere}
+                <span className="wc-else-mark" aria-hidden="true">
+                  <PenCross />
+                </span>
+                <span>
+                  <span className="wc-else-label">With a chatbot,</span> {s.elsewhere}
+                </span>
               </p>
-              {s.cta && (
-                <AuthLink href={s.cta.href} className="wc-cta">
-                  {s.cta.label} <span aria-hidden="true">→</span>
-                </AuthLink>
-              )}
-              {i < SLIDES.length - 1 && (
-                <button type="button" className="wc-next" onClick={() => go(i + 1)}>
-                  Next: {SLIDES[i + 1].tab} <span aria-hidden="true">→</span>
-                </button>
-              )}
+              <div className="wc-actions">
+                {i < SLIDES.length - 1 ? (
+                  <button type="button" className="wc-next" onClick={() => go(i + 1)}>
+                    Next: {SLIDES[i + 1].tab} <span aria-hidden="true">→</span>
+                  </button>
+                ) : (
+                  <button type="button" className="wc-next" onClick={() => go(0)}>
+                    Back to the start <span aria-hidden="true">↺</span>
+                  </button>
+                )}
+                {s.cta && (
+                  <AuthLink href={s.cta.href} className="wc-cta">
+                    {s.cta.label} <span aria-hidden="true">→</span>
+                  </AuthLink>
+                )}
+              </div>
             </div>
             <div className="wc-visual">{s.visual(index === i)}</div>
           </div>

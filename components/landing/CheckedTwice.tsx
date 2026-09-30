@@ -37,14 +37,6 @@ export function CheckedSheet() {
             </div>
           ))}
         </div>
-        <ol className="checked-notes">
-          <li>
-            <span className="checked-n">1</span> Solved without the key: 20.83%. It matches.
-          </li>
-          <li>
-            <span className="checked-n">2</span> Audited: one right answer, nothing ambiguous.
-          </li>
-        </ol>
         <span className="checked-stamp" aria-hidden="true">
           Checked twice
         </span>

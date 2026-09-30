@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { PenCheck, PenCross } from "@/components/PenMarks";
 
 /**
@@ -16,7 +19,17 @@ const ROSTER: { name: string; event: string; detail: string; status: "ready" | "
 
 const STATUS = { ready: "Ready", track: "On track", attn: "Needs attention" };
 
-export function AdvisorVisual() {
+export function AdvisorVisual({ active }: { active?: boolean }) {
+  // Members "join" the lobby one at a time while the slide is showing.
+  const [joined, setJoined] = useState(JOINED.length);
+  useEffect(() => {
+    if (!active) return;
+    if (typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setJoined(1);
+    const id = window.setInterval(() => setJoined((n) => (n >= JOINED.length ? n : n + 1)), 550);
+    return () => window.clearInterval(id);
+  }, [active]);
+
   return (
     <div className="adv-grid">
       <figure className="adv-projector" aria-label="Example Mock Regionals lobby">
@@ -31,11 +44,16 @@ export function AdvisorVisual() {
           ))}
         </div>
         <p className="adv-joined">
-          <strong>{JOINED.length} members</strong> have joined
+          <strong>
+            {joined} {joined === 1 ? "member" : "members"}
+          </strong>{" "}
+          {joined === 1 ? "has" : "have"} joined
         </p>
         <ul className="adv-names">
-          {JOINED.map((n) => (
-            <li key={n}>{n}</li>
+          {JOINED.slice(0, joined).map((n) => (
+            <li key={n} className="adv-arrive">
+              {n}
+            </li>
           ))}
         </ul>
         <figcaption className="ed-fineprint">Example lobby. Names are made up.</figcaption>
