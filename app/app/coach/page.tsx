@@ -8,6 +8,7 @@ import { COMPETITIONS, getCompetition, FORMAT_LABEL, isAiTestable } from "@/lib/
 import { addPracticeLog, getRegistered, recordTopicResults, getWeakTopics, onStorageChange, type WeakTopic } from "@/lib/storage";
 import { evaluateExpression } from "@/lib/calc";
 import { AI_LOG_PREFIX } from "@/lib/chapter";
+import { PenCircle, PenCheck, PenCross } from "@/components/PenMarks";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -121,6 +122,8 @@ function CoachInner() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Option>>({});
   const [logged, setLogged] = useState(false);
+  // Review screen: show only the questions you missed.
+  const [missesOnly, setMissesOnly] = useState(false);
   // Test stopwatch: starts when the generated test enters the taking phase.
   const [elapsedMs, setElapsedMs] = useState(0);
   const testStartRef = useRef<number | null>(null);
@@ -190,6 +193,7 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    setMissesOnly(false);
     testStartRef.current = null;
     setElapsedMs(0);
     recordedRef.current = false;
@@ -306,6 +310,7 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    setMissesOnly(false);
     setGenError("");
     testStartRef.current = null;
     setElapsedMs(0);
@@ -322,6 +327,7 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    setMissesOnly(false);
     setGenError("");
     testStartRef.current = null;
     setElapsedMs(0);
@@ -333,6 +339,20 @@ function CoachInner() {
   const correctCount = questions.filter((q) => answers[q.id - 1] === q.correct).length;
   const pct = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
   const meta = scoreMeta(pct);
+  // Per-topic results for the report card, weakest first.
+  const topicRows = (() => {
+    const by = new Map<string, { right: number; total: number }>();
+    questions.forEach((q, i) => {
+      if (!q.topic) return;
+      const row = by.get(q.topic) ?? { right: 0, total: 0 };
+      row.total += 1;
+      if (answers[i] === q.correct) row.right += 1;
+      by.set(q.topic, row);
+    });
+    return [...by.entries()]
+      .map(([topic, r]) => ({ topic, ...r }))
+      .sort((a, b) => a.right / a.total - b.right / b.total || b.total - a.total);
+  })();
 
   // ── IDLE ──────────────────────────────────────────────────────
   if (phase === "idle") {
@@ -605,10 +625,9 @@ function CoachInner() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span
-              className="font-mono"
               role="timer"
               aria-label="Time elapsed"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--text2)", background: "var(--bg3)", border: "0.5px solid var(--border)", padding: "5px 12px", borderRadius: 999 }}
+              className="coach-clock"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2 2M9 2h6" />
@@ -621,106 +640,54 @@ function CoachInner() {
           </div>
         </div>
 
-        {/* Progress dots */}
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+        {/* Answer grid: one numbered bubble per question, like the grid on a
+            scantron. Filled once answered; the current one is ringed. */}
+        <div className="coach-grid" role="group" aria-label="Jump to a question">
           {questions.map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setCurrentIdx(i)}
-              title={`Question ${i + 1}`}
-              style={{
-                width: 28,
-                height: 6,
-                borderRadius: 999,
-                border: "none",
-                cursor: "pointer",
-                background:
-                  i === currentIdx
-                    ? "var(--accent)"
-                    : answers[i] !== undefined
-                    ? "var(--brand)"
-                    : "var(--bg3)",
-                transition: "background 0.15s",
-                flexShrink: 0,
-              }}
-            />
+              className={`coach-grid-cell${i === currentIdx ? " is-current" : ""}${answers[i] !== undefined ? " is-answered" : ""}`}
+              aria-label={`Question ${i + 1}${answers[i] !== undefined ? ", answered" : ""}`}
+              aria-current={i === currentIdx ? "step" : undefined}
+            >
+              {i + 1}
+            </button>
           ))}
         </div>
 
-        {/* Question card */}
-        <div style={{ background: "var(--card-bg)", border: "0.5px solid var(--border)", borderRadius: 16, padding: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-            <span
-              className="font-mono"
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.18em",
-                background: "var(--accent-dim)",
-                color: "var(--accent-text)",
-                padding: "3px 10px",
-                borderRadius: 999,
-                fontWeight: 700,
-              }}
-            >
-              Q{currentIdx + 1} / {questions.length}
-            </span>
-            <span style={{ fontSize: 11, color: "var(--text3)" }}>
-              Press A B C D to answer · ← → to navigate
-            </span>
-          </div>
+        {/* The question, on a sheet of exam paper. Keyed on the index so each
+            new question is laid down with the page-turn animation. */}
+        <div className="sheet-stack">
+          <div key={currentIdx} className="sheet coach-sheet turn-in">
+            <div className="sheet-head">
+              <span className="sheet-meta">
+                Question {currentIdx + 1} <span className="sheet-of">of {questions.length}</span>
+              </span>
+              <span className="sheet-event">{comp?.name}</span>
+            </div>
 
-          <p style={{ fontSize: 17, fontWeight: 500, lineHeight: 1.65, color: "var(--text)", marginBottom: 24 }}>
-            {q.question}
-          </p>
+            <p className="sheet-q">{q.question}</p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {OPTIONS.map((opt) => {
-              const isSelected = selectedAnswer === opt;
-              return (
+            <div className="sheet-opts" role="group" aria-label="Answer choices">
+              {OPTIONS.map((opt) => (
                 <button
                   key={opt}
                   type="button"
-                  aria-pressed={isSelected}
+                  className="opt"
+                  aria-pressed={selectedAnswer === opt}
                   onClick={() => setAnswers((prev) => ({ ...prev, [currentIdx]: opt }))}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    padding: "14px 16px",
-                    borderRadius: 10,
-                    border: isSelected ? "1.5px solid var(--accent)" : "0.5px solid var(--border)",
-                    background: isSelected ? "var(--accent-dim)" : "var(--bg2)",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "all 0.12s",
-                  }}
                 >
-                  <span
-                    className="font-mono"
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "50%",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                      background: isSelected ? "var(--accent)" : "var(--bg3)",
-                      color: isSelected ? "var(--bg)" : "var(--text3)",
-                      transition: "all 0.12s",
-                    }}
-                  >
-                    {opt}
-                  </span>
-                  <span style={{ fontSize: 14, color: isSelected ? "var(--text)" : "var(--text2)", lineHeight: 1.55 }}>
-                    {q.options[opt]}
-                  </span>
+                  <span className="bubble">{opt}</span>
+                  <span className="opt-text">{q.options[opt]}</span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
+
+            <div className="sheet-foot">
+              <span className="sheet-hint">Press A, B, C or D to answer. Arrow keys move between questions.</span>
+            </div>
           </div>
         </div>
 
@@ -782,136 +749,138 @@ function CoachInner() {
   // ── REVIEWING ─────────────────────────────────────────────────
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 720 }}>
-      {/* Score banner */}
-      <div
-        className="coach-score-banner"
-        style={{
-          background: meta.bg,
-          border: `0.5px solid ${meta.color}`,
-          borderRadius: 16,
-          padding: "28px 32px",
-          display: "flex",
-          alignItems: "center",
-          gap: 24,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ textAlign: "center", minWidth: 90 }}>
-          <div className="font-mono" style={{ fontSize: 48, fontWeight: 700, lineHeight: 1, color: meta.color }}>
-            {pct}
-            <span style={{ fontSize: 24 }}>%</span>
+      {/* Report card: the graded front page of the test */}
+      <div className="sheet coach-report">
+        <div className="sheet-head">
+          <span className="sheet-meta">Graded</span>
+          <span className="sheet-event">{comp?.name}</span>
+        </div>
+
+        <div className="report-score">
+          <div className="report-big" aria-label={`${correctCount} out of ${questions.length}`}>
+            <span>
+              {correctCount}
+              <span className="report-slash">/</span>
+              {questions.length}
+            </span>
+            <svg className="pen report-circle" viewBox="0 0 120 80" aria-hidden="true">
+              <path d="M18 30C28 10 70 4 94 14c18 8 22 30 8 46-16 16-56 18-76 6C6 56 6 38 20 24c8-8 22-12 34-12" />
+            </svg>
           </div>
-          <div className="font-mono" style={{ fontSize: 11, color: "var(--text3)", marginTop: 4, letterSpacing: "0.1em" }}>
-            {correctCount} / {questions.length}
+          <div>
+            <p className="report-verdict">{meta.label}.</p>
+            <p className="coach-report-sub">
+              {pct}% on a {questions.length}-question test
+              {elapsedMs > 0 ? `, finished in ${formatClock(elapsedMs)}` : ""}
+            </p>
           </div>
         </div>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 20, fontWeight: 700, color: meta.color, letterSpacing: "-0.01em" }}>{meta.label}</p>
-          <p style={{ fontSize: 13, color: "var(--text2)", marginTop: 4, lineHeight: 1.5 }}>
-            {comp?.name} · {questions.length}-question AI practice test
-          </p>
-          <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-            {!logged ? (
-              <button type="button" onClick={logScore} disabled={logged} className="btn btn-accent btn-sm btn-pill">
-                Log score to tracker
-              </button>
-            ) : (
-              <span className="btn btn-ghost btn-sm" style={{ pointerEvents: "none", color: "var(--green)" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 12l5 5L20 7" />
-                </svg>
-                Logged
-              </span>
-            )}
-            {correctCount < questions.length && (
-              <button type="button" onClick={retryMisses} className="btn btn-brand btn-sm btn-pill">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
-                </svg>
-                Retry the {questions.length - correctCount} you missed
-              </button>
-            )}
-            <button type="button" onClick={() => generate()} className="btn btn-ghost btn-sm btn-pill">
-              New test
-            </button>
-            <button type="button" onClick={restart} className="btn btn-ghost btn-sm btn-pill">
-              Change event
-            </button>
+
+        {topicRows.length > 1 && (
+          <div className="coach-topics">
+            <p className="coach-topics-title">By topic, weakest first</p>
+            {topicRows.map((t) => (
+              <div key={t.topic} className="coach-topic-row">
+                <span className="coach-topic-name">{t.topic}</span>
+                <span className="coach-topic-bar" aria-hidden="true">
+                  <span
+                    className={t.right / t.total < 0.6 ? "is-weak" : ""}
+                    style={{ width: `${Math.round((t.right / t.total) * 100)}%` }}
+                  />
+                </span>
+                <span className="coach-topic-score">
+                  {t.right}/{t.total}
+                </span>
+                {t.right < t.total ? (
+                  <button type="button" className="coach-topic-drill" onClick={() => generate(t.topic)}>
+                    Drill
+                  </button>
+                ) : (
+                  <span className="coach-topic-drill is-done" aria-hidden="true" />
+                )}
+              </div>
+            ))}
           </div>
+        )}
+
+        <div className="sheet-foot coach-report-actions">
+          {!logged ? (
+            <button type="button" onClick={logScore} className="btn btn-accent btn-sm btn-pill">
+              Log score to tracker
+            </button>
+          ) : (
+            <span className="btn btn-ghost btn-sm btn-pill" style={{ pointerEvents: "none" }}>
+              Logged to your tracker
+            </span>
+          )}
+          {correctCount < questions.length && (
+            <button type="button" onClick={retryMisses} className="btn btn-ghost btn-sm btn-pill">
+              Retry the {questions.length - correctCount} you missed
+            </button>
+          )}
+          <button type="button" onClick={() => generate()} className="btn btn-ghost btn-sm btn-pill">
+            New test
+          </button>
+          <button type="button" onClick={restart} className="btn btn-ghost btn-sm btn-pill">
+            Change event
+          </button>
         </div>
       </div>
 
-      {/* Question review */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em" }}>Review</h3>
+      {/* Every question, graded in red pen, with the explanation in the margin */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="coach-review-head">
+          <h2 style={{ fontSize: 26 }}>Review</h2>
+          {correctCount < questions.length && correctCount > 0 && (
+            <div className="coach-review-toggle" role="group" aria-label="Which questions to show">
+              <button type="button" aria-pressed={!missesOnly} onClick={() => setMissesOnly(false)}>
+                All {questions.length}
+              </button>
+              <button type="button" aria-pressed={missesOnly} onClick={() => setMissesOnly(true)}>
+                Misses only
+              </button>
+            </div>
+          )}
+        </div>
         {questions.map((q, i) => {
           const userAns = answers[i];
           const isCorrect = userAns === q.correct;
+          if (missesOnly && isCorrect) return null;
           return (
-            <div
-              key={q.id}
-              style={{
-                background: "var(--card-bg)",
-                border: `0.5px solid ${isCorrect ? "var(--border)" : "rgba(var(--red-rgb), 0.3)"}`,
-                borderRadius: 12,
-                padding: 20,
-                borderLeft: `3px solid ${isCorrect ? "var(--green)" : "var(--red)"}`,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: 10,
-                    padding: "2px 8px",
-                    borderRadius: 999,
-                    fontWeight: 700,
-                    background: isCorrect ? "rgba(var(--green-rgb), 0.12)" : "rgba(var(--red-rgb), 0.1)",
-                    color: isCorrect ? "var(--green)" : "var(--red)",
-                    flexShrink: 0,
-                  }}
-                >
-                  Q{i + 1}
+            <div key={q.id} className="sheet coach-review-item">
+              <div className="sheet-head">
+                <span className="sheet-meta">Question {i + 1}</span>
+                <span className={`coach-review-verdict${isCorrect ? "" : " is-wrong"}`}>
+                  {isCorrect ? "Correct" : "Missed"}
                 </span>
-                <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.6, color: "var(--text)" }}>{q.question}</p>
               </div>
-
-              <div className="coach-options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 12 }}>
+              <p className="sheet-q coach-review-q">{q.question}</p>
+              <div className="sheet-opts">
                 {(["A", "B", "C", "D"] as Option[]).map((opt) => {
                   const isUser = userAns === opt;
                   const isRight = q.correct === opt;
-                  let bg = "transparent";
-                  let color = "var(--text3)";
-                  let borderColor = "var(--border-dim)";
-                  if (isRight) { bg = "rgba(var(--green-rgb), 0.08)"; color = "var(--green)"; borderColor = "rgba(var(--green-rgb), 0.3)"; }
-                  if (isUser && !isRight) { bg = "rgba(var(--red-rgb), 0.08)"; color = "var(--red)"; borderColor = "rgba(var(--red-rgb), 0.3)"; }
+                  const state = isRight ? " is-correct" : isUser ? " is-wrong" : " is-dim";
                   return (
-                    <div
-                      key={opt}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: 8,
-                        padding: "8px 10px",
-                        borderRadius: 8,
-                        border: `0.5px solid ${borderColor}`,
-                        background: bg,
-                      }}
-                    >
-                      <span className="font-mono" style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}>
+                    <div key={opt} className={`opt${state}${isUser ? " is-picked" : ""}`}>
+                      <span className="bubble">
                         {opt}
+                        {isRight && <PenCircle />}
+                        {isUser && !isRight && <PenCross />}
                       </span>
-                      <span style={{ fontSize: 12, color, lineHeight: 1.5 }}>{q.options[opt]}</span>
+                      <span className="opt-text">
+                        {q.options[opt]}
+                        {isUser && <span className="sr-only"> (your answer)</span>}
+                        {isRight && <span className="sr-only"> (correct answer)</span>}
+                      </span>
+                      {isRight ? <PenCheck /> : <span />}
                     </div>
                   );
                 })}
               </div>
-
-              <div style={{ padding: "10px 14px", background: "var(--bg2)", borderRadius: 8, border: "0.5px solid var(--border)" }}>
-                <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4, fontWeight: 700 }}>
-                  Explanation
-                </p>
-                <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6 }}>{q.explanation}</p>
+              <div className="sheet-why is-open">
+                <div className="why-inner">
+                  <span className="why-mark">{isCorrect ? "Right." : "Here's why."}</span> {q.explanation}
+                </div>
               </div>
             </div>
           );

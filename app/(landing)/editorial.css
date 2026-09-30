@@ -143,7 +143,7 @@
 
 /* The exam sheet's base styles are global (globals.css) so the real practice
    test can use them. Landing-only: the page sits slightly askew on the desk. */
-.ed .sheet { transform: rotate(-0.8deg); }
+.ed .sheet { --sheet-tilt: -0.8deg; transform: rotate(var(--sheet-tilt)); }
 
 /* ── Ledger ──────────────────────────────────────────────── */
 
@@ -290,7 +290,7 @@
   .ed-hero { padding: 36px 0 56px; }
   .ed-section { padding: 72px 0; }
   .ed-close { padding: 80px 0 88px; }
-  .ed .sheet { transform: none; }
+  .ed .sheet { --sheet-tilt: 0deg; }
   .ed-sep { margin: 0 8px; }
   .toc-title { font-size: 20px; white-space: normal; }
   .toc-body { margin-left: 48px; }
@@ -322,69 +322,3 @@
    than a grey blob. CSS fill/stroke override the SVG's presentation attributes. */
 .ed .footer-watermark-mark path:first-of-type { fill: var(--text); }
 .ed .footer-watermark-mark path:last-of-type { stroke: var(--bg); }
-
-
-/* ── Exam sheet: stack, page turn, red-pen score ─────────── */
-
-/* Two sheets peek out underneath, so it reads as one page of a longer test.
-   isolation keeps the pseudo-element sheets behind the real one. */
-.sheet-stack { position: relative; isolation: isolate; }
-.sheet-stack::before,
-.sheet-stack::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: 4px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 26px -18px rgba(60, 45, 20, 0.4);
-}
-.sheet-stack::before { transform: translate(7px, 7px) rotate(1.6deg); }
-.sheet-stack::after  { transform: translate(-5px, 12px) rotate(-2.6deg); }
-.sheet { z-index: 1; }
-
-/* "Next question" lifts the top sheet off; the next one is laid down. */
-.sheet.turn-out { animation: sheet-out 0.28s cubic-bezier(0.4, 0, 1, 1) forwards; }
-.sheet.turn-in  { animation: sheet-in 0.36s cubic-bezier(0.22, 0.61, 0.36, 1); }
-@keyframes sheet-out {
-  to { transform: translate(-52px, -20px) rotate(-7deg); opacity: 0; }
-}
-@keyframes sheet-in {
-  from { transform: translate(0, 14px) rotate(-0.8deg); opacity: 0; }
-  to   { transform: rotate(-0.8deg); opacity: 1; }
-}
-
-/* Running score, written in the top margin and circled. */
-.sheet-score {
-  position: absolute;
-  top: -30px;
-  right: 46px;
-  z-index: 3;
-  padding: 6px 14px;
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-weight: 600;
-  font-size: 23px;
-  line-height: 1;
-  color: var(--red);
-  transform: rotate(-7deg);
-  animation: score-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
-  pointer-events: none;
-}
-.sheet-score span { position: relative; z-index: 1; font-variant-numeric: lining-nums; }
-.pen-score-circle { width: 78px; height: 52px; left: -9px; top: -8px; stroke-width: 2.3; }
-.pen-score-circle path { stroke-dasharray: 220; stroke-dashoffset: 220; }
-@keyframes score-in {
-  from { opacity: 0; transform: rotate(-7deg) scale(0.85); }
-  to   { opacity: 1; transform: rotate(-7deg) scale(1); }
-}
-
-@media (max-width: 768px) {
-  .sheet-stack::before { transform: translate(4px, 5px) rotate(1deg); }
-  .sheet-stack::after  { transform: translate(-3px, 8px) rotate(-1.4deg); }
-  .sheet-score { right: 34px; top: -26px; font-size: 20px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sheet.turn-out, .sheet.turn-in, .sheet-score { animation: none; }
-}

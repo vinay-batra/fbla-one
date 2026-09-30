@@ -1177,3 +1177,156 @@ p { color: var(--text2); line-height: 1.62; }
 
 /* The format chip on competition cards: ink, so "Test, then Role Play" reads first. */
 .chip-format { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* ── Exam sheet: stack, page turn, red-pen score (landing + app) ── */
+
+/* Two sheets peek out underneath, so it reads as one page of a longer test.
+   isolation keeps the pseudo-element sheets behind the real one. */
+.sheet-stack { position: relative; isolation: isolate; }
+.sheet-stack::before,
+.sheet-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px -18px rgba(60, 45, 20, 0.4);
+}
+.sheet-stack::before { transform: translate(7px, 7px) rotate(1.6deg); }
+.sheet-stack::after  { transform: translate(-5px, 12px) rotate(-2.6deg); }
+.sheet { z-index: 1; }
+
+/* "Next question" lifts the top sheet off; the next one is laid down. */
+.sheet.turn-out { animation: sheet-out 0.28s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.sheet.turn-in  { animation: sheet-in 0.36s cubic-bezier(0.22, 0.61, 0.36, 1); }
+@keyframes sheet-out {
+  to { transform: translate(-52px, -20px) rotate(-7deg); opacity: 0; }
+}
+@keyframes sheet-in {
+  from { transform: translate(0, 14px) rotate(var(--sheet-tilt, 0deg)); opacity: 0; }
+  to   { transform: rotate(var(--sheet-tilt, 0deg)); opacity: 1; }
+}
+
+/* Running score, written in the top margin and circled. */
+.sheet-score {
+  position: absolute;
+  top: -30px;
+  right: 46px;
+  z-index: 3;
+  padding: 6px 14px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1;
+  color: var(--red);
+  transform: rotate(-7deg);
+  animation: score-in 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+}
+.sheet-score span { position: relative; z-index: 1; font-variant-numeric: lining-nums; }
+.pen-score-circle { width: 78px; height: 52px; left: -9px; top: -8px; stroke-width: 2.3; }
+.pen-score-circle path { stroke-dasharray: 220; stroke-dashoffset: 220; }
+@keyframes score-in {
+  from { opacity: 0; transform: rotate(-7deg) scale(0.85); }
+  to   { opacity: 1; transform: rotate(-7deg) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .sheet-stack::before { transform: translate(4px, 5px) rotate(1deg); }
+  .sheet-stack::after  { transform: translate(-3px, 8px) rotate(-1.4deg); }
+  .sheet-score { right: 34px; top: -26px; font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet.turn-out, .sheet.turn-in, .sheet-score { animation: none; }
+}
+
+/* ── AI practice test on exam paper (app/app/coach) ───────── */
+.coach-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--text);
+}
+.coach-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.coach-grid-cell {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text3);
+  background: transparent;
+  color: var(--text2);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.coach-grid-cell:hover { border-color: var(--text); }
+.coach-grid-cell.is-answered { background: var(--text); border-color: var(--text); color: var(--bg); }
+.coach-grid-cell.is-current { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--pen); }
+.coach-sheet .sheet-q { font-size: 21px; }
+.opt.is-picked .bubble { background: var(--text); border-color: var(--text); color: var(--card-bg); }
+
+.coach-report .report-score { margin-bottom: 8px; }
+.coach-report-sub { margin-top: 4px; font-size: 13.5px; color: var(--text3); }
+.coach-topics { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.coach-topics-title { font-size: 12.5px; font-weight: 600; color: var(--text3); margin-bottom: 6px; }
+.coach-topic-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(60px, 140px) 40px 52px;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  border-bottom: 1px dashed var(--border);
+}
+.coach-topic-name { font-size: 14px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.coach-topic-bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.coach-topic-bar span { display: block; height: 100%; background: var(--text); border-radius: 3px; }
+.coach-topic-bar span.is-weak { background: var(--red); }
+.coach-topic-score { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text2); text-align: right; }
+.coach-topic-drill {
+  justify-self: end;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.coach-report-actions { flex-wrap: wrap; justify-content: flex-start; }
+
+.coach-review-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.coach-review-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 3px; background: var(--card-bg); }
+.coach-review-toggle button {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+}
+.coach-review-toggle button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.coach-review-item { padding-top: 20px; padding-bottom: 18px; }
+.coach-review-q { font-size: 17px; }
+.coach-review-verdict { font-size: 12px; font-weight: 700; color: var(--green); margin-right: 0; }
+.coach-review-verdict.is-wrong { color: var(--red); }
+.coach-review-item .opt { cursor: default; }
+.coach-review-item .opt:hover { background: transparent; }
+
+@media (max-width: 600px) {
+  .coach-sheet .sheet-q { font-size: 18px; }
+  .coach-topic-row { grid-template-columns: minmax(0, 1fr) 40px 48px; }
+  .coach-topic-bar { display: none; }
+}
