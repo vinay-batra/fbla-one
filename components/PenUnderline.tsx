@@ -57,7 +57,13 @@ export function PenUnderline({ children, delay = 0.55 }: { children: ReactNode; 
     const ro = new ResizeObserver(measure);
     ro.observe(el.parentElement ?? el);
     document.fonts?.ready.then(measure).catch(() => {});
-    return () => ro.disconnect();
+    // Sent by anything that moves the phrase without resizing its parent, such
+    // as the hero's rotating word changing width.
+    window.addEventListener("pen-underline:measure", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("pen-underline:measure", measure);
+    };
   }, [delay]);
 
   // After the first draw, render strokes static so a later re-measure (resize,

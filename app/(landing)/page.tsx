@@ -5,6 +5,7 @@ import { HeroCta } from "@/components/HeroCta";
 import { EmailCta } from "@/components/EmailCta";
 import { ExamSheet } from "@/components/landing/ExamSheet";
 import { PenUnderline } from "@/components/PenUnderline";
+import { RotatingWord } from "@/components/landing/RotatingWord";
 import { WhyDifferent } from "@/components/landing/WhyDifferent";
 import { EventIndex } from "@/components/landing/EventIndex";
 import { COMPETITION_STATS } from "@/lib/competitions";
@@ -63,7 +64,8 @@ export default function Landing() {
             </div>
             <div className="rise rise-1">
               <h1 className="ed-display">
-                Walk into regionals{" "}
+                Walk into{" "}
+                <RotatingWord words={["regionals", "states", "nationals"]} />{" "}
                 <PenUnderline delay={0.65}>already knowing the test.</PenUnderline>
               </h1>
             </div>
