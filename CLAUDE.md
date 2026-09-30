@@ -14,7 +14,9 @@ The Aug 25, 2026 officer-meeting demo has passed. No fixed deadline now; the goa
 
 ## Current focus
 
-**LIVE at [chapterprep.com](https://chapterprep.com). Last shipped: v1.11.0 (Sept 30, 2026). Migrations: 0001-0021, ALL applied + verified live (0021 daily AI caps: `_quota_test.mjs` 13/13).** Read the v1.11.0 block first: it is the current feature inventory and design system, and it supersedes the reference sections' older descriptions wherever they conflict. Then v1.10.0, v1.9.0, v1.8.0; the v1.7.0/v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history from when the product was called FBLA One at fbla.one. **Do not rewrite that history.** The old name shipped and the record of it stays intact.
+**LIVE at [chapterprep.com](https://chapterprep.com). Last shipped: v1.12.0 (Oct 1, 2026). Migrations: 0001-0021, ALL applied + verified live (0021 daily AI caps: `_quota_test.mjs` 13/13).** Read the v1.12.0 block, then the v1.11.0 block: together they are the current feature inventory and design system, and it supersedes the reference sections' older descriptions wherever they conflict. Then v1.10.0, v1.9.0, v1.8.0; the v1.7.0/v1.6.2/v1.5/v1.4/v1.3 blocks below are accurate history from when the product was called FBLA One at fbla.one. **Do not rewrite that history.** The old name shipped and the record of it stays intact.
+
+> **v1.12.0 - launch readiness (Sept 30 - Oct 1, 2026), DONE + deployed + verified live.** The details live as bullets inside the v1.11.0 block below (Landing, Event finder, Conversion pass, Daily AI caps, Analytics). In short: `/for-advisors` page + "For advisors" buttons; hero claims + rotating regionals/states/nationals word; event quiz embedded on the landing (`/find-your-event` redirects); walkthrough copy tightened; public chat readable, 7 free messages, chat icon, and it now receives the real event list in its system prompt (`EVENT_LIST` in `app/api/ai-chat/route.ts`, it had invented formats); Google sign-up keeps the role; daily AI caps (0021); Vercel Web Analytics (enabled by Vinay in the dashboard Oct 1; the MCP `count_pageviews` returns "Web Analytics not found" until it is); new og-image from `scripts/og-image.html`; Next 16.3.8. Launch context: Vinay's standstill with FBLA ended Oct 1; he is promoting on LinkedIn and TikTok. Public copy may say "FBLA" descriptively but never use FBLA's logo, claim endorsement, or promise results.
 
 > **v1.11.0 - site-wide redesign + practice that teaches (Sept 29-30, 2026), DONE + deployed + verified live.**
 > - **Design system is now site-wide "paper and ink"** (it was landing-only in v1.10). Tokens in `app/globals.css`: paper `--bg #f5f1e8` / ink `#13110e`; `--accent` IS ink (`#17181c` / `#f0e9da`), `--brand` is deep red pen (`#9e2a1b` / `#ff9b8c`), `--pen` (lighter red for drawn lines), `--pen-text` (red labels). **No blue or teal anywhere.** `--green`/`--red` stay semantic (correct/incorrect). Fraunces (`--font-serif`) loads in the root layout and sets every h1-h3; `.font-mono` is now Inter with tabular figures (80 call sites); real Space Mono survives only on the exam sheet. Logo = solid red ribbon bookmark with a paper check (`#b8362a` / `#fbf8f1`, fixed, not themed), wordmark in Fraunces ink with italic "Prep". `components/PenUnderline.tsx` measures each rendered line (`getClientRects`) and draws one flat stroke per line, so underlined phrases can wrap. Glow orbs, shimmer, pulsing badges, and the `/changelog` page are gone (`/changelog` 308s to `/`). Every page: 0 AA contrast failures in both themes (automated DOM sweep).
@@ -152,7 +154,7 @@ The Aug 25, 2026 officer-meeting demo has passed. No fixed deadline now; the goa
 - Build clean (79 routes), lint clean. No em dashes in source. No CommandPalette (removed).
 
 ### Next up
-1. Get real students using it (3 or 4 chapter members on their own phones) and fix what confuses them.
+1. Get real students using it (3 or 4 chapter members on their own phones) and fix what confuses them. After Vinay's chapter runs a real Mock Regionals, add genuine proof to the landing (an advisor quote, a real photo, real counts). Never invent any.
 2. Emails and reminders (on hold per Vinay): needs a Resend account + DNS for chapterprep.com. `lib/email.ts` is scaffolded and no-ops without `RESEND_API_KEY`.
 3. `hello@` / `privacy@chapterprep.com` still have no MX records.
 
@@ -166,7 +168,7 @@ There's a self-contained integration test pattern (used twice this session to ca
 - **Framework**: Next.js 16.3.8 (App Router, Turbopack), TypeScript, React 19. Read `node_modules/next/dist/docs` before assuming an API (see AGENTS.md).
   - **16.3 notes (upgraded Sept 30, 2026 for the Proxy-bypass/Server Actions/next/og advisories; 16.2.x has no patched release for the next/og RCE):** `next build` now keeps a Turbopack cache in `.next/cache` by default (about 76MB here; `rm -rf .next` is safe when disk is low). `next dev` upserts the `nextjs-agent-rules` block in AGENTS.md when it detects a coding agent; its template contains em dashes, so if it rewrites that block, do not commit the rewrite without asking Vinay. New lint rule `@next/next/no-location-assign-relative-destination` warns on the intentional full reload in AppShell's Exit preview (warning only). The gitignored `_*.mjs` scripts are linted too: never name a helper `use` (react-hooks reads it as React's `use`).
 - **Styling**: CSS variables only (no Tailwind). Fonts via `next/font` in `app/layout.tsx` (self-hosted): Inter (body), Fraunces (`--font-serif`, all headings), Space Mono (exam sheet only), Space Grotesk (loaded, barely used).
-- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0020 in `supabase/migrations/`, all applied to prod.
+- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0021 in `supabase/migrations/`, all applied to prod.
 - **AI**: Anthropic SDK. claude-haiku-4-5 generates practice questions (calculator tool loop) and runs the public chat; claude-sonnet-5 verifies every question and powers the AI Judge.
 - **Animation**: CSS only (framer-motion was removed in v1.9). ScrollReveal is IntersectionObserver-based and never hides above-the-fold content.
 - **Hosting**: Vercel, apex `chapterprep.com` (www 308s to it). Push to `main` auto-deploys.
@@ -306,7 +308,7 @@ Open http://localhost:3000.
 
 - **Frontend**: push to `main` and Vercel auto-deploys to `chapterprep.com`.
 - **Env vars on Vercel and in `.env.local`**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_ADMIN_EMAIL`.
-- **Supabase migrations** (0001-0020 applied): Vinay pastes each new file into the Supabase SQL Editor (Claude prints it in chat). All are idempotent. After applying, run that migration's `_*_test.mjs` live check.
+- **Supabase migrations** (0001-0021 applied): Vinay pastes each new file into the Supabase SQL Editor (Claude prints it in chat). All are idempotent. After applying, run that migration's `_*_test.mjs` live check.
 - **Version**: bump `lib/version.ts` and add a CHANGELOG entry each release.
 
 ---

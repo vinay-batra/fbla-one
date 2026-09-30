@@ -4,6 +4,20 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.12.0 - October 1, 2026 - Ready for launch
+
+- **A page for advisors.** `/for-advisors` walks through setting up and running a chapter in six steps, from creating it to regionals. "For advisors" is in the menu, the home page and the footer, and its button starts sign-up with Advisor already picked.
+- **The home page says what makes ChapterPrep different** right at the top: practice tests built from your event's outline, an AI judge for role plays, and a mock regionals for your whole chapter. The headline now cycles through regionals, states and nationals.
+- **The event quiz is on the home page**, right above "Why not just ask a chatbot?", instead of its own tab. Old links still work.
+- **The chatbot comparison is shorter and punchier,** five slides with the most important first, and every "with a chatbot" line is literally true.
+- **The chat assistant** is easier to read, has a plain chat icon, allows 7 free messages a day, and now knows how every event is judged instead of guessing.
+- **Signing up with Google keeps your Student or Advisor choice.** It used to ignore it.
+- **Daily limits on AI use** so the site stays free: 200 practice questions, 30 judge actions and 60 chat messages a day per account. They reset at midnight Eastern, and a normal study day never gets close.
+- **Phones:** the floating buttons slide out of the way while you scroll, the list of all 76 events folds into categories, and a few layouts that overflowed at in-between screen sizes are fixed.
+- **New link preview image** for when the site is shared, and privacy-friendly visitor analytics.
+- The FAQ points unanswered questions to the AI chat instead of an email address. The "notify me" email box is gone, since the site does not send email yet.
+- Security update to the latest Next.js.
+
 ## v1.11.0 - September 30, 2026 - Practice that actually teaches
 
 - **The whole site is paper and ink now**, not just the home page, with one accent color: the red pen. New red bookmark logo and serif wordmark.

@@ -8,7 +8,7 @@ AI-powered all-in-one platform for FBLA chapters: every competitive event verifi
 |---|---|
 | Repo | `github.com/vinay-batra/fbla-one` (push to `main` -> Vercel auto-deploys) |
 | Hosting | Vercel, domain `chapterprep.com` (SSL active) |
-| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0020, all applied + verified live; Mock Regionals 47/47, readiness 36/36, mistake bank 16/16). |
+| Database | Supabase project `osxoygndwazbygiqyjhu` (migrations 0001-0021, all applied + verified live; Mock Regionals 47/47, readiness 36/36, mistake bank 16/16, daily AI caps 13/13). |
 | Auth | Google OAuth + email/password + magic link (PKCE via `/auth/callback`) |
 | AI | Anthropic via `ANTHROPIC_API_KEY`: `claude-haiku-4-5` writes practice questions (`/api/practice-test`) and runs the public chat; `claude-sonnet-5` checks every question (`/api/verify-questions`) and powers the AI Judge (`/api/judge`) |
 
@@ -21,18 +21,20 @@ See [`CLAUDE.md`](./CLAUDE.md) for architecture + rules. [`CHANGELOG.md`](./CHAN
 Sign up (as a student or advisor), pick your event, then everything lives in the gated dashboard at `/app`.
 
 **For students**
-- **55 competition guides** -- every FBLA event with test format, topic list, curated study resources, and a link to its official FBLA guidelines
-- **AI practice tests** -- 10/25/50-question tests calibrated to your event's exact topic outline, streamed live, with a plain-language explanation on every question and an in-test stopwatch. Every numeric answer is computed and verified by a calculator tool (not the model's mental math), so the answer keys are correct. Each question is topic-tagged.
-- **Weak-topic drills** -- the coach learns your lowest-accuracy topics and a "Drill" button generates a test focused on just that topic
-- **Retry your misses** -- re-quiz only the questions you got wrong
-- **Day streak + score tracker** -- consecutive-practice streak and per-event score trends on the dashboard
-- **Road to Nationals** -- a study plan with the full Regionals -> States -> Nationals path, countdowns, and a weekly practice-pace target
-- **Chapter leaderboard** -- a friendly, effort-based ranking of everyone in your chapter (plus your rank on the dashboard)
-- **Deadline calendar + saved resources** -- in-app alerts 3 days out; bookmark any study resource
+- **Every FBLA event** -- all 76, each with how it is judged (test, test then role play, presentation), its topic outline, and study resources
+- **AI practice tests** -- 10/25/50 questions or a full 100-question, 50-minute simulation, built from the event's topic outline. A calculator tool computes every number, and a second model solves every question without the answer key; anything it cannot confirm is replaced
+- **AI Judge** -- draw a role play card or hand in a presentation script, prep on the real clock, and get scored on the event's rating sheet with notes on what to fix
+- **Mistake bank** -- missed questions come back in later tests until you get them right twice; synced to your account
+- **Weak-topic drills, day streak, score trends, Road to Nationals study plan, chapter leaderboard, deadline calendar**
+- **"Which event is for me?"** -- a 7-question quiz on the landing page that recommends three events with reasons
 
-**For advisors**
-- **Run your chapter** -- create a chapter, share a one-tap invite link + QR (or code), see a member roster, leaderboard, 8-week stats, and CSV exports
-- **Assignments** -- set practice goals for the whole chapter and watch a live completion grid fill in as members practice
+**For advisors** (see `/for-advisors`)
+- **Run your chapter** -- create a chapter, share a one-tap invite link + QR, see the roster, leaderboard, stats, and CSV exports (including a regional-registration export)
+- **Assignments** -- set practice goals and watch a live completion grid
+- **Mock Regionals** -- one timed test on the projector, the whole chapter joins from their phones, server clock, podium and hardest question
+- **Readiness report** -- each member marked Ready / On track / Needs attention, with weakest topics
+
+**Limits**: AI use is capped per day (accounts: 200 practice questions, 30 judge calls, 60 chat messages; signed-out visitors less, per IP), resetting at midnight Eastern.
 
 **Onboarding**: a guided spotlight tour on first visit (replayable from Settings). Free for every FBLA member.
 
@@ -81,8 +83,12 @@ Project `osxoygndwazbygiqyjhu` is connected. Env vars set locally and on Vercel:
 | `0015_email_signups.sql` | landing-page email capture list |
 | `0016_leaderboard_exclude_advisor.sql` | leaderboard excludes advisors |
 | `0017_audit_remediation.sql` | audit fixes: indexes, role/feedback/email-list guards, audit_log, email_signups delete grant, 8-char invite codes |
+| `0018_mock_regionals.sql` | Mock Regionals sessions, answer-key protection, server-side grading |
+| `0019_practice_topic_results.sql` | per-topic results on practice logs (readiness report) |
+| `0020_mistake_bank.sql` | mistake bank synced to accounts |
+| `0021_ai_daily_quota.sql` | daily AI caps (`consume_ai_quota`, service role only) |
 
-All migration files live in `supabase/migrations/`; run any unapplied ones in order. 0016 + 0017 are idempotent.
+All migration files live in `supabase/migrations/`; run any unapplied ones in order. 0016 onward are idempotent.
 
 **Migration 0005** - run in Supabase SQL Editor:
 ```sql
@@ -127,7 +133,7 @@ Env vars required on Vercel:
 ```
 fbla-one/
   app/
-    layout.tsx                   <- root: ThemeProvider + GlobalShell + AmbientOrbs + FOUC
+    layout.tsx                   <- root: fonts, ThemeProvider, GlobalShell, Vercel Analytics, theme script
     globals.css                  <- full token system, button/input/card library (~600 lines)
     api/
       practice-test/route.ts     <- streaming AI practice test generation (POST)
@@ -135,16 +141,17 @@ fbla-one/
       delete-account/route.ts    <- account deletion (DELETE, service role + erasure)
       health/route.ts            <- /api/health readiness probe (GET)
       preview/route.ts           <- sets fbla_preview cookie for demo mode (GET)
+    (landing)/
+      page.tsx                   <- / landing page (editorial.css)
+      for-advisors/page.tsx      <- /for-advisors
     (marketing)/
       layout.tsx                 <- PublicNav + Footer
-      page.tsx                   <- / landing page
-      about/page.tsx             <- /about
       faq/page.tsx               <- /faq
       privacy/page.tsx
       terms/page.tsx
       competitions/
         page.tsx                 <- /competitions (filterable grid)
-        [slug]/page.tsx          <- /competitions/[slug] (SSG, 55 pages)
+        [slug]/page.tsx          <- /competitions/[slug] (SSG, 76 pages)
     auth/page.tsx                <- sign in / sign up / magic link
     app/
       layout.tsx                 <- AppShell wrapper + auth gate (preview cookie bypass)
@@ -163,7 +170,6 @@ fbla-one/
     GlobalShell.tsx              <- mounts PublicAIChat + FeedbackButton + OnboardingModal
     PublicAIChat.tsx             <- floating AI assistant FAB (-> /api/ai-chat)
     FeedbackButton.tsx           <- fixed FAB -> feedback modal (writes to public.feedback)
-    EmailCta.tsx                 <- landing email capture (-> join_email_list RPC)
     OnboardingModal.tsx          <- first-visit welcome modal
     DeadlineAlert.tsx            <- in-app alert for deadlines within 3 days
     ChapterRankChip.tsx          <- dashboard chapter-rank nudge (shared leaderboard cache)
@@ -175,14 +181,12 @@ fbla-one/
     ThemeToggle.tsx
     Logo.tsx                     <- inline SVG shield+torch mark + wordmark
     ScrollReveal.tsx
-    AmbientOrbs.tsx
-    ConditionalAmbientOrbs.tsx
     SectionHeader.tsx
     HeroBadge.tsx
     Card.tsx
     RegisterButton.tsx
   lib/
-    competitions.ts              <- 55-event FBLA registry (all complete)
+    competitions.ts              <- 76-event FBLA registry, formats verified against the guidelines
     storage.ts                   <- localStorage-first state + Supabase sync
     chapter.ts                   <- chapter Supabase ops (create, join, roster, activity)
     url.ts                       <- safeNextPath() same-origin redirect guard
