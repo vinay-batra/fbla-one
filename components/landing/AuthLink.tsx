@@ -11,7 +11,9 @@ import { useSignedIn } from "@/components/useSignedIn";
  */
 export function AuthLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
   const signedIn = useSignedIn();
-  const to = signedIn ? href : `/auth?mode=signup&next=${encodeURIComponent(href)}`;
+  // Setting up a chapter is an advisor's job, so pre-pick that role at sign-up.
+  const role = href.startsWith("/app/chapter") ? "&role=advisor" : "";
+  const to = signedIn ? href : `/auth?mode=signup${role}&next=${encodeURIComponent(href)}`;
   return (
     <Link href={to} className={className}>
       {children}

@@ -36,7 +36,7 @@ export default function NotFound() {
         That page does not exist, or it moved. Let us get you back on track.
       </p>
       <div style={{ marginTop: 14, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-        <Link href="/" className="btn btn-accent btn-lg cta-shimmer">Back home</Link>
+        <Link href="/" className="btn btn-accent btn-lg">Back home</Link>
         <Link href="/competitions" className="btn btn-ghost btn-lg">Browse competitions</Link>
       </div>
     </div>

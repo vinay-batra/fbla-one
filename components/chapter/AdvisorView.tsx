@@ -86,7 +86,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
           title="Set goals for your chapter"
           tagline="Assign practice targets and watch completion update as members practice."
           right={
-            <button type="button" onClick={() => c.setShowAsgForm((v) => !v)} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+            <button type="button" onClick={() => c.setShowAsgForm((v) => !v)} className="btn btn-accent btn-sm btn-pill">
               {c.showAsgForm ? "Close" : "New assignment"}
             </button>
           }

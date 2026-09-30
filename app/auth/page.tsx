@@ -30,7 +30,10 @@ function AuthForm() {
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"member" | "advisor">("member");
+  // "For advisors" links arrive with role=advisor so the choice is already made.
+  const [role, setRole] = useState<"member" | "advisor">(
+    searchParams.get("role") === "advisor" ? "advisor" : "member"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -126,9 +129,16 @@ function AuthForm() {
     if (!isSupabaseConfigured) { setError("OAuth not configured."); return; }
     const supa = getSupabase();
     if (!supa) return;
+    // Google skips the email form, so carry the Student/Advisor choice the same
+    // way email sign-up does, and send advisors to their chapter page.
+    let next = nextPath;
+    if (mode === "signup") {
+      try { localStorage.setItem("fbla_pending_role", role); } catch {}
+      if (role === "advisor") next = "/app/chapter";
+    }
     const { error } = await supa.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${nextPath}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
     if (error) setError(error.message);
   };
@@ -403,6 +413,41 @@ function AuthForm() {
             </div>
           )}
 
+          {/* Role picker on signup */}
+          {mode === "signup" && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: "0.02em" }}>I am a</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {([
+                  { key: "member", label: "Student", sub: "Prep and compete" },
+                  { key: "advisor", label: "Advisor", sub: "Run a chapter" },
+                ] as const).map((opt) => {
+                  const active = role === opt.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setRole(opt.key)}
+                      aria-pressed={active}
+                      style={{
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: 11,
+                        border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: active ? "var(--accent-dim)" : "var(--bg2)",
+                        cursor: "pointer",
+                        transition: "border-color 0.15s, background 0.15s",
+                      }}
+                    >
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: active ? "var(--accent-text)" : "var(--text)" }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Google OAuth */}
           {(mode === "login" || mode === "signup") && isSupabaseConfigured && (
             <>
@@ -511,41 +556,6 @@ function AuthForm() {
               </>
             )}
           </div>
-
-          {/* Role picker on signup */}
-          {mode === "signup" && (
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: "0.02em" }}>I am a</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {([
-                  { key: "member", label: "Student", sub: "Prep and compete" },
-                  { key: "advisor", label: "Advisor", sub: "Run a chapter" },
-                ] as const).map((opt) => {
-                  const active = role === opt.key;
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setRole(opt.key)}
-                      aria-pressed={active}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: 11,
-                        border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
-                        background: active ? "var(--accent-dim)" : "var(--bg2)",
-                        cursor: "pointer",
-                        transition: "border-color 0.15s, background 0.15s",
-                      }}
-                    >
-                      <div style={{ fontSize: 13.5, fontWeight: 600, color: active ? "var(--accent-text)" : "var(--text)" }}>{opt.label}</div>
-                      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{opt.sub}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Trust strip on signup */}
           {mode === "signup" && (

@@ -44,7 +44,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         email <a href="mailto:hello@chapterprep.com" className="animated-link" style={{ color: "var(--accent)" }}>hello@chapterprep.com</a>.
       </p>
       <div style={{ marginTop: 14, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-        <button onClick={reset} className="btn btn-accent btn-lg cta-shimmer">Try again</button>
+        <button onClick={reset} className="btn btn-accent btn-lg">Try again</button>
         <Link href="/" className="btn btn-ghost btn-lg">Back home</Link>
       </div>
     </div>

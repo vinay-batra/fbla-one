@@ -12,7 +12,7 @@ import { useSignedIn } from "@/components/useSignedIn";
 export function HeroCta({
   signedOutLabel = "Get started",
   signedOutHref = "/auth?mode=signup",
-  className = "btn btn-accent btn-lg cta-shimmer",
+  className = "btn btn-accent btn-lg",
   wrap = true,
 }: {
   signedOutLabel?: string;

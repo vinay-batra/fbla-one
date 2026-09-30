@@ -19,7 +19,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
  * word just stays put.
  */
 const HOLD_MS = 3500;
-const MOVE_MS = 650;
+const MOVE_MS = 700;
 
 export function RotatingWord({ words }: { words: string[] }) {
   const [{ index, prev }, setTurn] = useState<{ index: number; prev: number | null }>({ index: 0, prev: null });

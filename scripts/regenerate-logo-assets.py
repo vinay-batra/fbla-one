@@ -6,10 +6,11 @@ first, then run this script:
   node -e "require('sharp')('scripts/logo-mark.svg',{density:600}).resize(512,512).png().toFile('public/logo-mark.png')"
   python3 scripts/regenerate-logo-assets.py
 
-This produces all favicons, PWA icons, apple-touch-icon, and the og-image so they
-never drift. It does NOT delete the source.
+This produces all favicons, PWA icons and apple-touch-icon so they never drift.
+It does NOT delete the source. The og-image has its own source:
+scripts/og-image.html.
 """
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 import os
 
 os.chdir(os.path.join(os.path.dirname(__file__), ".."))
@@ -49,24 +50,7 @@ square(180, 0.14, PAPER).convert("RGB").save("public/apple-touch-icon.png")
 square(192, 0.18, PAPER).convert("RGB").save("public/icon-192.png")
 square(512, 0.18, PAPER).convert("RGB").save("public/icon-512.png")
 
-# OG card: 1200x630 paper, red-pen rule, mark + serif wordmark in ink + tagline
-W, H = 1200, 630
-og = Image.new("RGB", (W, H), (245, 241, 232))
-d = ImageDraw.Draw(og)
-d.rectangle([0, 0, W, 6], fill=(184, 54, 42))
-lg = square(300, 0.02)
-og.paste(lg, (150, (H - 300) // 2), lg)
-try:
-    f_bold = ImageFont.truetype("/System/Library/Fonts/Supplemental/Georgia Bold.ttf", 92)
-    f_ital = ImageFont.truetype("/System/Library/Fonts/Supplemental/Georgia Italic.ttf", 92)
-    f_tag = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 36)
-except Exception:
-    f_bold = f_ital = f_tag = ImageFont.load_default()
-tx = 500
-INK = (23, 24, 28)
-d.text((tx, 240), "Chapter", font=f_bold, fill=INK)
-d.text((tx + d.textlength("Chapter", font=f_bold), 240), "Prep", font=f_ital, fill=INK)
-d.text((tx, 350), "Practice tests for every competitive event", font=f_tag, fill=(92, 94, 101))
-og.save("public/og-image.png")
+# The link preview (public/og-image.png) is NOT made here any more. Its source
+# is scripts/og-image.html, rendered with headless Chrome (command in that file).
 
 print("Regenerated all brand assets from", SRC)

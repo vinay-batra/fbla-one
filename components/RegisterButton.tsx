@@ -40,7 +40,7 @@ export function RegisterButton({ slug, name }: { slug: string; name: string }) {
     <button
       type="button"
       onClick={onClick}
-      className={`btn ${registered ? "btn-ghost" : "btn-accent cta-shimmer"} btn-pill`}
+      className={`btn ${registered ? "btn-ghost" : "btn-accent"} btn-pill`}
       aria-label={registered ? `Remove ${name}` : otherTracked ? `Switch to ${name}` : `Track ${name}`}
     >
       {registered ? (

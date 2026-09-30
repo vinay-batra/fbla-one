@@ -31,6 +31,7 @@ export function AdvisorVisual({ active }: { active?: boolean }) {
   }, [active]);
 
   return (
+    <div className="adv-wrap">
     <div className="adv-grid">
       <figure className="adv-projector" aria-label="Example Mock Regionals lobby">
         <div className="adv-bar">
@@ -82,6 +83,7 @@ export function AdvisorVisual({ active }: { active?: boolean }) {
         </ul>
         <figcaption className="ed-fineprint">Example chapter. Names are made up.</figcaption>
       </figure>
+    </div>
     </div>
   );
 }

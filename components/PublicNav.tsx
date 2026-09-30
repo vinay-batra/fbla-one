@@ -13,6 +13,7 @@ type NavLinkSpec = { href: string; label: string };
 const NAV_LINKS: NavLinkSpec[] = [
   { href: "/", label: "Features" },
   { href: "/competitions", label: "Competitions" },
+  { href: "/for-advisors", label: "For advisors" },
   { href: "/faq", label: "FAQ" },
 ];
 
@@ -149,7 +150,7 @@ export function PublicNav() {
               <div aria-hidden style={{ width: 110, height: 36, opacity: 0 }} />
             ) : loggedIn ? (
               <>
-                <Link href="/app" className="btn btn-accent btn-pill btn-sm cta-shimmer nav-hide-mobile" style={{ paddingLeft: 16, paddingRight: 16 }}>
+                <Link href="/app" className="btn btn-accent btn-pill btn-sm nav-hide-mobile" style={{ paddingLeft: 16, paddingRight: 16 }}>
                   Go to dashboard
                 </Link>
                 <UserMenu />
@@ -159,7 +160,7 @@ export function PublicNav() {
                 <Link href="/auth" className="btn btn-ghost btn-pill btn-sm nav-hide-mobile" style={{ paddingLeft: 16, paddingRight: 16 }}>
                   Log in
                 </Link>
-                <Link href="/auth?mode=signup" className="btn btn-accent btn-pill btn-sm cta-shimmer" style={{ paddingLeft: 18, paddingRight: 18 }}>
+                <Link href="/auth?mode=signup" className="btn btn-accent btn-pill btn-sm" style={{ paddingLeft: 18, paddingRight: 18 }}>
                   Sign up
                 </Link>
               </>
@@ -236,7 +237,7 @@ export function PublicNav() {
             {/* Auth actions hidden from the top bar on mobile live here instead */}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12, paddingTop: 12, borderTop: "0.5px solid var(--border)" }}>
               {loggedIn ? (
-                <Link href="/app" className="btn btn-accent btn-pill cta-shimmer" style={{ width: "100%" }}>
+                <Link href="/app" className="btn btn-accent btn-pill" style={{ width: "100%" }}>
                   Go to dashboard
                 </Link>
               ) : (

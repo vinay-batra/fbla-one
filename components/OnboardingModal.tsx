@@ -228,7 +228,7 @@ export function OnboardingModal() {
         <button
           type="button"
           onClick={dismiss}
-          className="btn btn-accent btn-pill cta-shimmer"
+          className="btn btn-accent btn-pill"
           style={{ width: "100%", fontSize: 15, padding: "13px 0" }}
         >
           Got it, let&apos;s go

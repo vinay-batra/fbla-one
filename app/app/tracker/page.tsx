@@ -125,7 +125,7 @@ export default function Tracker() {
               />
             </Field>
 
-            <button type="submit" className="btn btn-accent btn-lg cta-shimmer">
+            <button type="submit" className="btn btn-accent btn-lg">
               {justSaved ? "Saved" : "Save log"}
             </button>
             <p role="status" aria-live="polite" style={{ fontSize: 12, color: "var(--green)", minHeight: 16, margin: 0 }}>

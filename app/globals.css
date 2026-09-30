@@ -489,19 +489,6 @@ p { color: var(--text2); line-height: 1.62; }
   animation: spin 0.7s linear infinite;
 }
 
-/* ─── CTA shimmer sweep (apply alongside any button) ─────── */
-.cta-shimmer {
-  position: relative !important;
-  overflow: hidden !important;
-}
-.cta-shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  display: none;
-}
-.cta-shimmer:hover:not(:disabled)::after { animation: shimmer-sweep 0.7s ease-in-out; }
-
 /* ─── Micro-interaction button (icon buttons) ────────────── */
 .mi-btn {
   transition: transform 0.1s ease, box-shadow 0.12s ease, filter 0.12s ease, opacity 0.12s ease;
@@ -843,6 +830,21 @@ p { color: var(--text2); line-height: 1.62; }
     height: 44px !important;
     bottom: 26px !important;
     right: 84px !important;
+  }
+}
+
+/* On phones the floating buttons sit over the page text, so they slide out of
+   the way while the reader scrolls down and come back on the first scroll up
+   (GlobalShell toggles html.fab-tucked). */
+@media (max-width: 768px) {
+  .fbla-ai-chat-btn, .fbla-feedback-btn {
+    transition: transform 0.25s ease, opacity 0.2s ease !important;
+  }
+  html.fab-tucked .fbla-ai-chat-btn,
+  html.fab-tucked .fbla-feedback-btn {
+    transform: translateY(140%) !important;
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

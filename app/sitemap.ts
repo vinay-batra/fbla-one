@@ -6,7 +6,7 @@ const BASE = "https://chapterprep.com";
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const staticRoutes = ["", "/competitions", "/faq", "/privacy", "/terms"].map((path) => ({
+  const staticRoutes = ["", "/competitions", "/for-advisors", "/faq", "/privacy", "/terms"].map((path) => ({
     url: `${BASE}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

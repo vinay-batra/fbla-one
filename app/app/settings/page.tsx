@@ -234,7 +234,7 @@ export default function Settings() {
             type="button"
             onClick={saveProfile}
             disabled={saving}
-            className="btn btn-accent btn-sm btn-pill cta-shimmer"
+            className="btn btn-accent btn-sm btn-pill"
             style={{ alignSelf: "flex-start", marginTop: 4 }}
           >
             {saving ? "Saving..." : "Save changes"}

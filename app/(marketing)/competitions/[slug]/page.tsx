@@ -343,7 +343,7 @@ export default async function CompetitionDetail({ params }: Props) {
               {isObjectiveTest && !isSoon && c.contentStatus === "complete" && (
                 <Link
                   href={`/app/coach?slug=${c.slug}`}
-                  className="btn btn-accent btn-pill cta-shimmer"
+                  className="btn btn-accent btn-pill"
                   style={{ width: "100%", justifyContent: "center", display: "flex", gap: 8, marginBottom: 16 }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -23,7 +23,7 @@ const STEPS: Step[] = [
   {
     selector: '[data-tour="coach"]',
     title: "Generate practice tests",
-    body: "Unlimited questions calibrated to your event's exact topics, with an explanation on every answer.",
+    body: "Fresh questions calibrated to your event's exact topics, with an explanation on every answer.",
   },
   {
     selector: '[data-tour="tracker"]',
@@ -205,11 +205,11 @@ export function AppTour() {
             Back
           </button>
           {isLast ? (
-            <button type="button" onClick={finish} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+            <button type="button" onClick={finish} className="btn btn-accent btn-sm btn-pill">
               Get started
             </button>
           ) : (
-            <button type="button" onClick={() => setStep((x) => Math.min(STEPS.length - 1, x + 1))} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+            <button type="button" onClick={() => setStep((x) => Math.min(STEPS.length - 1, x + 1))} className="btn btn-accent btn-sm btn-pill">
               Next
             </button>
           )}

@@ -13,6 +13,7 @@ const COLS: FooterCol[] = [
     title: "Product",
     links: [
       { href: "/competitions", label: "Competitions" },
+      { href: "/for-advisors", label: "For advisors" },
       { href: "/app", label: "Dashboard" },
       { href: "/auth", label: "Sign in" },
     ],
@@ -63,9 +64,9 @@ export function Footer() {
                 lineHeight: 1.65,
               }}
             >
-              The all-in-one platform for FBLA chapters: competition guides, study
-              resources, a prep tracker, and chapter management. Built for FBLA
-              students, by an FBLA student.
+              Free prep for FBLA competitive events: practice tests built from each
+              event&apos;s topic outline, an AI judge for role plays and presentations,
+              and a live mock regionals for your whole chapter.
             </p>
             <AffiliationNotice style={{ marginTop: 18 }} />
           </div>
@@ -102,7 +103,7 @@ export function Footer() {
             zIndex: 2,
           }}
         >
-          <span>© {new Date().getFullYear()} ChapterPrep. Built for FBLA students, by an FBLA student.</span>
+          <span>© {new Date().getFullYear()} ChapterPrep. Built by an FBLA student, for FBLA students.</span>
           <span className="font-mono" style={{ fontSize: 11, letterSpacing: "0.05em" }}>
             v{APP_VERSION} · chapterprep.com
           </span>

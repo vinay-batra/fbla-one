@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroCta } from "@/components/HeroCta";
-import { EmailCta } from "@/components/EmailCta";
+import { PenCheck } from "@/components/PenMarks";
 import { ExamSheet } from "@/components/landing/ExamSheet";
 import { PenUnderline } from "@/components/PenUnderline";
 import { RotatingWord } from "@/components/landing/RotatingWord";
@@ -17,7 +17,7 @@ import { COMPETITION_STATS } from "@/lib/competitions";
 const HOME_TITLE = "ChapterPrep: Practice Tests for Every FBLA Objective Event";
 // Kept under ~160 characters so search results do not truncate it.
 const HOME_DESCRIPTION =
-  "Unlimited practice tests for every FBLA objective event, with instant explanations and score tracking. Study guides, deadlines and an advisor dashboard. Free.";
+  "Free FBLA practice tests built from each event's topic outline, an AI judge for role plays and presentations, and a live mock regionals for your chapter.";
 
 export const metadata: Metadata = {
   title: { absolute: HOME_TITLE },
@@ -74,24 +74,35 @@ export default function Landing() {
               </h1>
             </div>
             <div className="rise rise-2">
-              {/* Numbers live in the ledger right below; this line carries the
-                  promise, not the stats. */}
-              <p className="ed-lede">
-                Practice tests built from your event&apos;s topic outline, with every answer
-                explained. By competition day, the real test feels familiar.
-              </p>
+              {/* The three things that set ChapterPrep apart, above the fold, so a
+                  visitor who came for the judge or for their chapter sees it here.
+                  The numbers live in the ledger right below. */}
+              <p className="ed-lede">Everything you need to prep for FBLA competition, free.</p>
+              <ul className="ed-claims">
+                <li>
+                  <span className="ed-claim-mark" aria-hidden="true"><PenCheck /></span>
+                  Practice tests built from your event&apos;s topic outline
+                </li>
+                <li>
+                  <span className="ed-claim-mark" aria-hidden="true"><PenCheck /></span>
+                  An AI judge that scores your role play on the rating sheet
+                </li>
+                <li>
+                  <span className="ed-claim-mark" aria-hidden="true"><PenCheck /></span>
+                  A mock regionals your whole chapter takes live
+                </li>
+              </ul>
             </div>
             <div className="rise rise-3">
               <div className="ed-actions">
                 <HeroCta wrap={false} signedOutLabel="Start practicing" className="ed-btn" />
-                <Link href="/competitions" className="ed-textlink">
-                  <span className="ed-textlink-label">Browse all {COMPETITION_STATS.total} events</span>{" "}
-                  <span aria-hidden="true">→</span>
+                <Link href="/for-advisors" className="ed-btn ed-btn-outline">
+                  For advisors
                 </Link>
               </div>
               <p className="ed-finder">
-                Not sure which event is yours?{" "}
-                <JumpLink to="find-your-event">Take the one-minute quiz</JumpLink>
+                <Link href="/competitions">Browse all {COMPETITION_STATS.total} events</Link>, or{" "}
+                <JumpLink to="find-your-event">take the one-minute quiz</JumpLink> to find yours.
               </p>
             </div>
           </div>
@@ -109,16 +120,15 @@ export default function Landing() {
       {/* --- LEDGER: the numbers, written as a sentence ------------------ */}
       <section className="ed-ledger" aria-label="At a glance">
         <div className="container">
+          {/* Each item stays on one line, and each dot rides with the item
+              before it, so a wrap never splits a phrase or starts a line with a
+              dot. On phones the dots hide and the items space out instead. */}
           <p>
-            <strong>{COMPETITION_STATS.total}</strong> events indexed
-            <span className="ed-sep" aria-hidden="true">·</span>
-            <strong>{COMPETITION_STATS.aiEligible}</strong> with practice tests
-            <span className="ed-sep" aria-hidden="true">·</span>
-            <strong>{COMPETITION_STATS.judged}</strong> with an AI judge
-            <span className="ed-sep" aria-hidden="true">·</span>
-            Every answer checked twice
-            <span className="ed-sep" aria-hidden="true">·</span>
-            Always free
+            <span className="ed-ledger-item"><strong>{COMPETITION_STATS.total}</strong> events indexed<span className="ed-sep" aria-hidden="true">·</span></span>{" "}
+            <span className="ed-ledger-item"><strong>{COMPETITION_STATS.aiEligible}</strong> with practice tests<span className="ed-sep" aria-hidden="true">·</span></span>{" "}
+            <span className="ed-ledger-item"><strong>{COMPETITION_STATS.judged}</strong> with an AI judge<span className="ed-sep" aria-hidden="true">·</span></span>{" "}
+            <span className="ed-ledger-item">Every answer checked twice<span className="ed-sep" aria-hidden="true">·</span></span>{" "}
+            <span className="ed-ledger-item">Always free</span>
           </p>
         </div>
       </section>
@@ -177,10 +187,14 @@ export default function Landing() {
             <div className="ed-close-inner">
               <h2 className="ed-display ed-display-close">Winners don&apos;t wait.</h2>
               <p className="ed-lede ed-lede-center">
-                Pick your event and take your first practice test in under a minute. Or leave your
-                email for prep tips before competition season.
+                Take your first practice test in under a minute, or set up your whole chapter.
               </p>
-              <EmailCta />
+              <div className="ed-close-actions">
+                <HeroCta wrap={false} signedOutLabel="Start practicing free" className="ed-btn" />
+                <Link href="/for-advisors" className="ed-btn ed-btn-outline">
+                  For advisors
+                </Link>
+              </div>
             </div>
           </ScrollReveal>
         </div>

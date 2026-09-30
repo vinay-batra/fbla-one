@@ -328,7 +328,7 @@ export default function Dashboard() {
               <EventStat label="JUDGE" value={`${myEventJudge.score}/100`} title="Latest AI Judge round, rubric points out of 100" />
             )}
 
-            <Link href={`/competitions/${myEvent.slug}`} className="btn btn-accent btn-sm btn-pill cta-shimmer">
+            <Link href={`/competitions/${myEvent.slug}`} className="btn btn-accent btn-sm btn-pill">
               Prep
             </Link>
             <Link href="/competitions" className="btn btn-ghost btn-sm">
