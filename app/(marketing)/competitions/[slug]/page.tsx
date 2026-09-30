@@ -272,6 +272,21 @@ export default async function CompetitionDetail({ params }: Props) {
                     </Card>
                   )}
 
+                  {c.judgedOn && c.judgedOn.length > 0 && (
+                    <Card style={{ marginTop: 20 }}>
+                      <h2 style={{ fontSize: 20, marginBottom: 14, letterSpacing: "-0.01em" }}>
+                        What judges score
+                      </h2>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {c.judgedOn.map((t) => (
+                          <span key={t} className="chip" style={{ fontSize: 13, padding: "7px 14px", borderRadius: 999 }}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
                   {c.topics && c.topics.length > 0 && (
                     <Card style={{ marginTop: 20 }}>
                       <h2 style={{ fontSize: 20, marginBottom: 14, letterSpacing: "-0.01em" }}>

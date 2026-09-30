@@ -7,7 +7,9 @@ import type { Competition, CompetitionFormat } from "@/lib/competitions";
 import type { JudgeMode, RolePlayCard } from "./types";
 
 export function judgeModeFor(format: CompetitionFormat): JudgeMode | null {
-  if (format === "objective-test") return null;
+  // A production test (Computer Applications) is a hands-on timed test with
+  // nothing for a judge to score, so it is not a Judge event either.
+  if (format === "objective-test" || format === "production") return null;
   if (format === "test-then-role-play") return "role-play";
   return "presentation";
 }
@@ -110,6 +112,10 @@ export function criteriaFor(c: Competition, mode: JudgeMode, card?: RolePlayCard
     const rows = focus.length > 0 ? focus : topics.slice(0, 2);
     return [...rows, ...ROLE_PLAY_STANDARD];
   }
+  // Test plus presentation events keep test areas in `topics`; their rating
+  // sheet lives in `judgedOn`.
+  const sheet = (c.judgedOn ?? []).map((t) => t.trim()).filter(Boolean);
+  if (sheet.length >= 3) return sheet.slice(0, MAX_CRITERIA);
   if (topics.length >= 3) return topics.slice(0, MAX_CRITERIA);
   return c.format === "interview" ? STANDARD_INTERVIEW : STANDARD_PRESENTATION;
 }

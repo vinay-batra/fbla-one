@@ -91,6 +91,12 @@ export type Competition = {
    * Displayed as chips.
    */
   topics?: string[];
+  /**
+   * The presentation or interview rating-sheet items, for events where
+   * `topics` holds the objective test's knowledge areas instead (test plus
+   * presentation events). The AI Judge scores against these when present.
+   */
+  judgedOn?: string[];
   /** Curated external study resources. */
   studyResources?: StudyResource[];
   /** Link to FBLA's official event description. */
@@ -351,8 +357,8 @@ export const COMPETITIONS: Competition[] = [
       "Purpose of Each Statement",
       "Analysis of Each Statement",
       "Overall Financial Condition",
-      "Changes From Prior Periods",
-      "Ratios, Trends and Benchmarks",
+      "Guidance for Business Decisions",
+      "Changes From Prior Periods and What They Reveal",
       "Two to Three Strategic Recommendations",
       "Cited Sources",
       "Delivery and Q&A",
@@ -459,9 +465,9 @@ export const COMPETITIONS: Competition[] = [
     duration: "3 minutes setup, 7-minute presentation, 3 minutes Q&A",
     topics: [
       "Supply chain scenario and strategy",
-      "Suppliers, timelines, and logistics",
-      "Costs, pricing, and risk",
-      "Demand forecasting and inventory",
+      "Management planning: structure and operations",
+      "Financial planning: costs, pricing, and risk",
+      "Demand planning: forecasting and inventory",
       "Credible cited sources",
       "Delivery and Q&A",
     ],
@@ -885,6 +891,15 @@ export const COMPETITIONS: Competition[] = [
     longDescription:
       "Future Business Leader is FBLA's premier individual award, recognizing members who combine leadership, business knowledge, and active FBLA involvement. Individual event. How it runs, in four parts: (1) you submit a cover letter (one page) and resume (up to two pages) as a PDF, judged before the conference; (2) you take a 50-minute, 100-question objective test on FBLA (its organization, bylaws and handbook, competitive event guidelines, publications, and mission, pledge, and goals) plus general business and technology knowledge; (3) a 10-minute preliminary interview with judges, with no technology or materials allowed; and (4) a 10-minute final interview for finalists. Your pre-judged, test, and preliminary interview scores are added together to choose finalists, and the final interview decides the winners.",
     duration: "50-minute test (100 questions) and a 10-minute interview (preliminary and final rounds), plus a cover letter and resume submitted before the conference",
+    judgedOn: [
+      "FBLA Participation and Leadership",
+      "Other School and Community Organizations",
+      "Areas of Outstanding Achievement",
+      "Career Knowledge and Plans",
+      "Greeting, Introduction and Closing",
+      "Confidence, Assertiveness and Enthusiasm",
+      "Verbal and Nonverbal Communication",
+    ],
     topics: [
       "FBLA Organization",
       "FBLA Bylaws & Handbook",
@@ -912,12 +927,11 @@ export const COMPETITIONS: Competition[] = [
       "Future Business Educator is for members interested in teaching business. You develop a lesson plan on the topic FBLA releases each year and then present it, showing your subject knowledge, instructional planning, and presentation skills. Individual event. How it runs: there is no test. You submit the lesson plan (no more than three pages, using FBLA's template) as a PDF, judged before the conference. In the presentation the judges play your students while you teach part of the lesson: 3 minutes to set up, a 7-minute presentation, and 3 minutes of questions. Internet access is not provided. At the National Leadership Conference your pre-judged score is added to your preliminary presentation score to decide who advances to the final round, and the final presentation decides the winners.",
     duration: "3 minutes setup, 7-minute presentation, 3 minutes Q&A, plus a lesson plan submitted before the conference",
     topics: [
-      "Standards and Objectives",
-      "Outcome and Measurement",
-      "Resources for Diverse Learners",
-      "Engaging Instructional Activities",
+      "Lesson Plan: Standards, Objectives and Activities",
       "Subject Matter Knowledge",
-      "Organized, Creative Lesson",
+      "Material Meets Lesson Objectives",
+      "Appropriate for Audience and Subject",
+      "Interesting, Motivating, Creative Lesson",
       "Cited Sources",
       "Delivery and Q&A",
     ],
@@ -971,7 +985,7 @@ export const COMPETITIONS: Competition[] = [
     topics: [
       "Resume Review with Visual Aids",
       "Career Research and Salary Data",
-      "School and Work Experience",
+      "Career-Related Education and Experience",
       "Skills, Awards and Certifications",
       "Cited Sources",
       "Use of Portfolio",
@@ -1100,7 +1114,7 @@ export const COMPETITIONS: Competition[] = [
       "Digital Video Production has you plan and produce a video on the topic FBLA releases each year, tailored to a specific audience. Team event (1 to 3 members). How it runs: there is no test. You submit a link to the video (no more than two minutes long), which is judged before the conference and played during your presentation, then present live: 3 minutes to set up, a 7-minute presentation, and 3 minutes of questions. Internet access is provided. At the National Leadership Conference your pre-judged score is added to your preliminary presentation score to decide who advances to the final round, and the final presentation decides the winners.",
     duration: "3 minutes setup, 7-minute presentation, 3 minutes Q&A, plus the video submitted before the conference",
     topics: [
-      "Documentary Topic Fit",
+      "Topic and Concept Fit",
       "Film Techniques and Editing",
       "Audio and Visual Elements",
       "Logical Flow and Call to Action",
@@ -2084,7 +2098,17 @@ export const COMPETITIONS: Competition[] = [
       "Team event: an objective test, a pre-judged executive summary, and a presentation on the year's ethics case.",
     longDescription:
       "Business Ethics asks your team to analyze an ethical dilemma that businesses face (FBLA releases the case each year) and present a solution. Team event (1 to 3 members). How it runs, in four parts: (1) you submit an executive summary (no more than three pages) as a PDF, judged before the conference, which must reflect interviews with three local businesspeople; (2) each member takes a 50-minute, 100-question objective test, and the team's scores are averaged; (3) a preliminary presentation: 3 minutes to set up, 7 minutes to present, and 3 minutes of questions; and (4) a final presentation for finalists. Internet access is provided only for the test. Your pre-judged score, averaged test score, and preliminary presentation score are added together to choose finalists, and the final presentation decides the winners.",
-    duration: "50-minute test (100 questions); presentation: 3 minutes setup, 7 minutes, 3 minutes Q&A; plus an executive summary submitted before the conference",
+    duration: "50-minute test (100 questions); 3 minutes setup, 7-minute presentation, 3 minutes Q&A; plus an executive summary submitted before the conference",
+    judgedOn: [
+      "Identifies and Defines the Ethical Issues",
+      "Explains Why the Issues Happened",
+      "Logical Recommendations to Resolve Them",
+      "Safeguards That Would Have Prevented Them",
+      "Research, Including Businesspeople Interviewed",
+      "Cites Legitimate Sources",
+      "Organized, Clearly Stated Delivery",
+      "Confidence, Body Language and Voice",
+    ],
     topics: [
       "Communication Skills",
       "Self-Awareness",
