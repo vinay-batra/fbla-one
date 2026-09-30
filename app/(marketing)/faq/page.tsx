@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
 import { COMPETITION_STATS } from "@/lib/competitions";
+import { PenUnderline } from "@/components/PenUnderline";
 
 type QA = { q: string; a: string };
 type Section = { title: string; items: QA[] };
@@ -147,7 +148,7 @@ export default function FAQ() {
           </ScrollReveal>
           <ScrollReveal delay={0.05}>
             <h1 style={{ marginTop: 22 }}>
-              Questions, <span style={{ color: "var(--accent)" }}>answered.</span>
+              Questions, <PenUnderline>answered.</PenUnderline>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>

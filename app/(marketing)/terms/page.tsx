@@ -13,7 +13,7 @@ export default function Terms() {
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
         <HeroBadge>Last updated September 25, 2026</HeroBadge>
-        <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Terms of Service</h1>
+        <h1 style={{ marginTop: 18, marginBottom: 28 }}>Terms of <em>service</em></h1>
 
         <Section title="What ChapterPrep is">
           <p>ChapterPrep is an independent educational platform for FBLA (Future Business Leaders of America) chapters. It is not affiliated with, endorsed by, or sponsored by Future Business Leaders of America, Inc.</p>

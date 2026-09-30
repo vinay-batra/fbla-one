@@ -13,7 +13,6 @@ export default function NotFound() {
         textAlign: "center",
         padding: "40px 24px",
         gap: 18,
-        background: `radial-gradient(60% 60% at 50% 30%, rgba(var(--brand-rgb), 0.18) 0%, transparent 65%)`,
       }}
     >
       <Logo size="lg" />

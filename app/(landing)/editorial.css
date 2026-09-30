@@ -11,146 +11,34 @@
    - ink   (dark):  warm near-black, cream type, the same pens, lightened
 ───────────────────────────────────────────────────────────── */
 
+/* The palette, Fraunces, the ink button, the eyebrow and the paper tooth are all
+   site-wide now (globals.css). Only landing-specific values live here. */
 .ed {
-  --bg: #f5f1e8;
-  --bg2: #ede7da;
-  --bg3: #e4ddcd;
-  --card-bg: #fbf8f1;
-  --card-glass: rgba(251, 248, 241, 0.86);
-  --border: #d9d0bf;
-  --border-dim: #e5dece;
-  --border2: rgba(23, 24, 28, 0.14);
-  --input-bg: #fbf8f1;
-  --input-border: rgba(23, 24, 28, 0.22);
-
-  --text: #17181c;
-  --text1: #17181c;
-  --text2: #3b3d44;
-  --text3: #5c5e65;
-  --text-muted: #5c5e65;
-
-  --brand: #1e3a8a;
-  --brand-rgb: 30, 58, 138;
-  --brand-dim: rgba(30, 58, 138, 0.08);
-  --brand-border: rgba(30, 58, 138, 0.26);
-
-  --accent: #0e6f64;
-  --accent-rgb: 14, 111, 100;
-  --accent-text: #0e6f64;
-  --accent-dim: rgba(14, 111, 100, 0.1);
-  --accent-border: rgba(14, 111, 100, 0.3);
-  --accent-glow: none;
-
-  --red: #b42318;
-  --red-rgb: 180, 35, 24;
-  --green: #11703f;
-  --green-rgb: 17, 112, 63;
-
-  --track: rgba(23, 24, 28, 0.1);
-  --nav-bg: rgba(245, 241, 232, 0.86);
-  /* silver is tuned against white; paper is darker, so it needs more weight */
-  --medal-silver: #5f6470;
-
-  --btn-bg: #17181c;
-  --btn-fg: #f5f1e8;
-  --sheet-shadow: 0 1px 0 rgba(23, 24, 28, 0.04), 0 18px 40px -22px rgba(60, 45, 20, 0.45),
-    0 40px 80px -48px rgba(60, 45, 20, 0.35);
-
   position: relative;
   z-index: 1;
-  min-height: 100vh;
-  color: var(--text);
-  background-color: var(--bg);
-  /* Paper tooth: faint warm noise, so the page reads as a surface, not a fill. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.18 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  --sheet-shadow: 0 1px 0 rgba(23, 24, 28, 0.04), 0 18px 40px -22px rgba(60, 45, 20, 0.45),
+    0 40px 80px -48px rgba(60, 45, 20, 0.35);
 }
-
 [data-theme="dark"] .ed {
-  --bg: #13110e;
-  --bg2: #1a1814;
-  --bg3: #23201b;
-  --card-bg: #1c1a15;
-  --card-glass: rgba(28, 26, 21, 0.86);
-  --border: rgba(240, 233, 218, 0.13);
-  --border-dim: rgba(240, 233, 218, 0.08);
-  --border2: rgba(240, 233, 218, 0.16);
-  --input-bg: #1c1a15;
-  --input-border: rgba(240, 233, 218, 0.24);
-
-  --text: #f0e9da;
-  --text1: #f0e9da;
-  --text2: #cfc6b5;
-  --text3: #a39b8b;
-  --text-muted: #a39b8b;
-
-  --brand: #9db7ff;
-  --brand-rgb: 157, 183, 255;
-  --brand-dim: rgba(157, 183, 255, 0.1);
-  --brand-border: rgba(157, 183, 255, 0.28);
-
-  --accent: #5fd6c2;
-  --accent-rgb: 95, 214, 194;
-  --accent-text: #5fd6c2;
-  --accent-dim: rgba(95, 214, 194, 0.1);
-  --accent-border: rgba(95, 214, 194, 0.3);
-
-  --red: #ff8f80;
-  --red-rgb: 255, 143, 128;
-  --green: #7fd3a1;
-  --green-rgb: 127, 211, 161;
-
-  --track: rgba(240, 233, 218, 0.1);
-  --nav-bg: rgba(19, 17, 14, 0.86);
-
-  --btn-bg: #f0e9da;
-  --btn-fg: #13110e;
   --sheet-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 22px 50px -24px rgba(0, 0, 0, 0.8);
-
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
 
 /* ── Shared chrome inside the editorial page ─────────────── */
 
-/* Primary buttons become ink, not glowing teal. Covers the nav's Sign up and
-   EmailCta. Specificity beats the global dark-mode .btn-accent rule. */
-.ed .btn.btn-accent {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
-  box-shadow: none;
-}
-.ed .btn.btn-accent:hover:not(:disabled) {
-  filter: none;
-  box-shadow: 0 8px 22px -12px rgba(23, 24, 28, 0.55);
-}
-.ed .cta-shimmer::after { display: none; }
 
-/* The mono, letterspaced eyebrow is the signature of a template; here it is a
-   small sans label behind a short rule. */
-.ed .eyebrow,
+
+
 .ed-kicker {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  text-transform: none;
   color: var(--accent-text);
 }
-.ed .eyebrow::before,
-.ed-kicker::before {
-  content: "";
-  width: 22px;
-  height: 1px;
-  background: currentColor;
-}
-
-.ed .card-hover:hover {
-  transform: translateY(-2px);
-  border-color: var(--text3);
-  box-shadow: 0 16px 32px -20px rgba(23, 24, 28, 0.4);
-}
+.ed-kicker::before { content: ""; width: 22px; height: 1px; background: currentColor; }
 
 /* ── Type ────────────────────────────────────────────────── */
 
@@ -192,41 +80,6 @@
   font-weight: 500;
   font-size: 21px;
   letter-spacing: -0.01em;
-}
-
-/* Hand-drawn red-pen underline under "knowing the test.". The phrase is kept on
-   one line so a real SVG can sit beneath it and be drawn with a dash offset:
-   the stroke follows its own path instead of stretching into place. */
-.pen-underline { position: relative; white-space: nowrap; }
-.pen-underline-svg {
-  position: absolute;
-  left: -1.5%;
-  width: 103%;
-  bottom: -0.2em;
-  height: 0.36em;
-  overflow: visible;
-  pointer-events: none;
-}
-.pen-underline-svg path {
-  fill: none;
-  stroke: var(--red);
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-.pen-underline-svg .pu-1 {
-  stroke-width: 2.6;
-  animation: pen-draw 0.75s cubic-bezier(0.55, 0.05, 0.3, 1) 0.65s forwards;
-}
-.pen-underline-svg .pu-2 {
-  stroke-width: 1.5;
-  opacity: 0.75;
-  animation: pen-draw 0.5s cubic-bezier(0.55, 0.05, 0.3, 1) 1.3s forwards;
-}
-/* A phrase this long cannot stay on one line on the narrowest phones. */
-@media (max-width: 359px) {
-  .pen-underline { white-space: normal; text-decoration: underline 2px var(--red); text-underline-offset: 0.18em; }
-  .pen-underline-svg { display: none; }
 }
 
 .ed-lede {
@@ -419,7 +272,6 @@
 .pen-cross path { stroke-dasharray: 90; stroke-dashoffset: 90; }
 .pen-check { position: relative; width: 26px; height: 21px; stroke-width: 2.8; }
 .pen-check path { stroke-dasharray: 60; stroke-dashoffset: 60; animation-delay: 0.35s; }
-@keyframes pen-draw { to { stroke-dashoffset: 0; } }
 
 /* Margin note: expands smoothly with grid-template-rows 0fr -> 1fr. */
 .sheet-why {
@@ -636,15 +488,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pen-underline-svg path { animation: none; stroke-dashoffset: 0; }
   .pen path { animation: none; stroke-dashoffset: 0; }
   .sheet-why { transition: none; }
 }
 
 /* ── Consistency passes ──────────────────────────────────── */
 
-/* One button shape on this page: the squared ink block, not the global pill. */
-.ed .btn.btn-accent { border-radius: 10px; }
 
 /* EmailCta's "Notify me" used the mono face this page otherwise retires. */
 .ed .email-cta-field .font-mono {
@@ -660,18 +509,3 @@
 .ed .footer-watermark-mark path:first-of-type { fill: var(--text); }
 .ed .footer-watermark-mark path:last-of-type { stroke: var(--bg); }
 
-/* Above-the-fold entrance, CSS only. ScrollReveal server-renders at opacity 0
-   and only reveals after hydration, so the hero headline (the page's LCP
-   element) stayed invisible until JavaScript loaded. A keyframe starts on first
-   paint instead. Below-the-fold sections still use ScrollReveal, which is fine:
-   they are off-screen until the user scrolls. The global reduced-motion reset
-   collapses these to an instant finish. */
-.ed-rise { animation: ed-rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-.ed-d1 { animation-delay: 0.06s; }
-.ed-d2 { animation-delay: 0.12s; }
-.ed-d3 { animation-delay: 0.18s; }
-.ed-d4 { animation-delay: 0.26s; }
-@keyframes ed-rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: none; }
-}

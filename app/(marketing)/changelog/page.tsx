@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
+import { PenUnderline } from "@/components/PenUnderline";
 
 export const metadata: Metadata = {
   title: "Changelog",
@@ -212,10 +213,6 @@ export default function ChangelogPage() {
           position: "relative",
           padding: "120px 0 36px",
           textAlign: "center",
-          background: `
-            radial-gradient(55% 60% at 18% 18%, rgba(var(--brand-rgb), 0.24) 0%, transparent 62%),
-            radial-gradient(50% 55% at 85% 24%, rgba(var(--accent-rgb), 0.16) 0%, transparent 66%)
-          `,
         }}
       >
         <div className="container">
@@ -225,7 +222,7 @@ export default function ChangelogPage() {
           <ScrollReveal delay={0.06}>
             <h1 style={{ marginTop: 22 }}>
               Every release,{" "}
-              <span style={{ color: "var(--accent)" }}>in order.</span>
+              <PenUnderline>in order.</PenUnderline>
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.12}>
@@ -368,15 +365,6 @@ export default function ChangelogPage() {
                 overflow: "hidden",
               }}
             >
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.16) 0%, transparent 60%)",
-                  pointerEvents: "none",
-                }}
-              />
               <div style={{ position: "relative" }}>
                 <h2 style={{ marginBottom: 14 }}>
                   More is on the{" "}

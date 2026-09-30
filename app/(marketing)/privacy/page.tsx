@@ -13,7 +13,7 @@ export default function Privacy() {
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
         <HeroBadge>Last updated September 25, 2026</HeroBadge>
-        <h1 style={{ marginTop: 18, marginBottom: 24, fontSize: 40 }}>Privacy Policy</h1>
+        <h1 style={{ marginTop: 18, marginBottom: 28 }}>Privacy <em>policy</em></h1>
 
         <Section title="What we collect">
           <p>When you sign up we collect your email address, display name, and (optionally) your school or chapter affiliation. As you use the platform we collect data you create: practice test logs, saved resources, competition registrations, progress, and any feedback you send through the in-app feedback form. If you enter your email in our landing-page sign-up form, we store it on a notification list. We also automatically log your IP address to rate-limit our AI features and prevent abuse.</p>

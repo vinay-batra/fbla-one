@@ -91,23 +91,18 @@ export default async function CompetitionDetail({ params }: Props) {
         style={{
           position: "relative",
           padding: "60px 0 40px",
-          background:
-            "radial-gradient(55% 65% at 18% 30%, rgba(var(--brand-rgb), 0.22) 0%, rgba(var(--brand-rgb), 0.07) 35%, transparent 65%)",
         }}
       >
         <div className="container" style={{ position: "relative" }}>
           <Link
             href="/competitions"
-            className="font-mono"
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
-              fontSize: 11,
-              letterSpacing: "0.14em",
+              fontSize: 13,
               color: "var(--text3)",
-              textTransform: "uppercase",
-              fontWeight: 700,
+              fontWeight: 600,
               marginBottom: 24,
               transition: "color 0.15s ease",
             }}
@@ -424,17 +419,7 @@ export default async function CompetitionDetail({ params }: Props) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p
-        className="font-mono"
-        style={{
-          fontSize: 9,
-          letterSpacing: "0.18em",
-          color: "var(--text3)",
-          textTransform: "uppercase",
-          fontWeight: 700,
-          marginBottom: 4,
-        }}
-      >
+      <p style={{ fontSize: 12, color: "var(--text3)", fontWeight: 500, marginBottom: 3 }}>
         {label}
       </p>
       <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{value}</p>

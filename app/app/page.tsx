@@ -268,7 +268,7 @@ export default function Dashboard() {
       {/* Your event (single-event model) */}
       <Card className="tour-event">
         <CardHeader
-          eyebrow="Your event"
+          eyebrow="Competing in"
           title="Your event"
           tagline={myEvent ? "The one event you're competing in this year." : "Pick the one event you're competing in."}
           right={

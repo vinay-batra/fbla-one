@@ -46,7 +46,6 @@ export function StudyPlan() {
 
   return (
     <div style={{ position: "relative", background: "var(--card-bg)", border: "0.5px solid var(--accent-border)", borderRadius: 16, padding: "22px 24px", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 100% 0%, rgba(var(--accent-rgb),0.10) 0%, transparent 55%)", pointerEvents: "none" }} />
       <div style={{ position: "relative" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>

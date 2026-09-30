@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
 import { Card } from "@/components/Card";
+import { PenUnderline } from "@/components/PenUnderline";
 import {
   COMPETITIONS,
   CATEGORIES,
@@ -63,7 +64,7 @@ function CompetitionsList() {
           <HeroBadge>{COMPETITION_STATS.total} events tracked</HeroBadge>
           <h1 style={{ marginTop: 20 }}>
             Every FBLA event,{" "}
-            <span style={{ color: "var(--accent)" }}>one click away.</span>
+            <PenUnderline>one click away.</PenUnderline>
           </h1>
           <p
             style={{

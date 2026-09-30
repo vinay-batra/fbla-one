@@ -5,6 +5,7 @@ import { ChapterShowcase } from "@/components/ChapterShowcase";
 import { HeroCta } from "@/components/HeroCta";
 import { EmailCta } from "@/components/EmailCta";
 import { ExamSheet } from "@/components/landing/ExamSheet";
+import { PenUnderline } from "@/components/PenUnderline";
 import { EventIndex } from "@/components/landing/EventIndex";
 import { COMPETITION_STATS } from "@/lib/competitions";
 
@@ -85,26 +86,16 @@ export default function Landing() {
       <section className="ed-hero">
         <div className="container ed-hero-grid">
           <div className="ed-hero-copy">
-            <div className="ed-rise">
+            <div className="rise">
               <p className="ed-kicker">Practice for FBLA competitive events</p>
             </div>
-            <div className="ed-rise ed-d1">
+            <div className="rise rise-1">
               <h1 className="ed-display">
                 Walk into regionals already{" "}
-                <span className="pen-underline">
-                  knowing the test.
-                  {/* Two real pen strokes drawn along a fixed path: a firm pass,
-                      then a lighter second pass, the way people underline twice
-                      for emphasis. Replaces a background that grew from zero
-                      width and visibly stretched the curve as it went. */}
-                  <svg className="pen-underline-svg" viewBox="0 0 300 18" preserveAspectRatio="none" aria-hidden="true">
-                    <path className="pu-1" pathLength={1} d="M4 10C52 5 104 13 156 8s96-5 140-3" />
-                    <path className="pu-2" pathLength={1} d="M22 15c58-4 128-3 262-6" />
-                  </svg>
-                </span>
+                <PenUnderline delay={0.65}>knowing the test.</PenUnderline>
               </h1>
             </div>
-            <div className="ed-rise ed-d2">
+            <div className="rise rise-2">
               {/* Numbers live in the ledger right below; this line carries the
                   promise, not the stats. */}
               <p className="ed-lede">
@@ -112,7 +103,7 @@ export default function Landing() {
                 explained. By competition day, the real test feels familiar.
               </p>
             </div>
-            <div className="ed-rise ed-d3">
+            <div className="rise rise-3">
               <div className="ed-actions">
                 <HeroCta wrap={false} signedOutLabel="Start practicing" className="ed-btn" />
                 <Link href="/competitions" className="ed-textlink">
@@ -123,7 +114,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="ed-rise ed-d4">
+          <div className="rise rise-4">
             {/* No 3D tilt here: an answerable sheet must not move under the
                 cursor. The tilt rotated the card as the pointer moved, so the
                 hovered answer slid out from under it and the hover state and

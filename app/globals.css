@@ -18,54 +18,54 @@ body {
 /* ── Light mode (default) ── */
 :root,
 [data-theme="light"] {
-  --bg:          #ffffff;
-  --bg2:         #f7f9fc;
-  --bg3:         #e7edf6;
-  --border:      #d6deeb;
-  --border2:     rgba(29, 78, 216, 0.18);
-  --border-dim:  #e2e8f3;
+  --bg:          #f5f1e8;
+  --bg2:         #ede7da;
+  --bg3:         #e4ddcd;
+  --border:      #d9d0bf;
+  --border2:     rgba(23, 24, 28, 0.14);
+  --border-dim:  #e5dece;
 
-  --text:        #0b1a33;
-  --text1:       #0b1a33;
-  --text2:       #2b3a55;
-  --text3:       #5a6b8a;
-  --text-muted:  #5c6c89;
+  --text:        #17181c;
+  --text1:       #17181c;
+  --text2:       #3b3d44;
+  --text3:       #5c5e65;
+  --text-muted:  #5c5e65;
 
-  --green:       #11703f; /* 4.37:1 on --bg2 before; now 5.83, and 4.92 on its own 12% tint */
+  --green:       #11703f;
   --green-rgb:   17, 112, 63;
-  --red:         #c0392b;
-  --red-rgb:     192, 57, 43;
+  --red:         #b42318;
+  --red-rgb:     180, 35, 24;
 
-  --accent:      #0e6f64;
-  --accent-rgb:  14, 111, 100;
-  --accent-text: #0e6f64;
+  --accent:      #0a5a50;
+  --accent-rgb:  10, 90, 80;
+  --accent-text: #0a5a50;
   --medal-gold:   #8a6600;
-  --medal-silver: #6b7280;
+  --medal-silver: #5f6470;
   --medal-bronze: #8a5a2b;
-  --accent-dim:  rgba(14, 111, 100, 0.1);
-  --accent-border: rgba(14, 111, 100, 0.32);
-  --accent-glow: 0 0 24px rgba(14, 111, 100, 0.28);
+  --accent-dim:  rgba(10, 90, 80, 0.1);
+  --accent-border: rgba(10, 90, 80, 0.3);
+  --accent-glow: none;
 
-  --brand:       #1d4ed8;
-  --brand-rgb:   29, 78, 216;
-  --brand-dim:   rgba(29, 78, 216, 0.08);
-  --brand-border: rgba(29, 78, 216, 0.28);
+  --brand:       #1e3a8a;
+  --brand-rgb:   30, 58, 138;
+  --brand-dim:   rgba(30, 58, 138, 0.08);
+  --brand-border: rgba(30, 58, 138, 0.26);
 
-  --warning:     #9a6209;
+  --warning:     #8a5a06;
 
-  --card-bg:     #ffffff;
-  --card-glass:  rgba(255, 255, 255, 0.78);
+  --card-bg:     #fbf8f1;
+  --card-glass:  rgba(251, 248, 241, 0.86);
 
-  --input-bg:    #ffffff;
-  --input-border: rgba(0, 0, 0, 0.12);
+  --input-bg:    #fbf8f1;
+  --input-border: rgba(23, 24, 28, 0.22);
 
-  --shadow-sm:   0 1px 2px rgba(11, 26, 51, 0.06);
-  --shadow:      0 1px 3px rgba(11, 26, 51, 0.08);
-  --shadow-md:   0 6px 18px rgba(11, 26, 51, 0.1);
-  --shadow-lg:   0 24px 60px rgba(11, 26, 51, 0.15);
+  --shadow-sm:   0 1px 2px rgba(60, 45, 20, 0.06);
+  --shadow:      0 1px 3px rgba(60, 45, 20, 0.08);
+  --shadow-md:   0 10px 24px -12px rgba(60, 45, 20, 0.28);
+  --shadow-lg:   0 30px 64px -30px rgba(60, 45, 20, 0.4);
 
-  --track:       rgba(0, 0, 0, 0.08);
-  --nav-bg:      rgba(255, 255, 255, 0.86);
+  --track:       rgba(23, 24, 28, 0.1);
+  --nav-bg:      rgba(245, 241, 232, 0.86);
 
   --font-body:   var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono:   var(--font-space-mono), 'SF Mono', Menlo, monospace;
@@ -75,63 +75,73 @@ body {
   --radius-lg:   12px;
   --radius-xl:   16px;
 
-  --toggle-knob:        #ffffff;
+  --toggle-knob:        #fbf8f1;
   --toggle-knob-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+
+  /* ink button + editorial type, shared by every page */
+  --btn-bg: #17181c;
+  --btn-fg: #f5f1e8;
+  --font-serif: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  --paper-tooth: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.18 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ── Dark mode ── */
 [data-theme="dark"] {
-  --bg:          #060c16;
-  --bg2:         #0a1322;
-  --bg3:         #11203a;
-  --border:      rgba(255, 255, 255, 0.07);
-  --border2:     rgba(45, 212, 191, 0.18);
-  --border-dim:  rgba(255, 255, 255, 0.05);
+  --bg:          #13110e;
+  --bg2:         #1a1814;
+  --bg3:         #23201b;
+  --border:      rgba(240, 233, 218, 0.13);
+  --border2:     rgba(240, 233, 218, 0.16);
+  --border-dim:  rgba(240, 233, 218, 0.08);
 
-  --text:        #e9eef7;
-  --text1:       #e9eef7;
-  --text2:       #b3bccd;
-  --text3:       #828ca8;
-  --text-muted:  #7c87a2;
+  --text:        #f0e9da;
+  --text1:       #f0e9da;
+  --text2:       #cfc6b5;
+  --text3:       #a39b8b;
+  --text-muted:  #a39b8b;
 
-  --green:       #5cb88a;
-  --green-rgb:   92, 184, 138;
-  --red:         #e05c5c;
-  --red-rgb:     224, 92, 92;
+  --green:       #7fd3a1;
+  --green-rgb:   127, 211, 161;
+  --red:         #ff8f80;
+  --red-rgb:     255, 143, 128;
 
-  --accent:      #2dd4bf;
-  --accent-rgb:  45, 212, 191;
-  --accent-text: #2dd4bf;
+  --accent:      #5fd6c2;
+  --accent-rgb:  95, 214, 194;
+  --accent-text: #5fd6c2;
   --medal-gold:   #d4af37;
   --medal-silver: #aab4c2;
   --medal-bronze: #c07f3c;
-  --accent-dim:  rgba(45, 212, 191, 0.1);
-  --accent-border: rgba(45, 212, 191, 0.32);
-  --accent-glow: 0 0 30px rgba(45, 212, 191, 0.32);
+  --accent-dim:  rgba(95, 214, 194, 0.1);
+  --accent-border: rgba(95, 214, 194, 0.3);
+  --accent-glow: none;
 
-  --brand:       #60a5fa;
-  --brand-rgb:   96, 165, 250;
-  --brand-dim:   rgba(96, 165, 250, 0.12);
-  --brand-border: rgba(96, 165, 250, 0.32);
+  --brand:       #9db7ff;
+  --brand-rgb:   157, 183, 255;
+  --brand-dim:   rgba(157, 183, 255, 0.1);
+  --brand-border: rgba(157, 183, 255, 0.28);
 
-  --warning:     #e09a3e;
+  --warning:     #e8b060;
 
-  --card-bg:     #0d1828;
-  --card-glass:  rgba(13, 24, 40, 0.55);
+  --card-bg:     #1c1a15;
+  --card-glass:  rgba(28, 26, 21, 0.86);
 
-  --input-bg:    #111b2d;
-  --input-border: rgba(255, 255, 255, 0.1);
+  --input-bg:    #1c1a15;
+  --input-border: rgba(240, 233, 218, 0.24);
 
   --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow:      0 1px 4px rgba(0, 0, 0, 0.5);
   --shadow-md:   0 6px 22px rgba(0, 0, 0, 0.55);
   --shadow-lg:   0 24px 60px rgba(0, 0, 0, 0.7);
 
-  --track:       rgba(255, 255, 255, 0.05);
-  --nav-bg:      rgba(6, 12, 22, 0.82);
+  --track:       rgba(240, 233, 218, 0.1);
+  --nav-bg:      rgba(19, 17, 14, 0.86);
 
-  --toggle-knob:        #f4ecda;
+  --toggle-knob:        #f0e9da;
   --toggle-knob-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(0, 0, 0, 0.3);
+
+  --btn-bg: #f0e9da;
+  --btn-fg: #13110e;
+  --paper-tooth: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.85 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 * {
@@ -148,7 +158,9 @@ html {
 
 html, body {
   height: 100%;
-  background: var(--bg);
+  background-color: var(--bg);
+  /* Paper tooth: faint warm noise, so every page reads as a surface, not a fill. */
+  background-image: var(--paper-tooth);
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
@@ -175,18 +187,6 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 
 ::selection { background: rgba(var(--accent-rgb), 0.35); color: var(--text); }
 
-/* Fine luminance grain, dark theme only. Breaks up banding on the large
-   background gradients so the dark surfaces read as depth rather than flat
-   fill. Inline SVG turbulence: no network request, no layout, no hit testing. */
-[data-theme="dark"] body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 @media (prefers-reduced-motion: reduce) {
   /* nothing animated here, but keep the hook alongside the other motion rules */
 }
@@ -246,7 +246,6 @@ input::placeholder, textarea::placeholder { color: var(--text3); }
 
 /* AmbientOrbs (dark mode only) */
 .ambient-orbs { display: none; }
-[data-theme="dark"] .ambient-orbs { display: block; }
 
 /* ─── Animations ─────────────────────────────────────────── */
 @keyframes spin    { to { transform: rotate(360deg); } }
@@ -297,20 +296,40 @@ h1, h2, h3, h4, h5 {
   color: var(--text);
   font-family: var(--font-body);
 }
-h1 { font-size: clamp(36px, 5vw, 60px); letter-spacing: -0.03em; }
-h2 { font-size: clamp(26px, 3.5vw, 40px); }
-h3 { font-size: clamp(20px, 2vw, 24px); }
+/* Editorial display type: headings are set in Fraunces across the whole site.
+   h4/h5 stay in the sans for dense UI labels. Negative tracking is kept light:
+   Fraunces is already tight at display optical sizes. */
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-variation-settings: "opsz" 96, "SOFT" 40;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+h1 { font-size: clamp(38px, 5.2vw, 64px); line-height: 1.04; letter-spacing: -0.015em; }
+h2 { font-size: clamp(28px, 3.6vw, 44px); line-height: 1.06; }
+h3 { font-size: clamp(20px, 2vw, 24px); font-variation-settings: "opsz" 36, "SOFT" 30; letter-spacing: -0.005em; }
+/* Emphasis inside a headline is italic, not a second color. */
+h1 em, h2 em { font-style: italic; font-weight: 400; }
 
 p { color: var(--text2); line-height: 1.62; }
 
 .eyebrow {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: var(--accent-text);
+}
+.eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
 }
 
 .eyebrow-dot {
@@ -361,7 +380,14 @@ p { color: var(--text2); line-height: 1.62; }
 .text-lg   { font-size: 16px; }
 .text-xl   { font-size: 20px; }
 .text-2xl  { font-size: 24px; }
-.font-mono { font-family: var(--font-mono); }
+.font-mono {
+  /* 80 call sites use this class for numbers and small labels. Monospace read as
+     a terminal; Inter with tabular figures keeps timers and score columns aligned
+     without the tech look. The landing's exam sheet uses var(--font-mono)
+     directly on purpose: that one is meant to feel typewritten. */
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
 .font-display { font-family: var(--font-display); }
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
@@ -379,10 +405,14 @@ p { color: var(--text2); line-height: 1.62; }
   font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3);
 }
 .metric-number {
-  font-family: var(--font-mono);
-  font-size: clamp(22px, 2.6vw, 30px);
-  font-weight: 700;
-  letter-spacing: -0.5px;
+  /* Big figures are set in the display serif, like numbers in a printed report. */
+  font-family: var(--font-serif);
+  font-variation-settings: "opsz" 72;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
 /* ─── Buttons ────────────────────────────────────────────── */
@@ -415,16 +445,16 @@ p { color: var(--text2); line-height: 1.62; }
 .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
 
 .btn-accent {
-  background: var(--accent);
-  color: #ffffff;
-  box-shadow: var(--accent-glow);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: none;
+  border-radius: 10px;
 }
-[data-theme="dark"] .btn-accent { color: #0b0e16; }
 /* white on the light-blue dark --brand is only 2.54:1; navy text is 6.83:1 */
 [data-theme="dark"] .btn-brand { color: #0b1a33; }
 .btn-accent:hover:not(:disabled) {
-  filter: brightness(1.08);
-  box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -12px rgba(23, 24, 28, 0.55);
 }
 
 .btn-brand {
@@ -488,9 +518,7 @@ p { color: var(--text2); line-height: 1.62; }
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.32) 50%, transparent 100%);
-  transform: translateX(-100%) skewX(-15deg);
-  pointer-events: none;
+  display: none;
 }
 .cta-shimmer:hover:not(:disabled)::after { animation: shimmer-sweep 0.7s ease-in-out; }
 
@@ -561,10 +589,9 @@ p { color: var(--text2); line-height: 1.62; }
   transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.25s ease;
 }
 .card-hover:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent-border);
-  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.16),
-    0 10px 30px -12px rgba(var(--accent-rgb), 0.28);
+  transform: translateY(-2px);
+  border-color: var(--text3);
+  box-shadow: var(--shadow-md);
 }
 .card-elevated {
   box-shadow: var(--shadow);
@@ -660,11 +687,11 @@ p { color: var(--text2); line-height: 1.62; }
   line-height: 1;
 }
 .empty-state-title {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
   color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.005em;
 }
 .empty-state-msg {
   font-size: 13px;
@@ -706,20 +733,24 @@ p { color: var(--text2); line-height: 1.62; }
 .toast-info    { background: var(--bg2); border: 0.5px solid var(--accent-border); color: var(--accent); }
 
 /* ─── Tag / badge / chip ─────────────────────────────────── */
+/* Chips read like a printed tag, not a terminal label: sentence-case sans with
+   no tracking. The old letterspaced mono caps were the most template-looking
+   element left on the site. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.25;
   color: var(--text2);
-  padding: 5px 9px;
-  border-radius: 6px;
+  padding: 4px 9px;
+  border-radius: 5px;
   background: var(--bg3);
-  border: 0.5px solid var(--border);
+  border: 1px solid var(--border);
 }
 .chip-accent {
   color: var(--accent);
@@ -868,3 +899,62 @@ p { color: var(--text2); line-height: 1.62; }
 
 /* Footer watermark: let the fixed-size BrandMark scale to its wrapper. */
 .footer-watermark-mark { width: 100% !important; height: auto !important; }
+
+/* ── Editorial motion, shared by every page ─────────────── */
+
+/* The red-pen underline (components/PenUnderline.tsx). The phrase is held on one
+   line so a real SVG can sit beneath it and be drawn with a dash offset: the
+   stroke follows its own path instead of stretching into place. */
+.pen-underline { position: relative; white-space: nowrap; }
+.pen-underline-svg {
+  position: absolute;
+  left: -1.5%;
+  width: 103%;
+  bottom: -0.2em;
+  height: 0.36em;
+  overflow: visible;
+  pointer-events: none;
+}
+.pen-underline-svg path {
+  fill: none;
+  stroke: var(--red);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.pen-underline-svg .pu-1 {
+  stroke-width: 2.6;
+  animation: pen-draw 0.75s cubic-bezier(0.55, 0.05, 0.3, 1) var(--pen-delay, 0.55s) forwards;
+}
+.pen-underline-svg .pu-2 {
+  stroke-width: 1.5;
+  opacity: 0.75;
+  animation: pen-draw 0.5s cubic-bezier(0.55, 0.05, 0.3, 1) calc(var(--pen-delay, 0.55s) + 0.65s) forwards;
+}
+/* A phrase this long cannot stay on one line on the narrowest phones. */
+@media (max-width: 359px) {
+  .pen-underline { white-space: normal; text-decoration: underline 2px var(--red); text-underline-offset: 0.18em; }
+  .pen-underline-svg { display: none; }
+}
+
+@keyframes pen-draw { to { stroke-dashoffset: 0; } }
+
+/* Above-the-fold entrance, CSS only. ScrollReveal server-renders at opacity 0
+   and only reveals after hydration, so the hero headline (the page's LCP
+   element) stayed invisible until JavaScript loaded. A keyframe starts on first
+   paint instead. Below-the-fold sections still use ScrollReveal, which is fine:
+   they are off-screen until the user scrolls. The global reduced-motion reset
+   collapses these to an instant finish. */
+.rise { animation: rise 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.rise-1 { animation-delay: 0.06s; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.18s; }
+.rise-4 { animation-delay: 0.26s; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pen-underline-svg path { animation: none; stroke-dashoffset: 0; }
+}

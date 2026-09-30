@@ -37,19 +37,6 @@ function AuthForm() {
   const [focused, setFocused] = useState<string | null>(null);
   const [magicSent, setMagicSent] = useState(false);
 
-  // Watch data-theme for the bg glow colour
-  const [dark, setDark] = useState(true);
-  useEffect(() => {
-    const sync = () =>
-      setDark(document.documentElement.getAttribute("data-theme") !== "light");
-    sync();
-    const obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-    return () => obs.disconnect();
-  }, []);
 
   // Redirect already-authenticated users
   useEffect(() => {
@@ -198,34 +185,8 @@ function AuthForm() {
     >
       <style>{`@keyframes auth-spin{to{transform:rotate(360deg)}}`}</style>
 
-      {/* Subtle grid */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundImage: `linear-gradient(rgba(var(--brand-rgb),0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--brand-rgb),0.04) 1px,transparent 1px)`,
-          backgroundSize: "56px 56px",
-          pointerEvents: "none",
-        }}
-      />
-      {/* Ambient glow */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "fixed",
-          top: "18%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 640,
-          height: 420,
-          background: dark
-            ? "radial-gradient(ellipse, rgba(var(--accent-rgb),0.07) 0%, transparent 68%)"
-            : "radial-gradient(ellipse, rgba(var(--brand-rgb),0.08) 0%, transparent 68%)",
-          pointerEvents: "none",
-        }}
-      />
-
+      {/* The grid and glow that used to sit here were the old template look; the
+          paper tooth on <body> is the backdrop now. */}
       {/* Minimal top bar */}
       <header
         style={{
@@ -366,11 +327,10 @@ function AuthForm() {
           {/* Headline */}
           <div style={{ textAlign: "center", marginBottom: 26 }}>
             <h1
-              className="font-mono"
               style={{
-                fontSize: 22,
-                fontWeight: 700,
-                letterSpacing: -0.5,
+                fontSize: 30,
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
                 lineHeight: 1.2,
                 margin: "0 0 6px",
                 color: "var(--text)",
@@ -426,12 +386,9 @@ function AuthForm() {
                     borderRadius: 8,
                     fontSize: 13,
                     fontWeight: m === mode ? 700 : 500,
-                    background: m === mode ? "var(--accent)" : "transparent",
+                    background: m === mode ? "var(--btn-bg)" : "transparent",
                     border: "none",
-                    // Both arms of this ternary used to be #060c16, so it never
-                    // did anything. On the darker light-mode accent that is
-                    // 3.24:1; white is 6.04:1. Dark mode keeps near-black.
-                    color: m === mode ? (dark ? "#060c16" : "#ffffff") : "var(--text3)",
+                    color: m === mode ? "var(--btn-fg)" : "var(--text3)",
                     cursor: "pointer",
                     transition: "background 0.2s, color 0.2s",
                     letterSpacing: 0.3,
@@ -738,9 +695,12 @@ function AuthForm() {
               borderRadius: 11,
               fontSize: 13.5,
               fontWeight: 700,
-              background: canSubmit ? "var(--accent)" : "rgba(var(--accent-rgb),0.22)",
+              // Ink, like every primary action on the site. It was near-black
+              // text on the teal accent, which the darker paper teal made
+              // nearly illegible.
+              background: canSubmit ? "var(--btn-bg)" : "var(--bg3)",
               border: "none",
-              color: canSubmit ? "#060c16" : "var(--text3)",
+              color: canSubmit ? "var(--btn-fg)" : "var(--text3)",
               cursor: canSubmit ? "pointer" : "default",
               transition: "filter 0.18s, transform 0.15s, box-shadow 0.18s",
               display: "flex",

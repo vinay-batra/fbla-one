@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Mono, Space_Grotesk, Fraunces } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ConditionalAmbientOrbs } from "@/components/ConditionalAmbientOrbs";
 import { DataSync } from "@/components/DataSync";
 import { GlobalShell } from "@/components/GlobalShell";
 import "./globals.css";
@@ -27,6 +26,16 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
   variable: "--font-space-grotesk",
 });
+// The editorial display serif. Every h1/h2/h3 on the site is set in it, so it
+// loads here rather than per page. Variable font: the full weight and optical
+// size range costs one file.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  style: ["normal", "italic"],
+  axes: ["opsz", "SOFT"],
+  variable: "--font-fraunces",
+});
 const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -36,8 +45,8 @@ const spaceMono = Space_Mono({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#060c16" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#13110e" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f1e8" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -101,7 +110,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${fraunces.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
@@ -113,7 +122,6 @@ export default function RootLayout({
               first two tab stops site-wide. */}
           <a href="#main" className="skip-link">Skip to content</a>
           <DataSync />
-          <ConditionalAmbientOrbs />
           {children}
           <GlobalShell />
         </ThemeProvider>

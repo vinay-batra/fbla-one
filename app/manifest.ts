@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Competition guides, study resources, and prep tracker for FBLA chapters.",
     start_url: "/app",
     display: "standalone",
-    background_color: "#060c16",
-    theme_color: "#060c16",
+    background_color: "#f5f1e8",
+    theme_color: "#f5f1e8",
     orientation: "portrait",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
