@@ -176,6 +176,23 @@ const ERAS: Era[] = [
     ],
     tags: ["Performance", "Accessibility", "Polish"],
   },
+  {
+    num: "10",
+    name: "A New Look",
+    versions: "v1.10",
+    dateRange: "Sep 29, 2026",
+    intro:
+      "A new bookmark logo and a home page set like a well-made study book, with a real practice question you can answer before you sign up.",
+    highlights: [
+      "A bookmark logo, crisp at every size down to the browser tab",
+      "Warm paper and ink themes, serif headlines, and red-pen grading marks",
+      "A live practice question on the home page, graded and explained",
+      "All 76 events typeset like the index of a book",
+      "A dedicated section for officers and advisers",
+      "The headline appears instantly, before any code has loaded",
+    ],
+    tags: ["Design", "Brand", "Interactive"],
+  },
 ];
 
 // Spelled-out count so the hero line can never drift from the array again

@@ -4,6 +4,16 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.10.0 - September 29, 2026 - A new look
+
+- **New logo.** A bookmark with a check: it marks a chapter, and it reads as ready. Rebuilt as a crisp vector mark at every size, from the 16-pixel browser tab icon up.
+- **A redesigned home page**, set like a well-made study book: warm paper in light mode, warm ink in dark, serif headlines and red-pen marks.
+- **Try a question before you sign up.** The home page now has a real practice question you can answer. It gets graded in red pen and explained, across Accounting, Economics, Business Law and Personal Finance.
+- **Every event at a glance**, typeset like the index of a book, with the ones that support practice tests marked.
+- **A section for officers and advisers** showing the leaderboard, assignments, weak-spot drills, shared deadlines and the regional registration export.
+- The headline now appears the instant the page loads, instead of waiting for the rest of the page's code.
+- First-time visitors are no longer greeted by a setup popup meant for people who already have an account.
+
 ## v1.9.1 - September 26, 2026 - Captcha removed
 
 Cloudflare Turnstile has been removed. Its hostname allowlist still pointed at the
