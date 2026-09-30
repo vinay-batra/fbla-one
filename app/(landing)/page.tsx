@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { ChapterShowcase } from "@/components/ChapterShowcase";
 import { HeroCta } from "@/components/HeroCta";
 import { EmailCta } from "@/components/EmailCta";
 import { ExamSheet } from "@/components/landing/ExamSheet";
 import { PenUnderline } from "@/components/PenUnderline";
+import { WhyDifferent } from "@/components/landing/WhyDifferent";
+import { CheckedTwice } from "@/components/landing/CheckedTwice";
+import { MistakeCards } from "@/components/landing/MistakeCards";
+import { JudgeDemo } from "@/components/landing/JudgeDemo";
+import { EventTypes } from "@/components/landing/EventTypes";
+import { ForAdvisors } from "@/components/landing/ForAdvisors";
 import { EventIndex } from "@/components/landing/EventIndex";
 import { COMPETITION_STATS } from "@/lib/competitions";
 
@@ -40,7 +45,7 @@ const JSON_LD = {
   name: "ChapterPrep",
   url: "https://chapterprep.com",
   description:
-    "Free practice tests, study guides, a deadline calendar and chapter tools for FBLA competitive events.",
+    "Free FBLA practice: tests checked by a second model, an AI judge for role plays and presentations, a mistake bank, and Mock Regionals for chapters.",
   publisher: {
     "@type": "Organization",
     name: "ChapterPrep",
@@ -48,34 +53,6 @@ const JSON_LD = {
     logo: { "@type": "ImageObject", url: "https://chapterprep.com/icon-512.png" },
   },
 };
-
-/** "How it works", set as a book's table of contents. */
-const CONTENTS = [
-  {
-    n: "I",
-    title: "Find your event",
-    value: `${COMPETITION_STATS.total} events`,
-    body: "Every 2025-26 competitive event, each with its format, the topics it covers, and study resources worth your time.",
-  },
-  {
-    n: "II",
-    title: "Take a practice test",
-    value: "up to 50 questions",
-    body: "Built around your event's topic outline, graded instantly, and every answer explained, so you learn it instead of guessing it.",
-  },
-  {
-    n: "III",
-    title: "Drill what you miss",
-    value: "scored by topic",
-    body: "Each test is scored topic by topic, and one tap turns your weakest topic into its own focused test.",
-  },
-  {
-    n: "IV",
-    title: "Bring your chapter",
-    value: "free, always",
-    body: "Your advisor sets goals, sees who is practicing, and exports regional registration in one file.",
-  },
-];
 
 export default function Landing() {
   return (
@@ -135,43 +112,52 @@ export default function Landing() {
             <span className="ed-sep" aria-hidden="true">·</span>
             <strong>{COMPETITION_STATS.aiEligible}</strong> with practice tests
             <span className="ed-sep" aria-hidden="true">·</span>
-            up to <strong>50</strong> questions a test
+            <strong>{COMPETITION_STATS.judged}</strong> with an AI judge
+            <span className="ed-sep" aria-hidden="true">·</span>
+            every answer <strong>checked twice</strong>
             <span className="ed-sep" aria-hidden="true">·</span>
             <strong>free</strong> for every chapter
           </p>
         </div>
       </section>
 
-      {/* --- CONTENTS (how it works) ------------------------------------- */}
+      {/* Contents, written as the answer to "why not just ask a chatbot?" */}
       <section className="ed-section">
-        <div className="container ed-contents-grid">
-          <ScrollReveal>
-            <div className="ed-section-head">
-              <p className="ed-kicker">How it works</p>
-              <h2 className="ed-h2">Contents</h2>
-              <p className="ed-muted">Four chapters, from picking your event to bringing your whole team along.</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.08}>
-            <ol className="toc">
-              {CONTENTS.map((c) => (
-                <li key={c.n} className="toc-row">
-                  <div className="toc-line">
-                    <span className="toc-n">{c.n}</span>
-                    <span className="toc-title">{c.title}</span>
-                    <span className="toc-leader" aria-hidden="true" />
-                    <span className="toc-value">{c.value}</span>
-                  </div>
-                  <p className="toc-body">{c.body}</p>
-                </li>
-              ))}
-            </ol>
-          </ScrollReveal>
-        </div>
+        <ScrollReveal>
+          <WhyDifferent />
+        </ScrollReveal>
       </section>
 
-      {/* --- OFFICERS + ADVISORS ----------------------------------------- */}
-      <ChapterShowcase />
+      {/* The proof, section by section */}
+      <section id="checked" className="ed-section ed-section-rule">
+        <ScrollReveal>
+          <CheckedTwice />
+        </ScrollReveal>
+      </section>
+
+      <section id="mistakes" className="ed-section ed-section-rule">
+        <ScrollReveal>
+          <MistakeCards />
+        </ScrollReveal>
+      </section>
+
+      <section id="judge" className="ed-section ed-section-rule">
+        <ScrollReveal>
+          <JudgeDemo />
+        </ScrollReveal>
+      </section>
+
+      <section id="event-types" className="ed-section ed-section-rule">
+        <ScrollReveal>
+          <EventTypes />
+        </ScrollReveal>
+      </section>
+
+      <section id="advisors" className="ed-section ed-section-rule">
+        <ScrollReveal>
+          <ForAdvisors />
+        </ScrollReveal>
+      </section>
 
       {/* --- INDEX: every event ------------------------------------------ */}
       <section className="ed-section ed-section-index">
@@ -181,10 +167,10 @@ export default function Landing() {
               <p className="ed-kicker">Index</p>
               <h2 className="ed-h2">Every event, in one place.</h2>
               <p className="ed-muted">
-                All {COMPETITION_STATS.total} FBLA competitive events for 2025-26, each with its own
-                prep page. Practice tests are available for the events marked{"\u00a0"}
-                <span className="index-mark index-mark-inline" aria-hidden="true" />
-                <span className="sr-only"> with a dot</span>.
+                All {COMPETITION_STATS.total} FBLA competitive events for 2026-27, each with its own
+                prep page. The tag says how each is decided: <strong>T</strong> a test,{" "}
+                <strong>R</strong> a test and then a role play, <strong>P</strong> a presentation or
+                interview.
               </p>
             </div>
           </ScrollReveal>

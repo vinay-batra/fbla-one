@@ -24,7 +24,7 @@ The Aug 25, 2026 officer-meeting demo has passed. No fixed deadline now; the goa
 > - **Mock Regionals** (`/app/mock`, `lib/mock.ts`, `components/mock/`, migration 0018): advisor hosts a live chapter test with a projector lobby (join code + QR via public `/mock/CODE`), server clock, podium, hardest question. Answer key never readable by students during the test (column grants + SECURITY DEFINER RPCs), graded server side. `_mock_test.mjs` 47/47.
 > - **Advisor readiness report** (`components/chapter/ReadinessReport.tsx`, migration 0019 `practice_logs.topic_results` jsonb with a validating check constraint): per member event, volume, average, trend, judge score, weakest topics, Ready / On track / Needs attention (`READINESS_RULE` in `lib/chapter.ts`), CSV export. `_readiness_test.mjs` 36/36.
 > - **Event finder quiz** (`/find-your-event`, `components/eventfinder/`): 7 questions, deterministic weighted scoring (`scoring.ts` weight tables), grade-gates Introduction events.
-> - **Landing**: 5-question sample test ending in a graded report card. `ExamSheet`, `.sheet*` and `.report-*` styles are global now.
+> - **Landing** (`app/(landing)/page.tsx`, sections in `components/landing/`): hero + 5-question sample test (graded report card) -> ledger -> **"Why not just ask a chatbot?"** (`WhyDifferent`: the table of contents IS the differentiators list, each row Elsewhere vs ChapterPrep with a "See it" anchor) -> `CheckedTwice` (#checked) -> `MistakeCards` (#mistakes) -> `JudgeDemo` (#judge, a REAL International Business card + rating sheet, lightly trimmed; one card sentence with a wrong currency effect is deliberately omitted) -> `EventTypes` (#event-types, tabs by `formatGroup()`) -> `ForAdvisors` (#advisors, labeled example lobby + readiness roster, made-up names; replaced ChapterShowcase, deleted) -> `EventIndex` with T/R/P format tags -> close. `AuthLink` sends signed-out visitors through sign-up to the feature. Counts come from `COMPETITION_STATS` (`judged`, `byGroup`). Rule: every claim on the landing must be true and checkable; alternatives are described generically, never named. `ScrollReveal` watches with a 100000px top rootMargin so sections a fast fling or anchor jump skips still reveal.
 > - **Phones:** the AppShell sidebar had an inline `position: sticky` that always beat its mobile `position: fixed` rule, so every /app page rendered in a ~127px column on phones since v1. Positioning now lives in the stylesheet. A 375px audit of every page fixed 17 sub-44px tap targets and 63 sub-11px labels.
 > - **Verification habits that paid off this release:** run the automated contrast sweep after any palette change; audit phones by measuring (overflow, tap targets, input font size), not by eye; spot-check AI answer keys by hand; live RLS scripts after every migration.
 > - **Process lesson:** while background agents are editing, commit with explicit paths, never `git add -A` (it once shipped half-written agent files; reverted within a minute).
@@ -150,8 +150,8 @@ The Aug 25, 2026 officer-meeting demo has passed. No fixed deadline now; the goa
 
 ### Next up
 1. Get real students using it (3 or 4 chapter members on their own phones) and fix what confuses them.
-3. Emails and reminders: needs a Resend account + DNS for chapterprep.com. `lib/email.ts` is scaffolded and no-ops without `RESEND_API_KEY`.
-4. `hello@` / `privacy@chapterprep.com` still have no MX records.
+2. Emails and reminders (on hold per Vinay): needs a Resend account + DNS for chapterprep.com. `lib/email.ts` is scaffolded and no-ops without `RESEND_API_KEY`.
+3. `hello@` / `privacy@chapterprep.com` still have no MX records.
 
 ### How to verify the DB path after schema changes
 There's a self-contained integration test pattern (used twice this session to catch a critical grant bug). Write a one-off node script that reads `.env.local`, uses the service role to create a throwaway user, signs in as them with the anon client, inserts/reads under RLS, checks cross-user isolation, then deletes the user. Run with `node --input-type=module`. This catches grant/RLS/trigger bugs that the build won't.
@@ -162,7 +162,7 @@ There's a self-contained integration test pattern (used twice this session to ca
 
 - **Framework**: Next.js 16 (App Router, Turbopack), TypeScript, React 19. Read `node_modules/next/dist/docs` before assuming an API (see AGENTS.md).
 - **Styling**: CSS variables only (no Tailwind). Fonts via `next/font` in `app/layout.tsx` (self-hosted): Inter (body), Fraunces (`--font-serif`, all headings), Space Mono (exam sheet only), Space Grotesk (loaded, barely used).
-- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0019 in `supabase/migrations/`, all applied to prod.
+- **Auth/DB**: Supabase (`@supabase/ssr` + `@supabase/supabase-js`). Project ref `osxoygndwazbygiqyjhu`. Migrations 0001-0020 in `supabase/migrations/`, all applied to prod.
 - **AI**: Anthropic SDK. claude-haiku-4-5 generates practice questions (calculator tool loop) and runs the public chat; claude-sonnet-5 verifies every question and powers the AI Judge.
 - **Animation**: CSS only (framer-motion was removed in v1.9). ScrollReveal is IntersectionObserver-based and never hides above-the-fold content.
 - **Hosting**: Vercel, apex `chapterprep.com` (www 308s to it). Push to `main` auto-deploys.
@@ -225,7 +225,7 @@ lib/
   chapter.ts                 chapter RLS helpers, leaderboard, assignments, readiness, log prefixes
   mistakes.ts  mock.ts  text.ts  calc.ts  format.ts  url.ts  rate-limit.ts  version.ts
 scripts/                     logo-mark.svg (logo source) + regenerate-logo-assets.py
-supabase/migrations/         0001-0019
+supabase/migrations/         0001-0020
 ```
 
 ---

@@ -1,15 +1,20 @@
 import Link from "next/link";
-import { CATEGORIES, COMPETITIONS, isAiTestable } from "@/lib/competitions";
+import { CATEGORIES, COMPETITIONS, formatGroup, type FormatGroup } from "@/lib/competitions";
 
 /**
  * Every event, typeset like the index at the back of a book: grouped by
  * category, alphabetized, each name linked to its prep page. Showing all 76 at
  * once says "complete" far better than six cards and a "browse all" button.
  *
- * A small mark flags the events a practice test can be generated for. It is
- * derived from isAiTestable(), the same predicate the practice-test picker uses,
- * so the index and the product can never disagree.
+ * A small tag says how each event is decided (T test, R test then role play,
+ * P presentation or interview), derived from formatGroup() so the index and the
+ * event pages can never disagree.
  */
+const TAG: Record<FormatGroup, { letter: string; label: string }> = {
+  test: { letter: "T", label: "test" },
+  "role-play": { letter: "R", label: "test, then role play" },
+  presentation: { letter: "P", label: "presentation or interview" },
+};
 export function EventIndex() {
   const groups = CATEGORIES.map((cat) => ({
     cat,
@@ -32,11 +37,10 @@ export function EventIndex() {
                 <Link href={`/competitions/${c.slug}`} className="index-link">
                   {c.name}
                 </Link>
-                {isAiTestable(c) && (
-                  <span className="index-mark" title="Practice tests available">
-                    <span className="sr-only"> (practice tests available)</span>
-                  </span>
-                )}
+                <span className={`index-tag index-tag-${formatGroup(c)}`} title={TAG[formatGroup(c)].label}>
+                  <span aria-hidden="true">{TAG[formatGroup(c)].letter}</span>
+                  <span className="sr-only"> ({TAG[formatGroup(c)].label})</span>
+                </span>
               </li>
             ))}
           </ul>

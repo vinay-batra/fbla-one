@@ -58,7 +58,12 @@ export function ScrollReveal({ children, delay = 0, y = 24, threshold = 0.12 }: 
           obs.disconnect();
         }
       },
-      { threshold: effectiveThreshold, rootMargin: "0px 0px -8% 0px" }
+      // The huge TOP margin extends the watched area far above the viewport, so
+      // a block that a fast fling or an in-page anchor jump carries straight past
+      // still counts as seen. Otherwise it goes from "below" to "above" without
+      // ever changing intersection state, no callback fires, and it stays
+      // invisible until the reader scrolls back to it.
+      { threshold: effectiveThreshold, rootMargin: "100000px 0px -8% 0px" }
     );
     obs.observe(el);
     return () => obs.disconnect();

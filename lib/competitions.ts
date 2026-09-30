@@ -2242,8 +2242,33 @@ export function isAiTestable(c: Competition): boolean {
 }
 
 /** Quick stats for the marketing site. */
+/**
+ * How an event is decided, in the three groups a student chooses between:
+ * a test (objective or hands-on production test), a test then a role play for
+ * finalists, or a presentation / interview / chapter presentation.
+ */
+export type FormatGroup = "test" | "role-play" | "presentation";
+
+export function formatGroup(c: Competition): FormatGroup {
+  if (c.format === "objective-test" || c.format === "production") return "test";
+  if (c.format === "test-then-role-play") return "role-play";
+  return "presentation";
+}
+
+/** Events decided at least partly by judges (the AI Judge covers these). */
+export function isJudged(c: Competition): boolean {
+  return formatGroup(c) !== "test";
+}
+
 export const COMPETITION_STATS = {
   total: COMPETITIONS.length,
+  /** Events decided by a role play, presentation or interview. */
+  judged: COMPETITIONS.filter((c) => formatGroup(c) !== "test").length,
+  byGroup: {
+    test: COMPETITIONS.filter((c) => formatGroup(c) === "test").length,
+    "role-play": COMPETITIONS.filter((c) => formatGroup(c) === "role-play").length,
+    presentation: COMPETITIONS.filter((c) => formatGroup(c) === "presentation").length,
+  } as Record<FormatGroup, number>,
   withContent: COMPETITIONS.filter((c) => c.contentStatus === "complete").length,
   categories: CATEGORIES.length,
   /** Events the AI practice test generator supports. Drives marketing copy. */
