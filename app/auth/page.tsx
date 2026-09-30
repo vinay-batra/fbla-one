@@ -732,8 +732,8 @@ function AuthForm() {
                   style={{
                     width: 12,
                     height: 12,
-                    border: "1.5px solid rgba(6,12,22,0.3)",
-                    borderTopColor: "#060c16",
+                    border: "1.5px solid currentColor",
+                    borderTopColor: "transparent",
                     borderRadius: "50%",
                     animation: "auth-spin 0.8s linear infinite",
                   }}

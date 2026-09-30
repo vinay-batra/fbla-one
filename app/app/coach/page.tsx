@@ -296,7 +296,7 @@ function CoachInner() {
       score: correct,
       outOf: questions.length,
       durationMin: elapsedMs > 0 ? Math.max(1, Math.round(elapsedMs / 60000)) : null,
-      notes: `${AI_LOG_PREFIX} - ${correct}/${questions.length}`,
+      notes: `${AI_LOG_PREFIX}: ${correct}/${questions.length}`,
     });
   }
 
@@ -454,7 +454,7 @@ function CoachInner() {
             <p style={{ fontSize: 11, color: "var(--text3)" }}>
               {questionCount === 10 && "Quick 10-minute warm-up"}
               {questionCount === 25 && "Solid half-length practice run"}
-              {questionCount === 50 && "Full-length simulation - closest to the real thing"}
+              {questionCount === 50 && "Full-length simulation, the closest to the real thing"}
             </p>
           </div>
 

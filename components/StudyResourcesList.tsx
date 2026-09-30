@@ -97,7 +97,7 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
               type="button"
               onClick={() => toggle(r)}
               aria-label={isSaved ? "Remove from saved" : "Save resource"}
-              title={isSaved ? "Saved - click to remove" : "Save to your library"}
+              title={isSaved ? "Saved. Click to remove" : "Save to your library"}
               style={{
                 flexShrink: 0,
                 background: "none",

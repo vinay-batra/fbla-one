@@ -15,7 +15,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "What is ChapterPrep?",
-        a: "An all-in-one platform for FBLA chapters. Competition guides, study resources, prep tracker, and chapter management - everything you'd otherwise put in a Drive folder, but actually usable.",
+        a: "An all-in-one platform for FBLA chapters. Competition guides, study resources, prep tracker, and chapter management: everything you'd otherwise put in a Drive folder, but actually usable.",
       },
       {
         q: "Who is it for?",
@@ -73,7 +73,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Is there a limit on how many tests I can generate?",
-        a: "No daily cap - generate as many as you want, and every test is a fresh set of questions. A brief anti-abuse throttle only kicks in if you generate dozens within a few minutes.",
+        a: "There is no daily cap. Generate as many as you want, and every test is a fresh set of questions. A brief anti-abuse throttle only kicks in if you generate dozens within a few minutes.",
       },
     ],
   },

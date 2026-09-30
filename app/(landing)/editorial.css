@@ -16,11 +16,6 @@
 .ed {
   position: relative;
   z-index: 1;
-  --sheet-shadow: 0 1px 0 rgba(23, 24, 28, 0.04), 0 18px 40px -22px rgba(60, 45, 20, 0.45),
-    0 40px 80px -48px rgba(60, 45, 20, 0.35);
-}
-[data-theme="dark"] .ed {
-  --sheet-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 22px 50px -24px rgba(0, 0, 0, 0.8);
 }
 
 
@@ -36,7 +31,7 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--accent-text);
+  color: var(--pen-text);
 }
 .ed-kicker::before { content: ""; width: 22px; height: 1px; background: currentColor; }
 
@@ -97,11 +92,6 @@
   line-height: 1.62;
   color: var(--text2);
 }
-.ed-fine {
-  margin-top: 20px;
-  font-size: 13px;
-  color: var(--text3);
-}
 
 .ed-actions {
   display: flex;
@@ -151,184 +141,9 @@
 }
 .ed-hero-copy { max-width: 580px; }
 
-/* ── The exam sheet ──────────────────────────────────────── */
-
-.sheet {
-  position: relative;
-  padding: 26px 28px 20px;
-  border-radius: 4px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  box-shadow: var(--sheet-shadow);
-  transform: rotate(-0.8deg);
-  text-align: left;
-}
-/* dog-eared corner */
-.sheet::after {
-  content: "";
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 26px;
-  height: 26px;
-  background: linear-gradient(225deg, var(--bg) 50%, var(--bg3) 50%, var(--card-bg) 100%);
-  box-shadow: -2px 2px 4px -2px rgba(23, 24, 28, 0.25);
-  border-bottom-left-radius: 3px;
-}
-.sheet-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  padding-bottom: 14px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.sheet-of { text-transform: none; letter-spacing: 0.02em; }
-.sheet-event { color: var(--brand); font-weight: 700; margin-right: 22px; }
-.sheet-q {
-  font-family: var(--font-serif), Georgia, serif;
-  font-variation-settings: "opsz" 30;
-  font-size: 19px;
-  line-height: 1.42;
-  letter-spacing: -0.005em;
-  color: var(--text);
-  margin-bottom: 16px;
-}
-
-.sheet-opts { display: flex; flex-direction: column; gap: 0; }
-.opt {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 11px 10px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text);
-  font-size: 14.5px;
-  line-height: 1.4;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease, opacity 0.25s ease;
-}
-.opt:hover:not(:disabled) { background: var(--bg2); }
-.opt:disabled { cursor: default; }
-.opt.is-dim { opacity: 0.5; }
-.opt.is-correct .opt-text { font-weight: 600; }
-.opt.is-wrong .opt-text {
-  text-decoration: line-through;
-  text-decoration-color: var(--red);
-  text-decoration-thickness: 2px;
-}
-
-/* Scantron-style bubble. Filled in when chosen. */
-.bubble {
-  position: relative;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1.5px solid var(--text3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text2);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-.opt[aria-pressed="true"] .bubble {
-  background: var(--text);
-  border-color: var(--text);
-  color: var(--card-bg);
-}
-
-/* Red pen marks, drawn in with a stroke animation. */
-.pen {
-  position: absolute;
-  fill: none;
-  stroke: var(--red);
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  pointer-events: none;
-  overflow: visible;
-}
-.pen path {
-  stroke-dasharray: 320;
-  stroke-dashoffset: 320;
-  animation: pen-draw 0.55s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-.pen-circle { width: 52px; height: 46px; left: -13px; top: -10px; }
-.pen-cross { width: 40px; height: 40px; left: -7px; top: -7px; stroke-width: 3; }
-.pen-cross path { stroke-dasharray: 90; stroke-dashoffset: 90; }
-.pen-check { position: relative; width: 26px; height: 21px; stroke-width: 2.8; }
-.pen-check path { stroke-dasharray: 60; stroke-dashoffset: 60; animation-delay: 0.35s; }
-
-/* Margin note: expands smoothly with grid-template-rows 0fr -> 1fr. */
-.sheet-why {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-.sheet-why.is-open { grid-template-rows: 1fr; }
-.why-inner {
-  overflow: hidden;
-  font-family: var(--font-serif), Georgia, serif;
-  font-style: italic;
-  font-variation-settings: "opsz" 24;
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: var(--text2);
-}
-.sheet-why.is-open .why-inner {
-  margin-top: 16px;
-  padding-left: 14px;
-  border-left: 2px solid var(--red);
-}
-.why-mark { color: var(--red); font-weight: 600; }
-
-.sheet-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--border);
-}
-.sheet-hint { font-size: 12.5px; color: var(--text3); }
-.sheet-link {
-  color: var(--brand);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.sheet-next {
-  flex-shrink: 0;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--card-bg);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-.sheet-next:hover { background: var(--bg2); border-color: var(--text3); }
-.sheet-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
-.sheet-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s ease; }
-.sheet-dots span.on { background: var(--text); }
+/* The exam sheet's base styles are global (globals.css) so the real practice
+   test can use them. Landing-only: the page sits slightly askew on the desk. */
+.ed .sheet { transform: rotate(-0.8deg); }
 
 /* ── Ledger ──────────────────────────────────────────────── */
 
@@ -475,8 +290,7 @@
   .ed-hero { padding: 36px 0 56px; }
   .ed-section { padding: 72px 0; }
   .ed-close { padding: 80px 0 88px; }
-  .sheet { padding: 20px 18px 16px; transform: none; }
-  .sheet-q { font-size: 17px; }
+  .ed .sheet { transform: none; }
   .ed-sep { margin: 0 8px; }
   .toc-title { font-size: 20px; white-space: normal; }
   .toc-body { margin-left: 48px; }

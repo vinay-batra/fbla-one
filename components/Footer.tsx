@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { APP_VERSION } from "@/lib/version";
 import { AffiliationNotice } from "@/components/AffiliationNotice";
-import { BrandMark } from "@/components/BrandMark";
 
 type FooterCol = {
   title: string;
@@ -19,11 +18,8 @@ const COLS: FooterCol[] = [
     ],
   },
   {
-    title: "Company",
-    links: [
-      { href: "/changelog", label: "Changelog" },
-      { href: "/faq", label: "FAQ" },
-    ],
+    title: "Help",
+    links: [{ href: "/faq", label: "FAQ" }],
   },
   {
     title: "Legal",
@@ -42,7 +38,7 @@ export function Footer() {
         zIndex: 1,
         borderTop: "0.5px solid var(--border)",
         marginTop: 120,
-        padding: "56px 0 0",
+        padding: "56px 0 40px",
         background: "var(--bg2)",
         overflow: "hidden",
       }}
@@ -67,8 +63,8 @@ export function Footer() {
                 lineHeight: 1.65,
               }}
             >
-              The all-in-one platform for FBLA chapters. Competition guides, study
-              resources, prep tracker, and chapter management - built for FBLA
+              The all-in-one platform for FBLA chapters: competition guides, study
+              resources, a prep tracker, and chapter management. Built for FBLA
               students, by an FBLA student.
             </p>
             <AffiliationNotice style={{ marginTop: 18 }} />
@@ -76,7 +72,7 @@ export function Footer() {
 
           {COLS.map((col) => (
             <div key={col.title}>
-              <p className="eyebrow" style={{ marginBottom: 14 }}>{col.title}</p>
+              <p className="footer-heading">{col.title}</p>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
                 {col.links.map((l) => (
                   <li key={l.href}>
@@ -112,25 +108,6 @@ export function Footer() {
           </span>
         </div>
 
-        {/* Watermark mark - sits behind the bottom row, opacity-faded, decorative only */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: "relative",
-            height: 120,
-            marginTop: -24,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-end",
-            pointerEvents: "none",
-            opacity: 0.08,
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ width: "min(520px, 70vw)", transform: "translateY(40%)" }}>
-            <BrandMark size={520} className="footer-watermark-mark" />
-          </div>
-        </div>
       </div>
 
       <style>{`

@@ -55,7 +55,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://chapterprep.com"),
   title: {
-    default: "ChapterPrep - The all-in-one FBLA chapter platform",
+    default: "ChapterPrep: the all-in-one FBLA chapter platform",
     template: "%s · ChapterPrep",
   },
   description:

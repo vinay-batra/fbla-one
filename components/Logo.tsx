@@ -26,9 +26,10 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
         display: "inline-flex",
         alignItems: "center",
         gap: s.gap,
-        fontFamily: "var(--font-display)",
-        fontWeight: 700,
-        letterSpacing: "-0.025em",
+        fontFamily: "var(--font-serif)",
+        fontWeight: 600,
+        fontVariationSettings: '"opsz" 36',
+        letterSpacing: "-0.015em",
         textDecoration: "none",
       }}
     >
@@ -37,8 +38,8 @@ export function Logo({ href = "/", size = "md", markOnly = false }: Props) {
       <BrandMark size={s.plate} />
       {!markOnly && (
         <span style={{ display: "inline-flex", alignItems: "baseline", lineHeight: 1 }}>
-          <span style={{ fontSize: s.font, color: "var(--brand)" }}>Chapter</span>
-          <span style={{ fontSize: s.font, color: "var(--accent)" }}>Prep</span>
+          <span style={{ fontSize: s.font, color: "var(--text)" }}>Chapter</span>
+          <span style={{ fontSize: s.font, color: "var(--text)", fontStyle: "italic", fontWeight: 500 }}>Prep</span>
         </span>
       )}
     </Link>

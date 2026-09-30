@@ -66,6 +66,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    // The public changelog page was removed; old links land on the home page.
+    return [{ source: "/changelog", destination: "/", permanent: true }];
+  },
 };
 
 export default nextConfig;

@@ -252,7 +252,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: 12, color: "var(--text2)", fontWeight: 500 }}>
                     {dl.title}
                     {comp && (
-                      <span style={{ color: "var(--text3)" }}> - {comp.name}</span>
+                      <span style={{ color: "var(--text3)" }}> ({comp.name})</span>
                     )}
                   </span>
                 </div>

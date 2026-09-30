@@ -259,8 +259,8 @@ export function useChapterData() {
     : registered.map((slug) => ({ slug, name: getCompetition(slug)?.name ?? slug }));
   const deadlineTagline = inChapter
     ? canManage
-      ? "Shared across your chapter - every member sees these."
-      : "Set by your advisor - shared across your chapter."
+      ? "Shared across your chapter. Every member sees these."
+      : "Set by your advisor and shared across your chapter."
     : "Track sign-up dates, test days, and submission windows.";
 
   return {

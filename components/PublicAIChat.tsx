@@ -385,7 +385,7 @@ function PublicAIChatInner() {
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendCurrent()}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
-              placeholder={atLimit ? "Daily limit reached - sign up free" : "Ask an FBLA question..."}
+              placeholder={atLimit ? "Daily limit reached. Sign up free" : "Ask an FBLA question..."}
               disabled={atLimit}
               style={{
                 flex: 1,

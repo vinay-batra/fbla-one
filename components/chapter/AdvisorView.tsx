@@ -36,7 +36,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
       {/* ── SHARE / INVITE (advisor) ── */}
       {chapter && (
         <Card>
-          <CardHeader eyebrow="Grow your chapter" title="Invite your members" tagline="Share one link. Members open it, sign up, and they're in your chapter automatically - no code to type." />
+          <CardHeader eyebrow="Grow your chapter" title="Invite your members" tagline="Share one link. Members open it, sign up, and they're in your chapter automatically. No code to type." />
           <div className="invite-share" style={{ display: "flex", gap: 24, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
             <div style={{ flex: "1 1 280px", minWidth: 0 }}>
               <p className="font-mono" style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700, marginBottom: 7 }}>Invite link</p>
@@ -284,7 +284,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
                   onClick={() => exportRegionalCSV(members, chapter?.name ?? "chapter")}
                   className="btn btn-ghost btn-sm"
                   style={{ gap: 6, display: "flex", alignItems: "center" }}
-                  title="Grouped by event, Last/First names - matches regional registration forms"
+                  title="Grouped by event with Last/First names, matching regional registration forms"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

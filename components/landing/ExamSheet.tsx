@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { PenCircle, PenCheck, PenCross } from "@/components/PenMarks";
 
 /**
  * The landing page's centerpiece: a real, answerable practice question on a
@@ -77,31 +78,6 @@ const QUESTIONS: Q[] = [
 ];
 
 const LETTERS = ["A", "B", "C", "D"] as const;
-
-/** A loose, overshooting loop, the way a teacher circles an answer. */
-function PenCircle() {
-  return (
-    <svg className="pen pen-circle" viewBox="0 0 52 46" aria-hidden="true">
-      <path d="M8 17C12 6 28 2 38 6c9 4 12 14 8 23-5 11-22 14-32 9C5 34 3 25 8 17c3-5 9-8 15-9" />
-    </svg>
-  );
-}
-
-function PenCheck() {
-  return (
-    <svg className="pen pen-check" viewBox="0 0 30 24" aria-hidden="true">
-      <path d="M3 13c3 2 6 5 8 8 4-8 9-14 16-18" />
-    </svg>
-  );
-}
-
-function PenCross() {
-  return (
-    <svg className="pen pen-cross" viewBox="0 0 30 30" aria-hidden="true">
-      <path d="M5 5c7 6 13 13 20 20M25 4C18 11 12 18 5 26" />
-    </svg>
-  );
-}
 
 /** The score, written in the top margin and circled, the way a teacher grades. */
 function PenScore({ right, done }: { right: number; done: number }) {

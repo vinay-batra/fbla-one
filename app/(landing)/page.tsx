@@ -9,7 +9,7 @@ import { PenUnderline } from "@/components/PenUnderline";
 import { EventIndex } from "@/components/landing/EventIndex";
 import { COMPETITION_STATS } from "@/lib/competitions";
 
-const HOME_TITLE = "ChapterPrep - Practice Tests for Every FBLA Objective Event";
+const HOME_TITLE = "ChapterPrep: Practice Tests for Every FBLA Objective Event";
 // Kept under ~160 characters so search results do not truncate it.
 const HOME_DESCRIPTION =
   "Unlimited practice tests for every FBLA objective event, with instant explanations and score tracking. Study guides, deadlines and an advisor dashboard. Free.";
@@ -91,8 +91,8 @@ export default function Landing() {
             </div>
             <div className="rise rise-1">
               <h1 className="ed-display">
-                Walk into regionals already{" "}
-                <PenUnderline delay={0.65}>knowing the test.</PenUnderline>
+                Walk into regionals{" "}
+                <PenUnderline delay={0.65}>already knowing the test.</PenUnderline>
               </h1>
             </div>
             <div className="rise rise-2">
@@ -110,7 +110,6 @@ export default function Landing() {
                   Browse all {COMPETITION_STATS.total} events <span aria-hidden="true">→</span>
                 </Link>
               </div>
-              <p className="ed-fine">Made by a chapter Competition Chair who needed it first.</p>
             </div>
           </div>
 

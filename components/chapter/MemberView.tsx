@@ -55,7 +55,7 @@ export function MemberView({ c }: { c: ChapterController }) {
       {/* ── LEADERBOARD (member-visible) ── */}
       {hasChapter && !isAdvisor && leaderboard.length > 0 && (
         <Card>
-          <CardHeader eyebrow="Chapter leaderboard" title="Who's putting in the work" tagline="Ranked by practice tests taken. Climb the board by practicing - effort, not scores." />
+          <CardHeader eyebrow="Chapter leaderboard" title="Who's putting in the work" tagline="Ranked by practice tests taken. Climb the board by practicing: it rewards effort, not scores." />
           <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 12 }}>
             {leaderboard.map((row, i) => {
               const me = row.userId === userId;

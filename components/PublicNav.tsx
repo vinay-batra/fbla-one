@@ -13,7 +13,6 @@ type NavLinkSpec = { href: string; label: string };
 const NAV_LINKS: NavLinkSpec[] = [
   { href: "/", label: "Features" },
   { href: "/competitions", label: "Competitions" },
-  { href: "/changelog", label: "Changelog" },
   { href: "/faq", label: "FAQ" },
 ];
 
