@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader } from "@/components/Card";
+import { PageHeader } from "@/components/app/PageHeader";
 import { Avatar } from "@/components/UserMenu";
 import { useTheme } from "@/components/ThemeProvider";
 import { getSupabase } from "@/lib/supabase";
@@ -163,11 +164,8 @@ export default function Settings() {
   const initials = (dbName || nameDraft || email?.split("@")[0] || "?")[0]?.toUpperCase() ?? "?";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 760 }}>
-      <div>
-        <p className="eyebrow" style={{ marginBottom: 8 }}>Settings</p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>Your account</h1>
-      </div>
+    <div className="app-page app-page-narrow">
+      <PageHeader eyebrow="Settings" title={<>Your <em>account.</em></>} sub="Your name, your chapter, how the app behaves, and your data." />
 
       {/* Avatar */}
       <Card>
@@ -222,7 +220,7 @@ export default function Settings() {
           <input type="text" aria-label="Display name" value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} className="input-field" placeholder="Your name" maxLength={60} />
 
           <FieldLabel label="Chapter" />
-          <input type="text" aria-label="Chapter" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="Council Rock South FBLA" maxLength={80} disabled={inChapter} style={inChapter ? { opacity: 0.7, cursor: "not-allowed" } : undefined} />
+          <input type="text" aria-label="Chapter" value={chapDraft} onChange={(e) => setChapDraft(e.target.value)} className="input-field" placeholder="e.g. Lincoln High FBLA" maxLength={80} disabled={inChapter} style={inChapter ? { opacity: 0.7, cursor: "not-allowed" } : undefined} />
           {inChapter && (
             <p style={{ fontSize: 11.5, color: "var(--text3)", marginTop: -4 }}>
               Synced from your chapter. Manage it on the{" "}

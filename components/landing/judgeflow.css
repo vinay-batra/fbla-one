@@ -1,0 +1,158 @@
+/* The judged round walkthrough (components/landing/JudgeFlow.tsx). Its own
+   file so the landing page and the AI Judge page can both show it. */
+/* ── The judge, as a three-step round ── */
+.jf { min-width: 0; }
+.jf-steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.jf-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.jf-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 12px;
+}
+.jf-step.is-done { color: var(--text2); }
+.jf-step.is-on { color: var(--btn-fg); background: var(--btn-bg); border-color: var(--btn-bg); }
+/* All three panels share one grid cell, so the stage never changes height. */
+.jf-stage { display: grid; margin-top: 16px; }
+.jf-panel {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) rotate(0.4deg);
+  transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.45s;
+  padding: 22px 24px;
+  border-radius: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--sheet-shadow);
+}
+.jf-panel.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.jf-card { border-top: 6px double var(--text); }
+.jf-card-top, .jf-sheet-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.jf-card-top span:first-child { color: var(--pen-text); }
+.jf-title { margin-top: 14px; font-family: var(--font-serif), Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.12; }
+.jf-text { margin-top: 10px; font-family: var(--font-serif), Georgia, serif; font-size: 16px; line-height: 1.55; color: var(--text); }
+.jf-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.jf-roles p { font-size: 14px; line-height: 1.5; color: var(--text2); }
+.jf-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 2px;
+}
+.jf-tasks { margin: 14px 0 0; padding-left: 22px; font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.jf-tasks li::marker { color: var(--pen-text); font-weight: 700; }
+.jf-clock-line { margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 13.5px; font-weight: 600; color: var(--text2); }
+
+.jf-prep { text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.jf-big-clock {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(64px, 9vw, 104px);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--text);
+}
+.jf-notecard {
+  margin: 20px auto 0;
+  max-width: 380px;
+  padding: 12px 18px;
+  text-align: left;
+  background: repeating-linear-gradient(to bottom, transparent 0 29px, color-mix(in srgb, var(--border) 80%, transparent) 29px 30px), var(--bg);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--pen);
+  border-radius: 4px;
+}
+.jf-notecard p {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 30px;
+  color: var(--text);
+  opacity: 0;
+}
+.jf-prep.is-on .jf-notecard p { animation: jf-write 0.5s ease forwards; }
+@keyframes jf-write { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+.jf-prep-after { margin-top: 16px; font-size: 14px; color: var(--text2); }
+
+.jf-total {
+  position: relative;
+  padding: 4px 16px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
+  color: var(--red);
+  transform: rotate(-5deg);
+}
+.jf-circle { width: 100px; height: 68px; left: -12px; top: -12px; stroke-width: 2.6; }
+.jf-rows { list-style: none; margin: 6px 0 0; padding: 0; }
+.jf-rows li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.jf-sheet.is-on .jf-rows li { animation: jf-write 0.45s ease both; }
+.jf-score {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--red);
+  text-align: center;
+}
+.jf-row-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.jf-row-name span { font-weight: 500; color: var(--text3); }
+.jf-note { margin-top: 2px; font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 14.5px; line-height: 1.4; color: var(--pen-text); }
+.jf-finalist { margin-top: 12px; font-size: 14px; line-height: 1.5; color: var(--text); }
+.jf-caption { margin-top: 12px; font-size: 12.5px; color: var(--text3); }
+
+@media (max-width: 640px) {
+  .jf-panel { padding: 18px 16px; }
+  .jf-roles { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .jf-title { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jf-panel, .jf-panel.is-on { transition: none; transform: none; }
+  .jf-notecard p, .jf-prep.is-on .jf-notecard p { animation: none; opacity: 1; }
+  .jf-sheet.is-on .jf-rows li { animation: none; }
+}

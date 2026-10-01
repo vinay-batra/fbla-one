@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { PageHeader } from "@/components/app/PageHeader";
 import { getCompetition } from "@/lib/competitions";
 import { getMockContext, listChapterSessions, type MockContext, type MockSession } from "@/lib/mock";
 import { HostSetup } from "./HostSetup";
@@ -42,23 +43,18 @@ export function MockHome() {
 
   return (
     <div className="mock-page">
-      <header className="mock-hero">
-        <p className="eyebrow">Chapter meeting</p>
-        <h1>
-          Mock <em>Regionals</em>
-        </h1>
-        <p className="mock-lede">
-          One paper, one clock, the whole chapter. The advisor puts a code on the projector, everyone sits the same
-          objective test at once, and the room finds out who would place.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Mock Regionals"
+        title={<>One paper, <em>one clock.</em></>}
+        sub="The advisor puts a code on the projector, the whole chapter sits the same test at once, and the room finds out who would place."
+      />
 
       {ctx === undefined && <p className="mock-muted" role="status">Loading your chapter...</p>}
 
       {ctx === null && (
         <div className="card mock-note">
-          <p>Sign in to host or join a Mock Regionals.</p>
-          <Link href="/auth" className="btn btn-accent btn-sm">Sign in</Link>
+          <p>Mock Regionals runs inside a chapter, so it needs a free account.</p>
+          <Link href="/auth?mode=signup&next=/app/mock" className="btn btn-accent btn-sm">Create free account</Link>
         </div>
       )}
 

@@ -236,3 +236,17 @@
   .as-main { padding: 22px 16px 48px; }
   .as-top-link { display: none; }
 }
+
+/* ── Page header shared by every /app page (components/app/PageHeader.tsx) ── */
+.ph { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.ph-text { min-width: 0; }
+.ph .eyebrow { margin-bottom: 8px; }
+.ph-sub { margin-top: 10px; max-width: 60ch; font-size: 15px; line-height: 1.55; color: var(--text3); }
+.ph-right { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Every /app page lays out as one column of sections. */
+.app-page { display: flex; flex-direction: column; gap: 22px; max-width: 1080px; }
+.app-page-narrow { max-width: 760px; }
+
+/* Older app pages still use <Card>; match the paper sheets around them. */
+.as-main .card { border-color: var(--border2); border-radius: 14px; }

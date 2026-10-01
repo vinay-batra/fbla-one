@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import "./judgeflow.css";
 
 /**
  * The AI Judge, played out in three steps like a real round: draw a card, the

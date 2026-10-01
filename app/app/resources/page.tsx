@@ -1,15 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Card, CardHeader } from "@/components/Card";
 import {
+  addSavedResource,
+  getRegistered,
   getSavedResources,
   removeSavedResource,
   onStorageChange,
-  type SavedResource,
 } from "@/lib/storage";
-import { getCompetition } from "@/lib/competitions";
+import { getCompetition, type StudyResource } from "@/lib/competitions";
+import { PageHeader } from "@/components/app/PageHeader";
+
+/**
+ * Saved resources, plus the study resources listed for your own event (from
+ * lib/competitions.ts) so the page is useful before you have saved anything.
+ */
 
 function hostOf(url: string): string {
   try {
@@ -19,193 +25,127 @@ function hostOf(url: string): string {
   }
 }
 
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
 export default function ResourcesPage() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
-  void tick;
+  const { saved, myEvent } = useMemo(() => {
+    void tick;
+    return {
+      saved: getSavedResources(),
+      myEvent: getRegistered().map((s) => getCompetition(s)).find(Boolean) ?? null,
+    };
+  }, [tick]);
 
   const [filter, setFilter] = useState<string>("all");
+  const savedUrls = new Set(saved.map((r) => r.url));
+  const suggested = myEvent?.studyResources ?? [];
 
-  const all = getSavedResources();
+  const groups = Array.from(new Set(saved.map((r) => r.competitionSlug ?? "")));
+  const shown = filter === "all" ? saved : saved.filter((r) => (r.competitionSlug ?? "") === filter);
 
-  // Group by competition
-  const slugs = Array.from(
-    new Set(all.map((r) => r.competitionSlug ?? "__none__"))
-  );
-
-  const filtered =
-    filter === "all"
-      ? all
-      : filter === "__none__"
-      ? all.filter((r) => !r.competitionSlug)
-      : all.filter((r) => r.competitionSlug === filter);
-
-  const filterOptions = [
-    { value: "all", label: `All (${all.length})` },
-    ...slugs
-      .filter((s) => s !== "__none__")
-      .map((s) => {
-        const comp = getCompetition(s);
-        const count = all.filter((r) => r.competitionSlug === s).length;
-        return { value: s, label: `${comp?.name ?? s} (${count})` };
-      }),
-    ...(all.some((r) => !r.competitionSlug)
-      ? [{ value: "__none__", label: `General (${all.filter((r) => !r.competitionSlug).length})` }]
-      : []),
-  ];
+  function toggle(r: StudyResource) {
+    if (!myEvent) return;
+    const existing = saved.find((s) => s.url === r.url);
+    if (existing) removeSavedResource(existing.id);
+    else addSavedResource({ competitionSlug: myEvent.slug, title: r.title, url: r.url, note: r.note ?? null });
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 900 }}>
-      {/* Header */}
-      <div>
-        <p className="eyebrow" style={{ marginBottom: 8 }}>Library</p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>Saved resources</h1>
-        <p style={{ fontSize: 14, color: "var(--text3)", marginTop: 6 }}>
-          Everything you have bookmarked across all competition pages.
-        </p>
-      </div>
+    <div className="app-page">
+      <PageHeader
+        eyebrow="Saved resources"
+        title={<>Your study <em>shelf.</em></>}
+        sub="Guides, videos and practice sets worth keeping. Save any of them with the bookmark."
+      />
 
-      {all.length === 0 ? (
-        <Card>
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-            </div>
-            <p className="empty-state-title">No saved resources yet</p>
-            <p className="empty-state-msg">
-              Browse competition pages and click the bookmark icon next to any study resource to save it here.
-            </p>
-            <Link href="/competitions" className="btn btn-accent btn-sm btn-pill" style={{ marginTop: 8 }}>
-              Browse competitions
-            </Link>
+      {myEvent && suggested.length > 0 && (
+        <section className="db-ledger" aria-labelledby="rs-suggested">
+          <div className="db-ledger-head">
+            <h2 id="rs-suggested">For {myEvent.name}</h2>
+            <Link href={`/competitions/${myEvent.slug}`}>Event guide</Link>
           </div>
-        </Card>
-      ) : (
-        <>
-          {/* Filter bar */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {filterOptions.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setFilter(opt.value)}
-                style={{
-                  padding: "6px 13px",
-                  borderRadius: 999,
-                  border: filter === opt.value ? "1.5px solid var(--accent)" : "0.5px solid var(--border)",
-                  background: filter === opt.value ? "var(--accent-dim)" : "transparent",
-                  color: filter === opt.value ? "var(--accent)" : "var(--text2)",
-                  fontSize: 12,
-                  fontWeight: filter === opt.value ? 600 : 400,
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Resource list */}
-          <Card>
-            <CardHeader
-              eyebrow="Bookmarks"
-              title={filter === "all" ? `${all.length} saved` : filterOptions.find(o => o.value === filter)?.label ?? ""}
-            />
-            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 14 }}>
-              {filtered.length === 0 ? (
-                <p style={{ fontSize: 13, color: "var(--text3)", padding: "8px 0" }}>No resources in this category.</p>
-              ) : (
-                filtered.map((r: SavedResource) => {
-                  const comp = r.competitionSlug ? getCompetition(r.competitionSlug) : null;
-                  return (
-                    <div
-                      key={r.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        padding: "12px 10px",
-                        borderRadius: 8,
-                        transition: "background 0.12s",
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg2)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                    >
-                      {/* Link icon */}
-                      <div style={{ flexShrink: 0 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                          <path d="M15 3h6v6" />
-                          <path d="M10 14L21 3" />
-                        </svg>
-                      </div>
-
-                      {/* Main info */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <a
-                          href={r.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: 14, fontWeight: 500, color: "var(--text)", textDecoration: "none" }}
-                          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--accent)"; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text)"; }}
-                        >
-                          {r.title}
-                        </a>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 11, color: "var(--text3)" }}>{hostOf(r.url)}</span>
-                          {comp && (
-                            <Link
-                              href={`/competitions/${comp.slug}`}
-                              className="chip chip-brand"
-                              style={{ fontSize: 11.5, padding: "2px 8px", textDecoration: "none" }}
-                            >
-                              {comp.name}
-                            </Link>
-                          )}
-                          {r.note && (
-                            <span style={{ fontSize: 11, color: "var(--text3)", fontStyle: "italic" }}>{r.note}</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Date */}
-                      <span className="font-mono" style={{ fontSize: 11.5, color: "var(--text-muted)", flexShrink: 0 }}>
-                        {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </span>
-
-                      {/* Remove */}
-                      <button
-                        type="button"
-                        onClick={() => removeSavedResource(r.id)}
-                        aria-label="Remove resource"
-                        style={{
-                          flexShrink: 0, width: 26, height: 26, borderRadius: 6,
-                          border: "0.5px solid var(--border)", background: "transparent",
-                          color: "var(--text3)", display: "flex", alignItems: "center",
-                          justifyContent: "center", cursor: "pointer",
-                        }}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </Card>
-
-          <p style={{ fontSize: 12, color: "var(--text3)" }}>
-            Find more resources on any{" "}
-            <Link href="/competitions" style={{ color: "var(--accent-text)" }}>competition page</Link>.
-          </p>
-        </>
+          <ul>
+            {suggested.map((r) => {
+              const isSaved = savedUrls.has(r.url);
+              return (
+                <li key={r.url} className="rs-row">
+                  <span className="db-ledger-name">
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="rs-link">{r.title}</a>
+                    <span className="db-ledger-kind">{r.kind} · {hostOf(r.url)}{r.note ? ` · ${r.note}` : ""}</span>
+                  </span>
+                  <button
+                    type="button"
+                    className={`rs-save${isSaved ? " is-saved" : ""}`}
+                    aria-pressed={isSaved}
+                    aria-label={isSaved ? `Remove ${r.title} from saved` : `Save ${r.title}`}
+                    onClick={() => toggle(r)}
+                  >
+                    <BookmarkIcon filled={isSaved} />
+                    <span>{isSaved ? "Saved" : "Save"}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
+
+      <section className="db-ledger" aria-labelledby="rs-saved">
+        <div className="db-ledger-head">
+          <h2 id="rs-saved">Saved{saved.length ? ` (${saved.length})` : ""}</h2>
+          {groups.length > 1 && (
+            <div className="hs-filters" role="group" aria-label="Show">
+              <button type="button" className="hs-filter" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>All</button>
+              {groups.map((g) => (
+                <button key={g || "general"} type="button" className="hs-filter" aria-pressed={filter === g} onClick={() => setFilter(g)}>
+                  {g ? getCompetition(g)?.name ?? g : "General"}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {saved.length === 0 ? (
+          <p className="hs-none">
+            Nothing saved yet.{" "}
+            {myEvent && suggested.length > 0
+              ? "Tap Save on anything above."
+              : <>Open your event in <Link href="/competitions" className="rs-inline">all events</Link> and save its resources.</>}
+          </p>
+        ) : (
+          <ul>
+            {shown.map((r) => {
+              const comp = r.competitionSlug ? getCompetition(r.competitionSlug) : null;
+              return (
+                <li key={r.id} className="rs-row">
+                  <span className="db-ledger-name">
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="rs-link">{r.title}</a>
+                    <span className="db-ledger-kind">
+                      {comp ? `${comp.name} · ` : ""}{hostOf(r.url)}{r.note ? ` · ${r.note}` : ""}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="rs-save is-saved"
+                    aria-label={`Remove ${r.title} from saved`}
+                    onClick={() => removeSavedResource(r.id)}
+                  >
+                    <BookmarkIcon filled />
+                    <span>Remove</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

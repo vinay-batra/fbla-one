@@ -4,6 +4,17 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.16.0 - October 1, 2026 - Every app page, rebuilt
+
+- **One look across the whole app.** Every page has the same big serif header, the same paper cards and the same width.
+- **AI Practice:** your event is already filled in; pick a practice test, the full 100-question simulation or your mistakes as big tiles, pick a length, and begin. The side panel shows the topics on your event's test and your weakest ones, each with a Drill button.
+- **History** (was Practice tracker): every test, judge round and mistake review with its score, your average, total time practiced, the score chart and filters. Since tests save themselves, adding one by hand is now a small button.
+- **AI Judge:** pick your event with the new search box, and see an example round (card, prep clock, scored rating sheet) before you start.
+- **Chapter:** if you are not in a chapter yet, one big card to join with your advisor's code, and one line to create a chapter if you are the advisor. The leftover "My events" list is gone.
+- **Saved resources:** the study resources for your event are listed with a Save button, so the page is useful before you have saved anything.
+- **Event search everywhere:** the 76-event dropdowns are now a type-to-search box.
+- Settings and Mock Regionals got the new header; example text no longer shows a real school's name.
+
 ## v1.15.0 - October 1, 2026 - Sign-in that actually signs you in
 
 - **Fixed: Google sign-in left you looking signed out.** After signing in with Google, the app let you in but the sidebar said "Preview mode", Mock Regionals asked you to sign in, and your practice did not save to your account. Google sessions are now readable by the app, and anyone who signed in with Google before this fix is repaired automatically on their next visit.

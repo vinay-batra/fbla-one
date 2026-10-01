@@ -1,38 +1,197 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Card, CardHeader } from "@/components/Card";
-import { COMPETITIONS, getCompetition } from "@/lib/competitions";
+import { getCompetition } from "@/lib/competitions";
 import {
   addPracticeLog,
   getPracticeLogs,
   removePracticeLog,
   getRegistered,
   onStorageChange,
+  type PracticeLog,
 } from "@/lib/storage";
-import { isJudgeNote, parseJudgeNote, judgeModeLabel } from "@/lib/chapter";
+import { AI_LOG_PREFIX, isJudgeNote, isScoredTest, parseJudgeNote } from "@/lib/chapter";
+import { PageHeader } from "@/components/app/PageHeader";
+import { EventCombobox } from "@/components/dashboard/EventCombobox";
+import { ScoreChart, logKind, eventName } from "@/components/dashboard/ScoreChart";
+
+/**
+ * Practice history. Graded tests and Judge rounds save here on their own (the
+ * coach and the judge write practice logs), so the list comes first and the
+ * by-hand form is tucked behind a button.
+ */
 
 const LOG_CAP = 100;
 
-export default function Tracker() {
+type Filter = "all" | "tests" | "judge" | "mistakes" | "hand";
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "tests", label: "Tests" },
+  { key: "judge", label: "Judge rounds" },
+  { key: "mistakes", label: "Mistake reviews" },
+  { key: "hand", label: "By hand" },
+];
+
+function kindOf(l: PracticeLog): Exclude<Filter, "all"> {
+  if (isJudgeNote(l.notes)) return "judge";
+  if (l.notes.startsWith("Mistake review")) return "mistakes";
+  if (l.notes.startsWith(AI_LOG_PREFIX)) return "tests";
+  return "hand";
+}
+
+export default function History() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
-  void tick;
+  const { logs, myEvent } = useMemo(() => {
+    void tick;
+    return {
+      logs: getPracticeLogs(),
+      myEvent: getRegistered().map((s) => getCompetition(s)).find(Boolean) ?? null,
+    };
+  }, [tick]);
 
-  const logs = getPracticeLogs();
-  const judgeCount = logs.filter((l) => isJudgeNote(l.notes)).length;
-  const testCount = logs.length - judgeCount;
-  const registered = getRegistered();
-  const options = registered.length > 0 ? COMPETITIONS.filter((c) => registered.includes(c.slug)) : COMPETITIONS;
+  const [filter, setFilter] = useState<Filter>("all");
+  const [showAll, setShowAll] = useState(false);
+  const [adding, setAdding] = useState(false);
 
-  const [slug, setSlug] = useState<string>(options[0]?.slug ?? "");
-  const [score, setScore] = useState<string>("");
-  const [outOf, setOutOf] = useState<string>("100");
-  const [duration, setDuration] = useState<string>("60");
-  const [notes, setNotes] = useState<string>("");
-  const [showAllLogs, setShowAllLogs] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
+  const shown = logs.filter((l) => filter === "all" || kindOf(l) === filter);
+  const scored = logs.filter((l) => isScoredTest(l));
+  const avg = scored.length
+    ? Math.round(scored.slice(0, 10).reduce((s, l) => s + (l.score! / l.outOf!) * 100, 0) / Math.min(scored.length, 10))
+    : null;
+  const minutes = logs.reduce((s, l) => s + (l.durationMin ?? 0), 0);
+  const judgeRounds = logs.filter((l) => isJudgeNote(l.notes)).length;
+
+  return (
+    <div className="app-page">
+      <PageHeader
+        eyebrow="History"
+        title={<>Every test, <em>every score.</em></>}
+        sub="Graded tests and judge rounds save here on their own."
+        right={
+          <button type="button" className="db-ghost" onClick={() => setAdding((v) => !v)} aria-expanded={adding}>
+            {adding ? "Close" : "Add one by hand"}
+          </button>
+        }
+      />
+
+      {adding && <ManualLog defaultSlug={myEvent?.slug ?? ""} onDone={() => setAdding(false)} />}
+
+      {logs.length === 0 ? (
+        <section className="db-sheet">
+          <div className="db-sheet-body hs-empty">
+            <h2 className="db-cover-title">Nothing here <em>yet.</em></h2>
+            <p className="db-cover-note">Your first graded test lands here with its score and topics.</p>
+            <div className="db-actions">
+              <Link href="/app/coach" className="db-begin">Take a practice test</Link>
+              <Link href="/app/judge" className="db-ghost">Try a judge round</Link>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className="db-stats">
+            <div className="db-stat">
+              <div className="db-stat-num">{logs.length}</div>
+              <div className="db-stat-label">Practice sessions</div>
+            </div>
+            <div className="db-stat">
+              <div className="db-stat-num">{avg != null ? `${avg}%` : "None yet"}</div>
+              <div className="db-stat-label">Test average, last {Math.min(scored.length, 10) || 10}</div>
+            </div>
+            <div className="db-stat">
+              <div className="db-stat-num">{judgeRounds}</div>
+              <div className="db-stat-label">{judgeRounds === 1 ? "Judge round" : "Judge rounds"}</div>
+            </div>
+            {minutes > 0 && (
+              <div className="db-stat">
+                <div className="db-stat-num">{minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`}</div>
+                <div className="db-stat-label">Time practiced</div>
+              </div>
+            )}
+          </div>
+
+          {myEvent && <ScoreChart comp={myEvent} logs={logs} />}
+
+          <div className="db-ledger">
+            <div className="db-ledger-head">
+              <h2>All practice</h2>
+              <div className="hs-filters" role="group" aria-label="Show">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    className="hs-filter"
+                    aria-pressed={filter === f.key}
+                    onClick={() => { setFilter(f.key); setShowAll(false); }}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {shown.length === 0 ? (
+              <p className="hs-none">Nothing in this view yet.</p>
+            ) : (
+              <ul>
+                {(showAll ? shown : shown.slice(0, LOG_CAP)).map((l) => {
+                  const judge = parseJudgeNote(l.notes);
+                  // A Judge round is rubric points, not a percentage, so it gets no %.
+                  const pct = !judge && l.score != null && l.outOf ? Math.round((l.score / l.outOf) * 100) : null;
+                  return (
+                    <li key={l.id} className="hs-row">
+                      <span className="db-ledger-name">
+                        {eventName(l.competitionSlug)}
+                        <span className="db-ledger-kind">
+                          {logKind(l)}
+                          {judge?.qaTotal != null ? `, Q&A ${judge.qaTotal}/100` : ""}
+                          {l.durationMin ? `, ${l.durationMin} min` : ""}
+                        </span>
+                      </span>
+                      <span className="db-ledger-when">
+                        {new Date(l.loggedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                      <span className="db-ledger-score">
+                        {l.score != null && l.outOf != null ? `${l.score}/${l.outOf}` : "Done"}
+                        {pct != null && <span className={`hs-pct${pct >= 80 ? " is-good" : ""}`}>{pct}%</span>}
+                      </span>
+                      <button
+                        type="button"
+                        className="hs-delete"
+                        onClick={() => removePracticeLog(l.id)}
+                        aria-label={`Delete ${logKind(l).toLowerCase()} for ${eventName(l.competitionSlug)}`}
+                        title="Delete"
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        </svg>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {!showAll && shown.length > LOG_CAP && (
+              <div className="hs-more">
+                <button type="button" className="db-linkbtn" onClick={() => setShowAll(true)}>
+                  Show all {shown.length}
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ManualLog({ defaultSlug, onDone }: { defaultSlug: string; onDone: () => void }) {
+  const [slug, setSlug] = useState(defaultSlug);
+  const [score, setScore] = useState("");
+  const [outOf, setOutOf] = useState("100");
+  const [duration, setDuration] = useState("");
+  const [notes, setNotes] = useState("");
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -44,282 +203,40 @@ export default function Tracker() {
       durationMin: duration ? Number(duration) : null,
       notes,
     });
-    setScore("");
-    setNotes("");
-    // Acknowledge the save (the new row may be off-screen below the form on
-    // mobile), so it never reads as if nothing happened and invites a re-submit.
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 2000);
+    onDone();
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 1240 }}>
-      <div>
-        <p className="eyebrow" style={{ marginBottom: 8 }}>Practice tracker</p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>Log a practice test</h1>
+    <section className="db-sheet" aria-labelledby="hs-add-title">
+      <div className="db-sheet-head">
+        <span id="hs-add-title" className="db-sheet-kicker">Add practice by hand</span>
+        <span className="db-sheet-kicker">For a paper test, a study session or a real competition</span>
       </div>
-
-      <div className="tracker-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 18 }}>
-        <Card>
-          <CardHeader eyebrow="New log" title="Add practice" />
-          <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 6 }}>
-            <Field label="Competition">
-              <select
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="input-field"
-                required
-              >
-                {options.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <Field label="Score">
-                <input
-                  type="number"
-                  value={score}
-                  onChange={(e) => setScore(e.target.value)}
-                  className="input-field"
-                  placeholder="e.g. 82"
-                  min={0}
-                  step={1}
-                />
-              </Field>
-              <Field label="Out of">
-                <input
-                  type="number"
-                  value={outOf}
-                  onChange={(e) => setOutOf(e.target.value)}
-                  className="input-field"
-                  placeholder="100"
-                  min={1}
-                  step={1}
-                />
-              </Field>
-            </div>
-
-            <Field label="Duration (min)">
-              <input
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="input-field"
-                min={0}
-                step={1}
-              />
-            </Field>
-
-            <Field label="Notes">
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="input-field"
-                placeholder="What did you study? What needs more work?"
-                rows={3}
-                style={{ resize: "vertical", minHeight: 80, padding: "11px 14px", lineHeight: 1.55 }}
-              />
-            </Field>
-
-            <button type="submit" className="btn btn-accent btn-lg">
-              {justSaved ? "Saved" : "Save log"}
-            </button>
-            <p role="status" aria-live="polite" style={{ fontSize: 12, color: "var(--green)", minHeight: 16, margin: 0 }}>
-              {justSaved ? "Practice log saved to your history." : ""}
-            </p>
-          </form>
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="History"
-            tagline={
-              judgeCount > 0
-                ? `${testCount} ${testCount === 1 ? "test" : "tests"} and ${judgeCount} Judge ${judgeCount === 1 ? "round" : "rounds"}. Judge scores are rubric points out of 100, shown apart from test percentages.`
-                : `${logs.length} ${logs.length === 1 ? "entry" : "entries"} total`
-            }
-          />
-          {logs.length === 0 ? (
-            <div className="empty-state" style={{ marginTop: 8 }}>
-              <div className="empty-state-icon">!</div>
-              <p className="empty-state-title">No logs yet</p>
-              <p className="empty-state-msg">Add your first practice test on the left to start tracking.</p>
-            </div>
-          ) : (
-            <>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginTop: 8 }}>
-                <thead>
-                  <tr style={{ borderBottom: "0.5px solid var(--border)" }}>
-                    <Th>When</Th>
-                    <Th>Competition</Th>
-                    <Th right>Score</Th>
-                    <Th right>%</Th>
-                    <Th right>Min</Th>
-                    <Th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {(showAllLogs ? logs : logs.slice(0, LOG_CAP)).map((l) => {
-                    const c = getCompetition(l.competitionSlug);
-                    const judge = parseJudgeNote(l.notes);
-                    // A Judge round is rubric points, not a percentage of questions
-                    // right, so it gets no % (and never feeds a test average).
-                    const pct = !judge && l.score != null && l.outOf != null && l.outOf > 0
-                      ? Math.round((l.score / l.outOf) * 100)
-                      : null;
-                    return (
-                      <tr key={l.id} style={{ borderBottom: "0.5px solid var(--border)" }}>
-                        <Td style={{ color: "var(--text3)", fontSize: 12 }}>
-                          {new Date(l.loggedAt).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </Td>
-                        <Td>
-                          {c ? (
-                            <Link href={`/competitions/${c.slug}`} style={{ color: "var(--text)", fontWeight: 500 }}>
-                              {c.name}
-                            </Link>
-                          ) : (
-                            l.competitionSlug
-                          )}
-                          {judge && (
-                            <span style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 4 }}>
-                              <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
-                                AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
-                              </span>
-                              {judge.qaTotal != null && (
-                                <span style={{ fontSize: 11.5, color: "var(--text3)" }}>Q&amp;A {judge.qaTotal}/100</span>
-                              )}
-                            </span>
-                          )}
-                        </Td>
-                        <Td right mono>
-                          {l.score != null && l.outOf != null ? `${l.score} / ${l.outOf}` : "-"}
-                        </Td>
-                        <Td right mono accent={pct != null && pct >= 80}>
-                          {pct != null ? `${pct}%` : judge ? <span style={{ fontSize: 11, color: "var(--text3)" }}>pts</span> : "-"}
-                        </Td>
-                        <Td right mono>{l.durationMin ?? "-"}</Td>
-                        <Td right>
-                          <button
-                            type="button"
-                            onClick={() => removePracticeLog(l.id)}
-                            aria-label="Delete log"
-                            className="mi-btn"
-                            style={{
-                              width: 24, height: 24, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                              color: "var(--text3)",
-                              transition: "color 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--red)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                              <path d="M3 6h18" />
-                              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                            </svg>
-                          </button>
-                        </Td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            {!showAllLogs && logs.length > LOG_CAP && (
-              <button type="button" onClick={() => setShowAllLogs(true)} className="btn btn-ghost btn-sm" style={{ marginTop: 14 }}>
-                Show all {logs.length} entries
-              </button>
-            )}
-            </>
-          )}
-        </Card>
-      </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .tracker-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  // Wrap the control inside the <label> so the association is implicit - no id
-  // threading, works for every field that uses this helper.
-  return (
-    <label style={{ display: "block" }}>
-      <span
-        className="font-mono"
-        style={{
-          display: "block",
-          fontSize: 11,
-          letterSpacing: "0.18em",
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          fontWeight: 700,
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function Th({ children, right }: { children?: React.ReactNode; right?: boolean }) {
-  return (
-    <th
-      className="font-mono"
-      style={{
-        textAlign: right ? "right" : "left",
-        fontSize: 11,
-        letterSpacing: "0.14em",
-        color: "var(--text-muted)",
-        textTransform: "uppercase",
-        fontWeight: 700,
-        padding: "10px 12px",
-      }}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  right,
-  mono,
-  accent,
-  style,
-}: {
-  children?: React.ReactNode;
-  right?: boolean;
-  mono?: boolean;
-  accent?: boolean;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <td
-      style={{
-        textAlign: right ? "right" : "left",
-        padding: "10px 12px",
-        fontFamily: mono ? "var(--font-mono)" : "var(--font-body)",
-        color: accent ? "var(--accent)" : "var(--text2)",
-        fontWeight: accent ? 700 : 400,
-        ...style,
-      }}
-    >
-      {children}
-    </td>
+      <form className="db-sheet-body hs-form" onSubmit={onSubmit}>
+        <div className="cp-field hs-wide">
+          <label htmlFor="hs-event" className="db-field-label">Event</label>
+          <EventCombobox id="hs-event" value={slug} onChange={setSlug} className="is-compact" />
+        </div>
+        <label className="cp-field">
+          <span className="db-field-label">Score</span>
+          <input className="input-field" type="number" min={0} step={1} placeholder="e.g. 82" value={score} onChange={(e) => setScore(e.target.value)} />
+        </label>
+        <label className="cp-field">
+          <span className="db-field-label">Out of</span>
+          <input className="input-field" type="number" min={1} step={1} value={outOf} onChange={(e) => setOutOf(e.target.value)} />
+        </label>
+        <label className="cp-field">
+          <span className="db-field-label">Minutes</span>
+          <input className="input-field" type="number" min={0} step={1} placeholder="e.g. 50" value={duration} onChange={(e) => setDuration(e.target.value)} />
+        </label>
+        <label className="cp-field hs-wide">
+          <span className="db-field-label">Notes</span>
+          <textarea className="input-field" rows={3} placeholder="What did you study? What needs more work?" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ resize: "vertical", lineHeight: 1.55 }} />
+        </label>
+        <div className="hs-wide">
+          <button type="submit" className="db-begin" disabled={!slug}>Save to history</button>
+        </div>
+      </form>
+    </section>
   );
 }

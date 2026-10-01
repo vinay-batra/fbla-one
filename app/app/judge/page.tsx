@@ -3,6 +3,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { PageHeader } from "@/components/app/PageHeader";
+import { EventCombobox } from "@/components/dashboard/EventCombobox";
+import { JudgeFlow } from "@/components/landing/JudgeFlow";
 import { COMPETITIONS, FORMAT_LABEL, getCompetition, type Competition } from "@/lib/competitions";
 import { addPracticeLog, getRegistered, updatePracticeLog } from "@/lib/storage";
 import { judgeLogNote } from "@/lib/chapter";
@@ -45,6 +48,7 @@ const byName = (a: Competition, b: Competition) => a.name.localeCompare(b.name);
 const JUDGED = COMPETITIONS.filter((c) => judgeModeFor(c.format) !== null);
 const ROLE_PLAY_EVENTS = JUDGED.filter((c) => judgeModeFor(c.format) === "role-play").sort(byName);
 const PRESENTATION_EVENTS = JUDGED.filter((c) => judgeModeFor(c.format) === "presentation").sort(byName);
+const JUDGE_PICKS = [...ROLE_PLAY_EVENTS, ...PRESENTATION_EVENTS];
 
 function isJudged(slug: string | null | undefined): slug is string {
   return !!slug && JUDGED.some((c) => c.slug === slug);
@@ -368,15 +372,11 @@ function JudgeInner() {
         {polite}
       </p>
 
-      <header className="judge-hero">
-        <p className="eyebrow">Judge</p>
-        <h1 className="judge-h1">
-          Practice for the <em>judges</em>, not just the test.
-        </h1>
-        <p className="judge-lede">
-          {JUDGED.length} events are decided by a role play, presentation, or interview. Pick yours, perform it here, and get it back marked up like a real rating sheet.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="AI Judge"
+        title={<>Practice for <em>the judges.</em></>}
+        sub={`${JUDGED.length} events are decided by a role play, presentation or interview. Perform yours here and get it back marked up like a real rating sheet.`}
+      />
 
       {(phase === "setup" || phase === "drawing") && (
         <SetupPanel
@@ -613,29 +613,14 @@ function SetupPanel({
         <label htmlFor="judge-event" className="judge-input-label">
           Your event
         </label>
-        <select
+        <EventCombobox
           id="judge-event"
-          className="input-field judge-select"
           value={slug}
-          onChange={(e) => onPick(e.target.value)}
-          disabled={busy}
-        >
-          <option value="">Choose a judged event</option>
-          <optgroup label="Role play events">
-            {ROLE_PLAY_EVENTS.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Presentation, speech, and interview events">
-            {PRESENTATION_EVENTS.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </optgroup>
-        </select>
+          onChange={onPick}
+          events={JUDGE_PICKS}
+          placeholder="Type a role play or presentation event"
+          className="is-compact"
+        />
         <p className="judge-input-hint">
           Objective-test-only events are not here.{" "}
           <Link href="/app/coach" className="judge-link">
@@ -643,6 +628,13 @@ function SetupPanel({
           </Link>
         </p>
       </div>
+
+      {!comp && (
+        <div className="judge-example">
+          <p className="db-notes-head"><span>How a round works: an example</span></p>
+          <JudgeFlow active />
+        </div>
+      )}
 
       {comp && mode && (
         <>

@@ -754,3 +754,7 @@
   .judge-timer-fill,
   .judge-timer-clock { transition: none; }
 }
+
+/* Before an event is picked: the landing page's walkthrough of a round. */
+.judge-example { padding: 22px 24px; border-radius: 14px; background: var(--card-bg); border: 0.5px solid var(--border2); }
+@media (max-width: 560px) { .judge-example { padding: 18px 14px; } }

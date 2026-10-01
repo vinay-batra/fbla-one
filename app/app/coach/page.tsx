@@ -19,6 +19,8 @@ import {
   type Question,
 } from "@/components/coach/engine";
 import { GeneratingView } from "@/components/coach/GeneratingView";
+import { PageHeader } from "@/components/app/PageHeader";
+import { EventCombobox } from "@/components/dashboard/EventCombobox";
 import {
   bankCount,
   getBank,
@@ -187,6 +189,12 @@ function CoachInner() {
     .filter((c): c is NonNullable<typeof c> =>
       Boolean(c) && ELIGIBLE.some((e) => e.slug === c!.slug)
     );
+
+  // No event in the URL: start on the student's own event.
+  const myEligible = registeredComps[0]?.slug ?? "";
+  useEffect(() => {
+    if (!initialSlug && myEligible) setSelectedSlug((s) => s || myEligible);
+  }, [initialSlug, myEligible]);
 
   // Auto-select if slug passed via URL
   useEffect(() => {
@@ -583,229 +591,139 @@ function CoachInner() {
         : mode === "mistakes"
           ? `Review ${Math.min(bankSize, REVIEW_MAX)} missed ${bankSize === 1 ? "question" : "questions"}`
           : `Generate ${questionCount}-question test`;
+    const canStart = Boolean(selectedSlug) && !(mode === "mistakes" && bankSize === 0);
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 700 }}>
-        <div>
-          <p className="eyebrow" style={{ marginBottom: 8, color: "var(--accent-text)" }}>Practice tests</p>
-          <h1 style={{ fontSize: 30, letterSpacing: "-0.02em" }}>Practice Test Generator</h1>
-          <p style={{ fontSize: 14, color: "var(--text3)", marginTop: 6, lineHeight: 1.6 }}>
-            Realistic questions calibrated to each event's exact topic outline and difficulty, with an instant explanation for every answer. A second model solves every question on its own before it reaches you, and anything it cannot confirm is replaced.
-          </p>
-        </div>
+      <div className="app-page">
+        <PageHeader
+          eyebrow="AI Practice"
+          title={<>Practice <em>the real test.</em></>}
+          sub="Questions built from your event's official topic outline. A second AI checks every answer before you see it."
+        />
 
-        {genError && (
-          <div role="alert" style={{ padding: "12px 16px", background: "rgba(var(--red-rgb), 0.08)", border: "0.5px solid var(--red)", borderRadius: 10, fontSize: 13, color: "var(--red)" }}>
-            {genError}
-          </div>
-        )}
+        {genError && <div role="alert" className="cp-error">{genError}</div>}
 
-        <div className="coach-setup" style={{ background: "var(--card-bg)", border: "0.5px solid var(--border)", borderRadius: 16, display: "flex", flexDirection: "column", gap: 24 }}>
-          {/* Competition picker */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <label htmlFor="coach-event" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-              Competition
-            </label>
+        <div className="cp-grid">
+          <section className="db-sheet" aria-labelledby="cp-setup-title">
+            <div className="db-sheet-head">
+              <span id="cp-setup-title" className="db-sheet-kicker">New paper</span>
+              {comp && <span className="db-sheet-kicker"><b>{comp.name}</b></span>}
+            </div>
+            <div className="db-sheet-body cp-body">
+              <div className="cp-field">
+                <label htmlFor="coach-event" className="db-field-label">Event</label>
+                <EventCombobox
+                  id="coach-event"
+                  value={selectedSlug}
+                  onChange={setSelectedSlug}
+                  events={ELIGIBLE}
+                  placeholder="Type an event with a test"
+                  className="is-compact"
+                />
+              </div>
 
-            {registeredComps.length > 0 && (
-              <div>
-                <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>Your event</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                  {registeredComps.map((c) => (
-                    <button
-                      key={c.slug}
-                      type="button"
-                      onClick={() => setSelectedSlug(c.slug)}
-                      aria-pressed={selectedSlug === c.slug}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 999,
-                        border: selectedSlug === c.slug ? "1.5px solid var(--accent)" : "0.5px solid var(--border)",
-                        background: selectedSlug === c.slug ? "var(--accent-dim)" : "transparent",
-                        color: selectedSlug === c.slug ? "var(--accent)" : "var(--text2)",
-                        fontSize: 12,
-                        fontWeight: selectedSlug === c.slug ? 600 : 400,
-                        cursor: "pointer",
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
+              <div className="cp-field">
+                <p id="coach-mode-label" className="db-field-label">Paper</p>
+                <div className="cp-modes" role="group" aria-labelledby="coach-mode-label">
+                  <button type="button" className="cp-mode" aria-pressed={mode === "practice"} onClick={() => setMode("practice")}>
+                    <span className="cp-mode-name">Practice test</span>
+                    <span className="cp-mode-sub">10, 25 or 50 questions, untimed</span>
+                  </button>
+                  <button type="button" className="cp-mode" aria-pressed={mode === "simulation"} onClick={() => setMode("simulation")}>
+                    <span className="cp-mode-name">Full simulation</span>
+                    <span className="cp-mode-sub">100 questions in 50:00</span>
+                  </button>
+                  <button type="button" className="cp-mode" aria-pressed={mode === "mistakes"} onClick={() => setMode("mistakes")} disabled={bankSize === 0}>
+                    <span className="cp-mode-name">Mistakes{bankSize > 0 ? ` (${bankSize})` : ""}</span>
+                    <span className="cp-mode-sub">
+                      {!selectedSlug ? "Pick an event first" : bankSize > 0 ? "Instant review, no waiting" : "Nothing missed yet"}
+                    </span>
+                  </button>
                 </div>
+              </div>
+
+              {mode === "practice" && (
+                <div className="cp-field">
+                  <p id="coach-count-label" className="db-field-label">Questions</p>
+                  <div className="cp-counts" role="group" aria-labelledby="coach-count-label">
+                    {[10, 25, 50].map((n) => (
+                      <button key={n} type="button" className="cp-count" aria-pressed={questionCount === n} onClick={() => setQuestionCount(n)}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="cp-note">
+                    {questionCount === 10 && "A quick warm-up."}
+                    {questionCount === 25 && "A solid half-length run."}
+                    {questionCount === 50 && "A long run, still untimed."}
+                    {bankMix > 0 && ` Includes ${bankMix} of your missed questions.`}
+                  </p>
+                </div>
+              )}
+              {mode === "simulation" && (
+                <p className="cp-note">
+                  Like the real objective test: the clock counts down and turns the paper in at 0:00. Explanations wait until the end. Writing and checking takes a minute or two, and you can start once the first 25 are ready.
+                </p>
+              )}
+              {mode === "mistakes" && bankSize > 0 && (
+                <p className="cp-note">
+                  A question leaves your bank once you get it right in two different tests.
+                  {bankSize > REVIEW_MAX ? ` This review takes the ${REVIEW_MAX} you have missed most.` : ""}
+                </p>
+              )}
+
+              <button type="button" onClick={startSelected} disabled={!canStart} className="db-begin cp-begin">
+                {startLabel}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <aside className="cp-side">
+            {comp ? (
+              <div className="cp-card">
+                <p className="db-notes-head"><span>About the event</span></p>
+                <div className="cp-chips">
+                  <span className="chip chip-brand">{comp.category}</span>
+                  <span className="chip">{FORMAT_LABEL[comp.format]}</span>
+                </div>
+                <p className="cp-desc">{comp.description}</p>
+                {comp.topics && comp.topics.length > 0 && (
+                  <>
+                    <p className="db-notes-head" style={{ marginTop: 16 }}><span>Topics on the test</span></p>
+                    <ul className="cp-topics">
+                      {comp.topics.map((t) => <li key={t}>{t}</li>)}
+                    </ul>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="cp-card cp-card-empty">
+                <p className="cp-desc">Pick an event to see the topics its test covers.</p>
               </div>
             )}
 
-            <div style={{ marginTop: registeredComps.length > 0 ? 4 : 0 }}>
-              {registeredComps.length > 0 && (
-                <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8 }}>Or pick from all events</p>
-              )}
-              <select
-                id="coach-event"
-                value={selectedSlug}
-                onChange={(e) => setSelectedSlug(e.target.value)}
-                className="input-field"
-              >
-                <option value="">Select an event</option>
-                {ELIGIBLE.map((c) => (
-                  <option key={c.slug} value={c.slug}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Competition preview */}
-          {comp && (
-            <div style={{ padding: "14px 16px", background: "var(--bg2)", borderRadius: 10, border: "0.5px solid var(--border)" }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-                <span className="chip chip-brand" style={{ fontSize: 11.5 }}>{comp.category}</span>
-                <span className="chip" style={{ fontSize: 11.5 }}>{FORMAT_LABEL[comp.format]}</span>
-                {comp.duration && <span className="chip" style={{ fontSize: 11.5 }}>{comp.duration}</span>}
+            {selectedSlug && weakTopics.length > 0 && (
+              <div className="cp-card">
+                <p className="db-notes-head"><span>Your weakest topics</span><span>% right</span></p>
+                <ul className="db-topics">
+                  {weakTopics.slice(0, 4).map((w) => (
+                    <li key={w.topic} className="db-topic">
+                      <span className="db-topic-name"><span>{w.topic}</span><span>{w.pct}%</span></span>
+                      <span className="db-bar" aria-hidden="true">
+                        <i className={w.pct >= 80 ? "is-ok" : ""} style={{ width: `${Math.max(4, w.pct)}%` }} />
+                      </span>
+                      <button type="button" className="db-drill" onClick={() => generate(w.topic)} aria-label={`Drill ${w.topic}`}>
+                        Drill
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.55 }}>{comp.description}</p>
-              {comp.topics && (
-                <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 8 }}>
-                  <span style={{ fontWeight: 600 }}>Topics: </span>
-                  {comp.topics.slice(0, 5).join(" · ")}{comp.topics.length > 5 ? ` · +${comp.topics.length - 5} more` : ""}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Test type */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <p id="coach-mode-label" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-              Test type
-            </p>
-            <div className="coach-modes" role="group" aria-labelledby="coach-mode-label">
-              <button type="button" className="coach-mode" aria-pressed={mode === "practice"} onClick={() => setMode("practice")}>
-                <span className="coach-mode-name">Practice test</span>
-                <span className="coach-mode-sub">10, 25 or 50 questions, untimed</span>
-              </button>
-              <button type="button" className="coach-mode" aria-pressed={mode === "simulation"} onClick={() => setMode("simulation")}>
-                <span className="coach-mode-name">Full simulation</span>
-                <span className="coach-mode-sub">100 questions in 50:00, like regionals</span>
-              </button>
-              <button
-                type="button"
-                className="coach-mode"
-                aria-pressed={mode === "mistakes"}
-                onClick={() => setMode("mistakes")}
-                disabled={bankSize === 0}
-              >
-                <span className="coach-mode-name">Mistakes</span>
-                <span className="coach-mode-sub">
-                  {!selectedSlug
-                    ? "Pick an event first"
-                    : bankSize > 0
-                      ? `Review your ${bankSize} missed ${bankSize === 1 ? "question" : "questions"}`
-                      : "Nothing missed yet for this event"}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Question count (practice only) */}
-          {mode === "practice" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <p id="coach-count-label" className="font-mono" style={{ fontSize: 11, letterSpacing: "0.18em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                Questions
-              </p>
-              <div style={{ display: "flex", gap: 8 }} role="group" aria-labelledby="coach-count-label">
-                {[10, 25, 50].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setQuestionCount(n)}
-                    aria-pressed={questionCount === n}
-                    style={{
-                      flex: 1,
-                      minHeight: 44,
-                      padding: "10px 0",
-                      borderRadius: 10,
-                      border: questionCount === n ? "1.5px solid var(--accent)" : "0.5px solid var(--border)",
-                      background: questionCount === n ? "var(--accent-dim)" : "transparent",
-                      color: questionCount === n ? "var(--accent)" : "var(--text2)",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 15,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-              <p style={{ fontSize: 11, color: "var(--text3)" }}>
-                {questionCount === 10 && "Quick 10-minute warm-up"}
-                {questionCount === 25 && "Solid half-length practice run"}
-                {questionCount === 50 && "A long practice run, still untimed"}
-                {bankMix > 0 && `. Includes ${bankMix} of your missed questions.`}
-              </p>
-            </div>
-          )}
-
-          {mode === "simulation" && (
-            <p className="coach-mode-note">
-              The real objective test is 100 questions in 50 minutes. The clock counts down and turns the test in at 0:00, with a warning at one minute left. Explanations wait until the end. Writing and checking the paper takes one to two minutes, and you can start once the first 25 are ready.
-            </p>
-          )}
-          {mode === "mistakes" && bankSize > 0 && (
-            <p className="coach-mode-note">
-              Instant, no waiting. A question leaves your bank after you answer it right in two different tests.
-              {bankSize > REVIEW_MAX ? ` This review takes the ${REVIEW_MAX} you have missed most.` : ""}
-            </p>
-          )}
-
-          {/* Start */}
-          <button
-            type="button"
-            onClick={startSelected}
-            disabled={!selectedSlug || (mode === "mistakes" && bankSize === 0)}
-            className="btn btn-accent btn-pill"
-            style={{ fontSize: 15, padding: "14px 28px", width: "100%", gap: 10, opacity: selectedSlug ? 1 : 0.45 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 3L13.5 8.5H19L14.5 11.5L16 17L12 14L8 17L9.5 11.5L5 8.5H10.5L12 3Z" />
-            </svg>
-            {startLabel}
-          </button>
+            )}
+          </aside>
         </div>
-
-        {selectedSlug && weakTopics.length > 0 && (
-          <div style={{ background: "var(--card-bg)", border: "0.5px solid var(--border2)", borderRadius: 16, padding: "20px 22px" }}>
-            <p className="eyebrow" style={{ marginBottom: 6, color: "var(--accent-text)" }}>Your weak spots</p>
-            <p style={{ fontSize: 13, color: "var(--text3)", marginBottom: 16, lineHeight: 1.55 }}>
-              Based on your past tests for this event. Drill a topic to get a focused set of questions on just that area.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {weakTopics.slice(0, 4).map((w) => {
-                const color = w.pct < 50 ? "var(--red)" : w.pct < 75 ? "var(--warning)" : "var(--green)";
-                return (
-                  <div key={w.topic} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
-                        <span style={{ fontSize: 13.5, color: "var(--text)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.topic}</span>
-                        <span className="font-mono" style={{ fontSize: 12, color, flexShrink: 0 }}>{w.pct}% · {w.correct}/{w.total}</span>
-                      </div>
-                      <div style={{ height: 6, borderRadius: 999, background: "var(--bg3)", overflow: "hidden" }}>
-                        <div style={{ width: `${w.pct}%`, height: "100%", background: color, borderRadius: 999 }} />
-                      </div>
-                    </div>
-                    <button type="button" onClick={() => generate(w.topic)} className="btn btn-brand btn-sm btn-pill" style={{ flexShrink: 0 }}>
-                      Drill
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <p style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", lineHeight: 1.6 }}>
-          Questions are built from each event's official FBLA topic outline. Results are logged to your{" "}
-          <Link href="/app/tracker" style={{ color: "var(--accent-text)" }}>practice tracker</Link>.
-        </p>
       </div>
     );
   }

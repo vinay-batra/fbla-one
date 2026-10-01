@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { CATEGORIES, COMPETITIONS, type Competition } from "@/lib/competitions";
 
 /**
@@ -10,33 +10,57 @@ import { CATEGORIES, COMPETITIONS, type Competition } from "@/lib/competitions";
  * arrows move, Enter picks, Escape closes.
  */
 
-const ORDERED: Competition[] = CATEGORIES.flatMap((cat) =>
+const ALL: Competition[] = CATEGORIES.flatMap((cat) =>
   COMPETITIONS.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name))
 );
 
-function matches(q: string): Competition[] {
+function matches(list: Competition[], q: string): Competition[] {
   const s = q.trim().toLowerCase();
-  if (!s) return ORDERED;
-  const starts = ORDERED.filter((c) => c.name.toLowerCase().startsWith(s));
-  const words = ORDERED.filter(
+  if (!s) return list;
+  const starts = list.filter((c) => c.name.toLowerCase().startsWith(s));
+  const words = list.filter(
     (c) => !starts.includes(c) && c.name.toLowerCase().split(/[\s&-]+/).some((w) => w.startsWith(s))
   );
-  const inside = ORDERED.filter((c) => !starts.includes(c) && !words.includes(c) && c.name.toLowerCase().includes(s));
+  const inside = list.filter((c) => !starts.includes(c) && !words.includes(c) && c.name.toLowerCase().includes(s));
   const byName = [...starts, ...words, ...inside];
   // Category only when no name matches ("finance" lists the finance events).
-  return byName.length ? byName : ORDERED.filter((c) => c.category.toLowerCase().includes(s));
+  return byName.length ? byName : list.filter((c) => c.category.toLowerCase().includes(s));
 }
 
-export function EventCombobox({ id, value, onChange }: { id: string; value: string; onChange: (slug: string) => void }) {
+export function EventCombobox({ id, value, onChange, events, placeholder = "Type your event", className = "" }: {
+  id: string;
+  value: string;
+  onChange: (slug: string) => void;
+  /** Limit the choices (AI Practice offers only events with a test). Defaults to all events. */
+  events?: Competition[];
+  placeholder?: string;
+  /** "is-compact" renders it as a normal form field instead of the booklet's big serif line. */
+  className?: string;
+}) {
+  const ordered = useMemo(
+    () => (events ? ALL.filter((c) => events.some((e) => e.slug === c.slug)) : ALL),
+    [events]
+  );
   const selected = value ? COMPETITIONS.find((c) => c.slug === value) ?? null : null;
   const [query, setQuery] = useState(selected?.name ?? "");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const listId = useId();
+
+  // The parent can set the event after mount (the page loads your saved
+  // event): show its name unless the student is typing.
+  useEffect(() => {
+    if (!open) setQuery(selected?.name ?? "");
+    // Only when the picked event changes, not on every keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.slug]);
   const listRef = useRef<HTMLUListElement>(null);
 
   // While the text still equals the picked event's name, show the whole list.
-  const results = useMemo(() => matches(selected && query === selected.name ? "" : query), [query, selected]);
+  const results = useMemo(
+    () => matches(ordered, selected && query === selected.name ? "" : query),
+    [ordered, query, selected]
+  );
 
   function pick(c: Competition) {
     onChange(c.slug);
@@ -52,7 +76,7 @@ export function EventCombobox({ id, value, onChange }: { id: string; value: stri
   }
 
   return (
-    <div className="db-combo">
+    <div className={`db-combo ${className}`}>
       <input
         id={id}
         className="db-combo-input"
@@ -63,7 +87,7 @@ export function EventCombobox({ id, value, onChange }: { id: string; value: stri
         aria-activedescendant={open && results[active] ? `${listId}-${results[active].slug}` : undefined}
         autoComplete="off"
         spellCheck={false}
-        placeholder="Type your event"
+        placeholder={placeholder}
         value={query}
         onFocus={(e) => { setOpen(true); e.currentTarget.select(); }}
         onBlur={() => {
