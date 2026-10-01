@@ -80,25 +80,50 @@
 }
 .db-field-label { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); }
 .db-field-value { font-size: 16px; color: var(--text); }
-.db-select {
+.db-combo { position: relative; min-width: 0; }
+.db-combo-input {
   width: 100%;
   min-height: 48px;
-  padding: 0 34px 0 0;
+  padding: 0;
   border: 0;
   background: transparent;
   font-family: var(--font-serif);
   font-size: 22px;
   color: var(--text);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--text2) 50%), linear-gradient(135deg, var(--text2) 50%, transparent 50%);
-  background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%;
-  background-size: 6px 6px;
-  background-repeat: no-repeat;
 }
-.db-select:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; border-radius: 4px; }
-.db-select.is-empty { color: var(--text3); font-style: italic; }
+.db-combo-input::placeholder { color: var(--text3); font-style: italic; }
+.db-combo-input:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; border-radius: 4px; }
+.db-combo-list {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: -12px;
+  right: -12px;
+  max-height: 320px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 0.5px solid var(--border2);
+  box-shadow: 0 24px 48px -24px rgba(20, 16, 8, 0.45);
+}
+.db-combo-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+}
+.db-combo-opt.is-active { background: var(--bg2); }
+.db-combo-opt[aria-selected="true"] { font-weight: 600; }
+.db-combo-cat { font-size: 12px; color: var(--text3); white-space: nowrap; }
+.db-combo-empty { padding: 12px; font-size: 14px; color: var(--text3); }
 .db-cover-note { margin-top: 16px; font-size: 13.5px; color: var(--text3); line-height: 1.5; }
 .db-cover-note a, .db-cover-note button { color: var(--pen-text); font-weight: 600; }
 .db-cover-side { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
@@ -357,7 +382,8 @@ a.db-stat:hover { border-color: var(--text3); }
   .db-sheet-head { padding: 14px 18px; }
   .db-sheet-body { padding: 22px 18px; }
   .db-field { grid-template-columns: 1fr; gap: 0; padding: 8px 0; }
-  .db-select { font-size: 20px; }
+  .db-combo-input { font-size: 20px; }
+  .db-combo-cat { display: none; }
   .db-adv-counts { gap: 8px; }
   .db-adv-counts li { padding: 12px; }
   .db-adv-counts .db-stat-num { font-size: 34px; }

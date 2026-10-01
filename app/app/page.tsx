@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StudyPlan } from "@/components/StudyPlan";
+import { EventCombobox } from "@/components/dashboard/EventCombobox";
 import { ChapterRankChip } from "@/components/ChapterRankChip";
 import { judgeModeFor } from "@/components/judge/rubric";
 import {
-  CATEGORIES,
-  COMPETITIONS,
   getCompetition,
   FORMAT_LABEL,
   isAiTestable,
@@ -92,11 +91,6 @@ const STATUS_CLASS: Record<ReadinessStatus, string> = {
   ready: "is-ready",
 };
 
-const BY_CATEGORY = CATEGORIES.map((cat) => ({
-  cat,
-  events: COMPETITIONS.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name)),
-})).filter((g) => g.events.length > 0);
-
 // ── Booklet cover: pick an event, begin ─────────────────────────
 
 function BookletCover({ initial, changing, onCancel }: { initial?: string; changing?: boolean; onCancel?: () => void }) {
@@ -125,21 +119,7 @@ function BookletCover({ initial, changing, onCancel }: { initial?: string; chang
           <div className="db-fields">
             <div className="db-field">
               <label htmlFor="db-event" className="db-field-label">Event</label>
-              <select
-                id="db-event"
-                className={`db-select${slug ? "" : " is-empty"}`}
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-              >
-                <option value="">Choose your event</option>
-                {BY_CATEGORY.map((g) => (
-                  <optgroup key={g.cat} label={g.cat}>
-                    {g.events.map((c) => (
-                      <option key={c.slug} value={c.slug}>{c.name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+              <EventCombobox id="db-event" value={slug} onChange={setSlug} />
             </div>
             <div className="db-field">
               <span className="db-field-label">Format</span>

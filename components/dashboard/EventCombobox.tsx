@@ -1,0 +1,112 @@
+"use client";
+
+import { useId, useMemo, useRef, useState } from "react";
+import { CATEGORIES, COMPETITIONS, type Competition } from "@/lib/competitions";
+
+/**
+ * Type-to-search event picker for the dashboard booklet. Replaces a native
+ * <select>: on macOS the native popup copies the field's 22px serif font, so
+ * 76 events became a menu taller than the screen. ARIA combobox pattern:
+ * arrows move, Enter picks, Escape closes.
+ */
+
+const ORDERED: Competition[] = CATEGORIES.flatMap((cat) =>
+  COMPETITIONS.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name))
+);
+
+function matches(q: string): Competition[] {
+  const s = q.trim().toLowerCase();
+  if (!s) return ORDERED;
+  const starts = ORDERED.filter((c) => c.name.toLowerCase().startsWith(s));
+  const words = ORDERED.filter(
+    (c) => !starts.includes(c) && c.name.toLowerCase().split(/[\s&-]+/).some((w) => w.startsWith(s))
+  );
+  const inside = ORDERED.filter((c) => !starts.includes(c) && !words.includes(c) && c.name.toLowerCase().includes(s));
+  const byName = [...starts, ...words, ...inside];
+  // Category only when no name matches ("finance" lists the finance events).
+  return byName.length ? byName : ORDERED.filter((c) => c.category.toLowerCase().includes(s));
+}
+
+export function EventCombobox({ id, value, onChange }: { id: string; value: string; onChange: (slug: string) => void }) {
+  const selected = value ? COMPETITIONS.find((c) => c.slug === value) ?? null : null;
+  const [query, setQuery] = useState(selected?.name ?? "");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const listId = useId();
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // While the text still equals the picked event's name, show the whole list.
+  const results = useMemo(() => matches(selected && query === selected.name ? "" : query), [query, selected]);
+
+  function pick(c: Competition) {
+    onChange(c.slug);
+    setQuery(c.name);
+    setOpen(false);
+  }
+
+  function move(delta: number) {
+    if (!open) { setOpen(true); return; }
+    const next = Math.max(0, Math.min(results.length - 1, active + delta));
+    setActive(next);
+    listRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
+  }
+
+  return (
+    <div className="db-combo">
+      <input
+        id={id}
+        className="db-combo-input"
+        role="combobox"
+        aria-expanded={open}
+        aria-controls={listId}
+        aria-autocomplete="list"
+        aria-activedescendant={open && results[active] ? `${listId}-${results[active].slug}` : undefined}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="Type your event"
+        value={query}
+        onFocus={(e) => { setOpen(true); e.currentTarget.select(); }}
+        onBlur={() => {
+          setOpen(false);
+          // Leaving with half-typed text: fall back to the picked event's name.
+          if (selected) setQuery(selected.name);
+        }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setActive(0);
+          setOpen(true);
+          if (selected && e.target.value !== selected.name) onChange("");
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
+          else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+          else if (e.key === "Enter" && open && results[active]) { e.preventDefault(); pick(results[active]); }
+          else if (e.key === "Escape") setOpen(false);
+        }}
+      />
+      {open && (
+        <ul id={listId} ref={listRef} role="listbox" className="db-combo-list" aria-label="Events">
+          {results.length === 0 ? (
+            <li className="db-combo-empty" role="presentation">No event matches &ldquo;{query}&rdquo;</li>
+          ) : (
+            results.map((c, i) => (
+              <li
+                key={c.slug}
+                id={`${listId}-${c.slug}`}
+                role="option"
+                aria-selected={c.slug === value}
+                className={`db-combo-opt${i === active ? " is-active" : ""}`}
+                // mousedown, not click: it fires before the input's blur closes the list.
+                onMouseDown={(e) => { e.preventDefault(); pick(c); }}
+                onMouseEnter={() => setActive(i)}
+              >
+                <span>{c.name}</span>
+                <span className="db-combo-cat">{c.category}</span>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
