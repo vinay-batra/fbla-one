@@ -26,7 +26,12 @@ export async function getSupabaseServer(): Promise<SupabaseClient | null> {
               name,
               value,
               ...options,
-              httpOnly: true,
+              // httpOnly MUST be false, same as proxy.ts: the browser client
+              // reads the session from document.cookie. This client writes the
+              // cookies after Google sign-in (/auth/callback); httpOnly:true
+              // there left every Google user looking signed out in the app
+              // (sidebar "Preview mode", Mock Regionals "Sign in", no sync).
+              httpOnly: false,
               sameSite: "lax",
               secure: process.env.NODE_ENV === "production",
               path: "/",
