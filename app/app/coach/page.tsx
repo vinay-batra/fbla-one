@@ -530,7 +530,8 @@ function CoachInner() {
   }
 
   // Dashboard shortcuts: ?slug=X&start=1 begins a test right away, with
-  // &topic=Y for a drill or &mode=mistakes for an instant review. The flags
+  // &topic=Y for a drill, &mode=mistakes for an instant review or
+  // &mode=simulation for the full 100-question paper. The flags
   // are dropped from the URL first, so a reload or Back never writes (and
   // spends quota on) another test.
   const autoStartedRef = useRef(false);
@@ -539,15 +540,18 @@ function CoachInner() {
     if (!initialSlug || selectedSlug !== initialSlug || !ELIGIBLE.some((c) => c.slug === initialSlug)) return;
     autoStartedRef.current = true;
     const topic = searchParams.get("topic") ?? undefined;
-    const wantMistakes = searchParams.get("mode") === "mistakes";
+    const want = searchParams.get("mode");
     window.history.replaceState(null, "", `/app/coach?slug=${encodeURIComponent(initialSlug)}`);
-    if (wantMistakes && bankCount(initialSlug) > 0) {
+    if (want === "mistakes" && bankCount(initialSlug) > 0) {
       setMode("mistakes");
       startMistakes();
+    } else if (want === "simulation") {
+      setMode("simulation");
+      void startSimulation();
     } else {
       void generate(topic);
     }
-  }, [searchParams, initialSlug, selectedSlug, generate, startMistakes]);
+  }, [searchParams, initialSlug, selectedSlug, generate, startMistakes, startSimulation]);
 
   const comp = getCompetition(selectedSlug);
   const answeredCount = questions.reduce((n, _, i) => n + (answers[i] !== undefined ? 1 : 0), 0);

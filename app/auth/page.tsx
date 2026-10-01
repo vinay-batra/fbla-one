@@ -74,8 +74,13 @@ function AuthForm() {
   useEffect(() => {
     const supa = getSupabase();
     if (!supa) { setSessionChecked(true); return; }
-    supa.auth.getSession().then(({ data: { session } }) => {
-      if (session) { clearPreview(); window.location.replace(nextPath); return; }
+    // getUser() asks Supabase, so a stale or revoked session cookie is caught
+    // here. getSession() only reads the cookie: with a dead session it sent you
+    // to /app, the server bounced you back to /auth, and the two looped.
+    supa.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) { clearPreview(); window.location.replace(nextPath); return; }
+      // Clear whatever dead session is left so the form starts clean.
+      await supa.auth.signOut({ scope: "local" }).catch(() => {});
       setSessionChecked(true);
     }).catch(() => setSessionChecked(true));
   }, [nextPath]);

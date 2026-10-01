@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, Suspense, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { AffiliationNotice } from "@/components/AffiliationNotice";
 import { DeadlineAlert } from "./DeadlineAlert";
 import { AppTour } from "./AppTour";
 import { getSupabase } from "@/lib/supabase";
+import "@/app/app/app.css";
 
 type NavItem = {
   href: string;
@@ -102,7 +103,6 @@ const NAV: NavItem[] = [
 
 export function AppShell({ children, isPreviewMode = false }: { children: ReactNode; isPreviewMode?: boolean }) {
   const pathname = usePathname() || "/app";
-  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
 
@@ -136,149 +136,78 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
   const signOut = async () => {
     const supa = getSupabase();
     if (supa) await supa.auth.signOut();
-    router.push("/");
+    // Full reload so every page drops the signed-in state at once.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/";
+  };
+
+  const practice = NAV.filter((n) => ["/app", "/app/coach", "/app/judge", "/app/tracker", "/app/resources"].includes(n.href));
+  const chapter = NAV.filter((n) => ["/app/chapter", "/app/mock"].includes(n.href));
+  const settings = NAV.find((n) => n.href === "/app/settings")!;
+  const initial = (email ?? "?").trim().charAt(0).toUpperCase();
+
+  const navLink = (item: NavItem) => {
+    const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href));
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        data-tour={item.href === "/app" ? "dashboard" : item.href.split("/").pop()}
+        className={`as-link${active ? " is-active" : ""}`}
+      >
+        <span className="as-link-icon">{item.icon}</span>
+        <span>{item.label}</span>
+      </Link>
+    );
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        minHeight: "100vh",
-        background: "var(--bg)",
-      }}
-    >
+    <div className="as">
       {/* Sidebar */}
-      <aside
-        ref={sidebarRef}
-        id="app-sidebar"
-        className={`app-sidebar ${drawerOpen ? "open" : ""}`}
-        style={{
-          width: 248,
-          flexShrink: 0,
-          borderRight: "0.5px solid var(--border)",
-          background: "var(--bg2)",
-          padding: "20px 14px 20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 4,
-          overflowY: "auto",
-        }}
-      >
-        <div style={{ padding: "6px 10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <aside ref={sidebarRef} id="app-sidebar" className={`app-sidebar as-side ${drawerOpen ? "open" : ""}`}>
+        <div className="as-logo">
           <Logo size="md" />
         </div>
 
-        <nav aria-label="Dashboard" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {NAV.map((item) => {
-            const active = pathname === item.href || (item.href !== "/app" && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                data-tour={item.href === "/app" ? "dashboard" : item.href.split("/").pop()}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "10px 12px",
-                  borderRadius: 9,
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  color: active ? "var(--accent)" : "var(--text2)",
-                  background: active ? "var(--accent-dim)" : "transparent",
-                  borderLeft: active ? "2px solid var(--accent)" : "2px solid transparent",
-                  paddingLeft: active ? 10 : 12,
-                  transition: "all 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  if (active) return;
-                  e.currentTarget.style.background = "var(--bg3)";
-                  e.currentTarget.style.color = "var(--text)";
-                }}
-                onMouseLeave={(e) => {
-                  if (active) return;
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--text2)";
-                }}
-              >
-                <span style={{ flexShrink: 0, color: "inherit" }}>{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <nav aria-label="Dashboard" className="as-nav">
+          <p className="as-group">Practice</p>
+          {practice.map(navLink)}
+          <p className="as-group">Chapter</p>
+          {chapter.map(navLink)}
+          <div className="as-gap" />
+          {navLink(settings)}
         </nav>
 
-        <div style={{ marginTop: "auto", paddingTop: 18, borderTop: "0.5px solid var(--border)" }}>
-          <div style={{ padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 4 }}>
-            {email ? (
-              <>
-                <p
-                  className="font-mono"
-                  style={{
-                    fontSize: 11.5,
-                    letterSpacing: "0.14em",
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    fontWeight: 700,
-                  }}
-                >
-                  SIGNED IN
-                </p>
-                <p style={{ fontSize: 12.5, color: "var(--text2)", wordBreak: "break-all" }}>
-                  {email}
-                </p>
-              </>
-            ) : (
-              <p
-                className="font-mono"
-                style={{
-                  fontSize: 11.5,
-                  letterSpacing: "0.14em",
-                  color: "var(--text-muted)",
-                  textTransform: "uppercase",
-                  fontWeight: 700,
-                }}
-              >
-                PREVIEW MODE
-              </p>
-            )}
+        {email ? (
+          <div className="as-user">
+            <span className="as-avatar" aria-hidden="true">{initial}</span>
+            <div className="as-user-text">
+              <span className="as-user-label">Signed in</span>
+              <span className="as-user-email">{email}</span>
+            </div>
+            <button type="button" onClick={signOut} className="as-signout" aria-label="Sign out" title="Sign out">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={signOut}
-            className="btn btn-ghost btn-sm"
-            style={{ width: "100%", justifyContent: "flex-start" }}
-          >
-            {email ? "Sign out" : "Sign in"}
-          </button>
-        </div>
+        ) : (
+          <div className="as-guest">
+            <p className="as-guest-title">You are previewing</p>
+            <p className="as-guest-sub">Make a free account to save your scores and join your chapter.</p>
+            <Link href="/auth?mode=signup" className="as-guest-cta">Create free account</Link>
+            <Link href="/auth" className="as-guest-login">I have an account</Link>
+          </div>
+        )}
       </aside>
 
       {/* Mobile drawer backdrop: tap outside to close (mobile only via CSS) */}
-      {drawerOpen && (
-        <div className="app-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-      )}
+      {drawerOpen && <div className="app-backdrop" onClick={() => setDrawerOpen(false)} aria-hidden="true" />}
 
       {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        {/* Topbar */}
-        <header
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 30,
-            background: "var(--nav-bg)",
-            backdropFilter: "blur(14px) saturate(140%)",
-            WebkitBackdropFilter: "blur(14px) saturate(140%)",
-            borderBottom: "0.5px solid var(--border)",
-            padding: "14px 28px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 16,
-          }}
-        >
+      <div className="as-body">
+        <header className="as-top">
           <button
             ref={burgerRef}
             type="button"
@@ -286,63 +215,29 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
             aria-label="Toggle sidebar"
             aria-expanded={drawerOpen}
             aria-controls="app-sidebar"
-            className="mi-btn app-burger"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 999,
-              display: "none",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "0.5px solid var(--border2)",
-              color: "var(--text)",
-            }}
+            className="app-burger as-burger"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
-
+          <div className="as-top-logo"><Logo size="sm" /></div>
           <div style={{ flex: 1 }} />
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div className="as-top-actions">
             <ThemeToggle />
-            <Link href="/competitions" className="btn btn-ghost btn-sm">
-              Browse competitions
-            </Link>
+            <Link href="/competitions" className="as-top-link">All events</Link>
           </div>
         </header>
 
-        <main
-          id="main"
-          tabIndex={-1}
-          className="app-main-content"
-          style={{
-            flex: 1,
-            padding: "28px 28px 60px",
-            background: "var(--bg)",
-            minWidth: 0,
-          }}
-        >
-          {isPreviewMode && (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              gap: 12, flexWrap: "wrap",
-              padding: "10px 16px", marginBottom: 20,
-              background: "var(--accent-dim)", border: "0.5px solid var(--accent-border)",
-              borderRadius: 10,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
-                </svg>
-                <span style={{ fontSize: 13, color: "var(--text2)" }}>
-                  <strong style={{ color: "var(--text)" }}>Preview mode.</strong> Your data stays local and is not saved to an account.
-                </span>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Link href="/auth" className="btn btn-accent btn-sm btn-pill">
-                  Sign up free
+        <main id="main" tabIndex={-1} className="app-main-content as-main">
+          {isPreviewMode && !email && (
+            <div className="as-preview">
+              <span>
+                <strong>Preview.</strong> Nothing here is saved to an account yet.
+              </span>
+              <div className="as-preview-actions">
+                <Link href="/auth?mode=signup" className="btn btn-accent btn-sm btn-pill">
+                  Create free account
                 </Link>
                 <button
                   type="button"
@@ -361,13 +256,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           )}
           <DeadlineAlert />
           {children}
-          <footer
-            style={{
-              marginTop: 48,
-              paddingTop: 20,
-              borderTop: "0.5px solid var(--border-dim)",
-            }}
-          >
+          <footer className="as-foot">
             <AffiliationNotice variant="compact" />
           </footer>
         </main>
@@ -376,40 +265,6 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
       <Suspense fallback={null}>
         <AppTour />
       </Suspense>
-
-      <style>{`
-        .app-backdrop { display: none; }
-        /* Desktop: the sidebar sticks beside the content. This lives here, not
-           in the inline style, because an inline position always beat the
-           mobile rule below, so on phones the hidden sidebar still took its
-           248px and squeezed every app page into a narrow column. */
-        .app-sidebar { position: sticky; top: 0; height: 100vh; }
-        @media (max-width: 900px) {
-          .app-sidebar {
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            z-index: 100;
-            transform: translateX(-100%);
-            visibility: hidden;
-            transition: transform 0.25s ease, visibility 0.25s ease;
-            box-shadow: var(--shadow-lg);
-          }
-          .app-sidebar.open { transform: translateX(0); visibility: visible; }
-          .app-burger { display: inline-flex !important; }
-          .app-backdrop {
-            display: block;
-            position: fixed;
-            inset: 0;
-            z-index: 90;
-            background: rgba(0, 0, 0, 0.5);
-            -webkit-backdrop-filter: blur(2px);
-            backdrop-filter: blur(2px);
-          }
-        }
-        @media (max-width: 768px) {
-          .app-main-content { padding-left: 16px !important; padding-right: 16px !important; }
-        }
-      `}</style>
     </div>
   );
 }

@@ -4,6 +4,14 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.15.0 - October 1, 2026 - Sign-in that actually signs you in
+
+- **Fixed: Google sign-in left you looking signed out.** After signing in with Google, the app let you in but the sidebar said "Preview mode", Mock Regionals asked you to sign in, and your practice did not save to your account. Google sessions are now readable by the app, and anyone who signed in with Google before this fix is repaired automatically on their next visit.
+- **Fixed: a dead session could trap you between the sign-in page and the dashboard.** The sign-in page now checks the session with the server and clears it if it is no longer valid.
+- **Fixed: "Sign in" in the app sidebar went to the home page.** Signed-out visitors now get a "Create free account" card in the sidebar.
+- **A new dashboard.** Before your first test it is a practice booklet cover: pick your event and begin. After that it is a report card: your average circled in red pen, a Ready / On track / Needs attention stamp, your weakest topics with bars and a Drill button each, missed questions waiting for review, three big next moves (next test, full simulation, judge round or a drill), and a chart of every scored test with the Ready line.
+- **A cleaner app sidebar,** grouped into Practice and Chapter, with your account at the bottom.
+
 ## v1.14.0 - October 1, 2026 - A better way in
 
 - **New sign-in and sign-up page.** Much less text: the form on the right, one line and a graded sample question on the left. Student or advisor is one tap, passwords have a Show button, and errors say what went wrong in plain words.

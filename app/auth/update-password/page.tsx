@@ -21,8 +21,8 @@ export default function UpdatePasswordPage() {
   useEffect(() => {
     const supa = getSupabase();
     if (!supa) { setState("expired"); return; }
-    supa.auth.getSession()
-      .then(({ data }) => setState(data.session ? "ready" : "expired"))
+    supa.auth.getUser()
+      .then(({ data }) => setState(data.user ? "ready" : "expired"))
       .catch(() => setState("expired"));
   }, []);
 

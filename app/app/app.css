@@ -1,0 +1,238 @@
+/* The signed-in app shell (components/AppShell.tsx): paper sidebar with
+   grouped navigation, an account card, a slim top bar. Dashboard styles live
+   in app/app/dashboard.css. */
+
+.as { display: flex; min-height: 100vh; background: var(--bg); }
+
+/* ── Sidebar ── */
+.as-side {
+  width: 252px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px 16px;
+  background: var(--bg);
+  border-right: 0.5px solid var(--border2);
+  overflow-y: auto;
+}
+.as-logo { padding: 4px 10px 22px; }
+.as-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.as-group {
+  margin: 14px 12px 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text3);
+}
+.as-group:first-child { margin-top: 0; }
+.as-gap { flex: 1; min-height: 18px; }
+
+.as-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.as-link:hover { background: var(--bg2); color: var(--text); }
+.as-link-icon { display: inline-flex; flex-shrink: 0; opacity: 0.8; }
+.as-link.is-active {
+  background: var(--card-bg);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(20, 16, 8, 0.08), 0 0 0 0.5px var(--border2);
+}
+.as-link.is-active .as-link-icon { opacity: 1; }
+/* A short red pen mark on the active item. */
+.as-link.is-active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 11px;
+  bottom: 11px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--pen);
+}
+
+.as-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 10px 8px 10px 10px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 0.5px solid var(--border2);
+}
+.as-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-serif);
+  font-size: 16px;
+}
+.as-user-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.as-user-label { font-size: 11.5px; color: var(--text3); }
+.as-user-email { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-signout {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+}
+.as-signout:hover { background: var(--bg2); color: var(--text); }
+
+.as-guest {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 0.5px solid var(--border2);
+}
+.as-guest-title { font-family: var(--font-serif); font-size: 18px; color: var(--text); }
+.as-guest-sub { margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--text3); }
+.as-guest-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.as-guest-cta:hover { filter: brightness(1.12); }
+.as-guest-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  text-decoration: none;
+}
+.as-guest-login:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Main column ── */
+.as-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.as-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 28px;
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 0.5px solid var(--border);
+}
+.as-burger {
+  width: 44px;
+  height: 44px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 0.5px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.as-top-logo { display: none; }
+.as-top-actions { display: flex; align-items: center; gap: 10px; }
+.as-top-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 0.5px solid var(--border2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+.as-top-link:hover { background: var(--bg2); }
+
+.as-main { flex: 1; padding: 32px 32px 60px; background: var(--bg); min-width: 0; }
+.as-foot { margin-top: 56px; padding-top: 20px; border-top: 0.5px solid var(--border-dim); }
+
+.as-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 0.5px dashed var(--border2);
+  font-size: 13.5px;
+  color: var(--text2);
+}
+.as-preview strong { color: var(--text); }
+.as-preview-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Phones and small tablets: the sidebar becomes a drawer ── */
+.app-backdrop { display: none; }
+/* Desktop: the sidebar sticks beside the content. Positioning lives here,
+   never inline: an inline position beat the mobile rule below and squeezed
+   every app page into a narrow column on phones. */
+.app-sidebar { position: sticky; top: 0; height: 100vh; }
+@media (max-width: 900px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0.25s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  .app-sidebar.open { transform: translateX(0); visibility: visible; }
+  .as-burger { display: inline-flex; }
+  .as-top-logo { display: block; }
+  .app-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+}
+@media (max-width: 768px) {
+  .as-top { padding: 10px 16px; }
+  .as-main { padding: 22px 16px 48px; }
+  .as-top-link { display: none; }
+}

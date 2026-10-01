@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, CardHeader } from "@/components/Card";
-import { Sparkbars } from "@/components/Sparkbars";
 import { StudyPlan } from "@/components/StudyPlan";
 import { ChapterRankChip } from "@/components/ChapterRankChip";
 import { judgeModeFor } from "@/components/judge/rubric";
@@ -30,6 +28,7 @@ import { bankCount, onMistakesChange } from "@/lib/mistakes";
 import { getSupabase } from "@/lib/supabase";
 import { relativeTime, dayKeyET } from "@/lib/format";
 import {
+  AI_LOG_PREFIX,
   isScoredTest,
   parseJudgeNote,
   judgeModeLabel,
@@ -38,86 +37,14 @@ import {
   getChapterById,
   getChapterReadiness,
   READINESS_LABEL,
+  READINESS_RULE,
   type ReadinessRow,
   type ReadinessStatus,
 } from "@/lib/chapter";
 import type { Competition } from "@/lib/competitions";
+import "./dashboard.css";
 
-// ── Score trend chart ──────────────────────────────────────────
-
-function ScoreTrends({ logs, registeredCompetitions }: { logs: PracticeLog[]; registeredCompetitions: Competition[] }) {
-  // Per-competition: last 8 scored tests, only comps with 2+ scored tests.
-  // Judge rounds are rubric points, not test percentages, so they stay out.
-  const entries = registeredCompetitions
-    .map((comp) => {
-      const compLogs = logs
-        .filter((l) => l.competitionSlug === comp.slug && isScoredTest(l))
-        .slice(0, 8);
-      if (compLogs.length < 2) return null;
-      const pcts = compLogs.map((l) => Math.round((l.score! / l.outOf!) * 100)).reverse();
-      const latest = pcts[pcts.length - 1];
-      const avg = Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
-      return { comp, pcts, latest, avg };
-    })
-    .filter(Boolean)
-    .slice(0, 4) as { comp: Competition; pcts: number[]; latest: number; avg: number }[];
-
-  if (entries.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader
-        eyebrow="AI Practice"
-        title="Score trends"
-        tagline="Your last 8 scored practice tests per event."
-        right={
-          <Link href="/app/coach" className="btn btn-ghost btn-sm">
-            New test
-          </Link>
-        }
-      />
-      <div
-        className="score-trends-grid"
-        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginTop: 18 }}
-      >
-        {entries.map(({ comp, pcts, latest, avg }) => (
-          <Link
-            key={comp.slug}
-            href={`/app/coach?slug=${comp.slug}`}
-            style={{ textDecoration: "none" }}
-          >
-            <div
-              style={{
-                padding: "14px 16px",
-                borderRadius: 10,
-                border: "0.5px solid var(--border)",
-                background: "var(--bg2)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                transition: "border-color 0.15s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent-border)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-            >
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)", lineHeight: 1.3 }}>{comp.name}</p>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
-                <Sparkbars values={pcts} variant="score" ariaLabel={`Last ${pcts.length} practice scores for ${comp.name}`} />
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <p className="font-mono" style={{ fontSize: 20, fontWeight: 700, lineHeight: 1, color: latest >= 80 ? "var(--green)" : latest >= 60 ? "var(--accent)" : "var(--red)" }}>
-                    {latest}<span style={{ fontSize: 12 }}>%</span>
-                  </p>
-                  <p style={{ fontSize: 11.5, color: "var(--text3)", marginTop: 2 }}>avg {avg}%</p>
-                </div>
-              </div>
-              <p style={{ fontSize: 11.5, color: "var(--text3)" }}>{pcts.length} test{pcts.length !== 1 ? "s" : ""} logged</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </Card>
-  );
-}
+// ── Helpers ────────────────────────────────────────────────────
 
 function timeOfDay(): string {
   const h = new Date().getHours();
@@ -129,19 +56,50 @@ function timeOfDay(): string {
 
 /** Where "start" goes for an event: an AI test, a Judge round, or its guide. */
 function startFor(comp: Competition): { href: string; label: string } {
-  if (isAiTestable(comp)) return { href: `/app/coach?slug=${comp.slug}&start=1`, label: "Start a 10-question test" };
-  if (judgeModeFor(comp.format)) return { href: `/app/judge?event=${comp.slug}`, label: "Start a judge round" };
+  if (isAiTestable(comp)) return { href: `/app/coach?slug=${comp.slug}&start=1`, label: "Begin test" };
+  if (judgeModeFor(comp.format)) return { href: `/app/judge?event=${comp.slug}`, label: "Begin judge round" };
   return { href: `/competitions/${comp.slug}`, label: "Open the event guide" };
 }
 
-// ── Event picker (first run, and "Change") ─────────────────────
+function paperFor(comp: Competition | null): string {
+  if (!comp) return "Pick an event first";
+  if (isAiTestable(comp)) return "10 questions, every answer checked by a second AI";
+  if (judgeModeFor(comp.format)) return "One round, scored on the rating sheet";
+  return "No test or judged round to practice here yet";
+}
+
+/** What kind of practice a log was, in plain words. */
+function logKind(l: PracticeLog): string {
+  const judge = parseJudgeNote(l.notes);
+  if (judge) return `AI Judge, ${judgeModeLabel(judge.mode).toLowerCase()}`;
+  if (l.notes.startsWith("Mistake review")) return "Mistake review";
+  if (l.notes.startsWith(`${AI_LOG_PREFIX} (full simulation)`)) return "Full simulation";
+  if (l.notes.startsWith(AI_LOG_PREFIX)) return "Practice test";
+  return "Logged by hand";
+}
+
+function Arrow() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+const STATUS_CLASS: Record<ReadinessStatus, string> = {
+  attention: "is-attention",
+  "on-track": "is-on-track",
+  ready: "is-ready",
+};
 
 const BY_CATEGORY = CATEGORIES.map((cat) => ({
   cat,
   events: COMPETITIONS.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name)),
 })).filter((g) => g.events.length > 0);
 
-function EventPicker({ initial, onCancel }: { initial?: string; onCancel?: () => void }) {
+// ── Booklet cover: pick an event, begin ─────────────────────────
+
+function BookletCover({ initial, changing, onCancel }: { initial?: string; changing?: boolean; onCancel?: () => void }) {
   const router = useRouter();
   const [slug, setSlug] = useState(initial ?? "");
   const comp = slug ? getCompetition(slug) ?? null : null;
@@ -154,186 +112,255 @@ function EventPicker({ initial, onCancel }: { initial?: string; onCancel?: () =>
   }
 
   return (
-    <div className="dash-picker">
-      <label htmlFor="dash-event" className="dash-picker-label">Your event</label>
-      <div className="dash-picker-row">
-        <select
-          id="dash-event"
-          className="input-field dash-picker-select"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-        >
-          <option value="">Choose your event</option>
-          {BY_CATEGORY.map((g) => (
-            <optgroup key={g.cat} label={g.cat}>
-              {g.events.map((c) => (
-                <option key={c.slug} value={c.slug}>{c.name}</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <button type="button" className="btn btn-accent btn-lg" onClick={go} disabled={!comp}>
-          {start?.label ?? "Start a 10-question test"}
-        </button>
+    <section className="db-sheet" aria-labelledby="db-cover-title">
+      <div className="db-sheet-head">
+        <span className="db-sheet-kicker">{changing ? "Change event" : "Practice booklet"}</span>
+        <span className="db-sheet-kicker"><b>{changing ? "" : "No. 1"}</b></span>
       </div>
-      <p className="dash-picker-note">
-        {comp
-          ? `${FORMAT_LABEL[comp.format]}. ${isAiTestable(comp)
-              ? "Every question is checked by a second AI before you see it."
-              : judgeModeFor(comp.format)
-                ? "You are scored on your event's rating sheet."
-                : "This event has no test or judge round to practice here yet."}`
-          : (
-            <>
-              Not sure which event is yours? <Link href="/#find-your-event">Take the one-minute quiz</Link>.
-            </>
-          )}
-        {onCancel && (
-          <>
-            {" "}
-            <button type="button" className="dash-linkbtn" onClick={onCancel}>Cancel</button>
-          </>
-        )}
-      </p>
-    </div>
+      <div className="db-sheet-body db-cover">
+        <div style={{ minWidth: 0 }}>
+          <h2 id="db-cover-title" className="db-cover-title">
+            {changing ? <>Switch to a <em>new event.</em></> : <>Fill in your event, <em>then begin.</em></>}
+          </h2>
+          <div className="db-fields">
+            <div className="db-field">
+              <label htmlFor="db-event" className="db-field-label">Event</label>
+              <select
+                id="db-event"
+                className={`db-select${slug ? "" : " is-empty"}`}
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              >
+                <option value="">Choose your event</option>
+                {BY_CATEGORY.map((g) => (
+                  <optgroup key={g.cat} label={g.cat}>
+                    {g.events.map((c) => (
+                      <option key={c.slug} value={c.slug}>{c.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+            <div className="db-field">
+              <span className="db-field-label">Format</span>
+              <span className="db-field-value">{comp ? FORMAT_LABEL[comp.format] : "Fills in when you pick"}</span>
+            </div>
+            <div className="db-field">
+              <span className="db-field-label">Paper</span>
+              <span className="db-field-value">{paperFor(comp)}</span>
+            </div>
+          </div>
+          <p className="db-cover-note">
+            {changing && onCancel ? (
+              <button type="button" className="db-linkbtn" onClick={onCancel}>Keep my current event</button>
+            ) : (
+              <>Not sure which event is yours? <Link href="/#find-your-event">Take the one-minute quiz</Link>.</>
+            )}
+          </p>
+        </div>
+        <div className="db-cover-side">
+          <button type="button" className="db-begin" onClick={go} disabled={!comp}>
+            {start?.label ?? "Begin test"} <Arrow />
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
-// ── Your event, once picked ────────────────────────────────────
+// ── Report card: score, status, weakest topics ──────────────────
 
-const STATUS_CLASS: Record<ReadinessStatus, string> = {
-  attention: "is-attention",
-  "on-track": "is-on-track",
-  ready: "is-ready",
-};
-
-function EventHero({ comp, row, mistakes, onChange }: {
+function ReportCard({ comp, row, mistakes, onChange }: {
   comp: Competition;
   row: ReadinessRow;
   mistakes: number;
   onChange: () => void;
 }) {
   const testable = isAiTestable(comp);
-  const judged = judgeModeFor(comp.format) !== null;
-  const start = startFor(comp);
-  const practiced = row.testsTotal + row.judgeRounds > 0;
   // Weak topics come from synced test logs; fall back to this device's tallies.
-  const weak = row.weakTopics.length ? row.weakTopics : getWeakTopics(comp.slug).slice(0, 3);
+  const weak = row.weakTopics.length ? row.weakTopics : getWeakTopics(comp.slug).slice(0, READINESS_RULE.weakCount);
 
-  const bigNumber = row.avgTestPct != null
-    ? { value: `${row.avgTestPct}%`, label: `Test average, last ${Math.min(row.scoredTests, 5)}` }
+  const big = row.avgTestPct != null
+    ? { value: String(row.avgTestPct), unit: "%", label: `Test average, last ${Math.min(row.scoredTests, READINESS_RULE.avgWindow)}` }
     : row.latestJudge
-      ? { value: `${row.latestJudge.score}`, label: "Latest judge score, out of 100" }
-      : null;
+      ? { value: String(row.latestJudge.score), unit: "/100", label: "Latest judge score" }
+      : { value: String(row.testsTotal), unit: "", label: row.testsTotal === 1 ? "Practice session logged" : "Practice sessions logged" };
 
   return (
-    <section className="dash-hero" aria-labelledby="dash-hero-title">
-      <div className="dash-hero-top">
-        <div style={{ minWidth: 0 }}>
-          <p className="eyebrow" style={{ marginBottom: 6 }}>Competing in</p>
-          <h2 id="dash-hero-title" className="dash-hero-title">
-            <Link href={`/competitions/${comp.slug}`}>{comp.name}</Link>
-          </h2>
-          <p className="dash-hero-meta">{comp.category} · {FORMAT_LABEL[comp.format]}</p>
-        </div>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={onChange}>Change event</button>
+    <section className="db-sheet" aria-labelledby="db-report-title">
+      <div className="db-sheet-head">
+        <span className="db-sheet-kicker">Report card · <b id="db-report-title">{comp.name}</b></span>
+        <button type="button" className="db-linkbtn" onClick={onChange}>Change event</button>
       </div>
-
-      {!practiced ? (
-        <div className="dash-hero-first">
-          <p className="dash-hero-lede">
-            {testable
-              ? "Take a 10-question test built from your event's topic outline. You get a score, the answer to every question, and your weakest topics."
-              : judged
-                ? "Draw a case, prep on the clock, and get scored on your event's rating sheet."
-                : "Read the event guide to see how it is scored and what to prepare."}
-          </p>
-          <div className="dash-hero-actions">
-            <Link href={start.href} className="btn btn-accent btn-lg">{start.label}</Link>
-            {testable && judged && (
-              <Link href={`/app/judge?event=${comp.slug}`} className="btn btn-ghost btn-lg">Practice the judged part</Link>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="dash-hero-grid">
-          <div className="dash-score">
-            {bigNumber ? (
-              <>
-                <p className="dash-score-num">{bigNumber.value}</p>
-                <p className="dash-score-label">{bigNumber.label}</p>
-              </>
-            ) : (
-              <>
-                <p className="dash-score-num">{row.testsTotal}</p>
-                <p className="dash-score-label">Practice {row.testsTotal === 1 ? "session" : "sessions"} logged</p>
-              </>
-            )}
-            <p className={`dash-status ${STATUS_CLASS[row.status]}`}>
-              <strong>{READINESS_LABEL[row.status]}</strong>
-              {row.reasons[0] && row.status !== "ready" ? <span>{row.reasons[0]}</span> : null}
+      <div className="db-sheet-body db-report">
+        <div className="db-score">
+          <div className="db-score-wrap">
+            <p className="db-score-num">
+              {big.value}<small>{big.unit}</small>
             </p>
-            {row.trendDelta != null && row.trendDelta !== 0 && (
-              <p className="dash-score-trend">
-                Your last 3 tests average {Math.abs(row.trendDelta)} points {row.trendDelta > 0 ? "higher" : "lower"} than the ones before
-              </p>
-            )}
+            <svg className="db-score-circle" viewBox="0 0 120 80" preserveAspectRatio="none" aria-hidden="true">
+              <path pathLength={1} d="M18 22C36 6 86 4 106 20c16 13 10 38-14 48-26 11-66 9-82-6C-2 50 4 30 22 18c10-7 26-10 40-10" />
+            </svg>
           </div>
-
-          <div className="dash-focus">
-            {weak.length > 0 && (
-              <div>
-                <p className="dash-focus-head">Your weakest topics</p>
-                <ul className="dash-weak">
-                  {weak.map((t) => (
-                    <li key={t.topic}>
-                      <span className="dash-weak-name">{t.topic}</span>
-                      <span className="dash-weak-pct font-mono">{t.pct}%</span>
-                      {testable && (
-                        <Link
-                          href={`/app/coach?slug=${comp.slug}&topic=${encodeURIComponent(t.topic)}&start=1`}
-                          className="dash-weak-drill"
-                          aria-label={`Drill ${t.topic}`}
-                        >
-                          Drill
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {mistakes > 0 && testable && (
-              <Link href={`/app/coach?slug=${comp.slug}&mode=mistakes&start=1`} className="dash-mistakes">
-                <span className="dash-mistakes-n font-mono">{mistakes}</span>
-                <span>
-                  {mistakes === 1 ? "missed question is" : "missed questions are"} waiting.
-                  <strong> Review them</strong>
-                </span>
-              </Link>
-            )}
-            {weak.length === 0 && mistakes === 0 && (
-              <p className="dash-focus-empty">
-                {testable
-                  ? "Take a couple more tests and your weakest topics show up here."
-                  : "Each judge round is saved here with its score."}
-              </p>
-            )}
-          </div>
-
-          <div className="dash-hero-actions dash-hero-actions-wide">
-            <Link href={testable ? `/app/coach?slug=${comp.slug}&start=1` : start.href} className="btn btn-accent btn-lg">
-              {testable ? "Next test" : start.label}
-            </Link>
-            {testable && judged && (
-              <Link href={`/app/judge?event=${comp.slug}`} className="btn btn-ghost btn-lg">Judge round</Link>
-            )}
-            {testable && (
-              <Link href={`/app/coach?slug=${comp.slug}`} className="dash-linkbtn">Full simulation and more</Link>
-            )}
+          <p className="db-score-label">{big.label}</p>
+          {row.trendDelta != null && row.trendDelta !== 0 && (
+            <p className="db-trend">
+              <b>{row.trendDelta > 0 ? "Up" : "Down"} {Math.abs(row.trendDelta)} points</b> over your last {READINESS_RULE.trendWindow} tests
+            </p>
+          )}
+          <div className={`db-stamp ${STATUS_CLASS[row.status]}`}>
+            <strong>{READINESS_LABEL[row.status]}</strong>
+            {row.status !== "ready" && row.reasons[0] && <span>{row.reasons[0]}</span>}
           </div>
         </div>
-      )}
+
+        <div style={{ minWidth: 0 }}>
+          <p className="db-notes-head">
+            <span>Weakest topics</span>
+            {weak.length > 0 && <span>% right</span>}
+          </p>
+          {weak.length > 0 ? (
+            <ul className="db-topics">
+              {weak.map((t) => (
+                <li key={t.topic} className="db-topic">
+                  <span className="db-topic-name">
+                    <span>{t.topic}</span>
+                    <span>{t.pct}%</span>
+                  </span>
+                  <span className="db-bar" aria-hidden="true">
+                    <i className={t.pct >= READINESS_RULE.testReadyPct ? "is-ok" : ""} style={{ width: `${Math.max(4, t.pct)}%` }} />
+                  </span>
+                  {testable && (
+                    <Link
+                      href={`/app/coach?slug=${comp.slug}&topic=${encodeURIComponent(t.topic)}&start=1`}
+                      className="db-drill"
+                      aria-label={`Drill ${t.topic}`}
+                    >
+                      Drill
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="db-empty-note">
+              {testable
+                ? "Take a couple more tests and your weakest topics show up here, each with a drill."
+                : "Each judge round is saved here with its score."}
+            </p>
+          )}
+
+          {mistakes > 0 && testable && (
+            <Link href={`/app/coach?slug=${comp.slug}&mode=mistakes&start=1`} className="db-mistakes">
+              <span className="db-mistakes-n">{mistakes}</span>
+              <span className="db-mistakes-text">
+                <strong>{mistakes === 1 ? "Missed question waiting" : "Missed questions waiting"}</strong>
+                They come back until you get each one right twice.
+              </span>
+              <span className="db-mistakes-go">Review</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Next moves ─────────────────────────────────────────────────
+
+function Moves({ comp, mistakes, weakest }: { comp: Competition; mistakes: number; weakest: string | null }) {
+  const testable = isAiTestable(comp);
+  const judged = judgeModeFor(comp.format) !== null;
+  const tiles: { href: string; kicker: string; title: string; sub: string; primary?: boolean }[] = [];
+
+  if (testable) {
+    tiles.push({
+      href: `/app/coach?slug=${comp.slug}&start=1`,
+      kicker: "10 questions",
+      title: "Next practice test",
+      sub: mistakes > 0 ? "Mixes in your misses" : "Checked by a second AI",
+      primary: true,
+    });
+    tiles.push({
+      href: `/app/coach?slug=${comp.slug}&mode=simulation&start=1`,
+      kicker: "100 questions · 50:00",
+      title: "Full simulation",
+      sub: "Turns itself in at zero",
+    });
+  }
+  if (judged) {
+    tiles.push({
+      href: `/app/judge?event=${comp.slug}`,
+      kicker: judgeModeFor(comp.format) === "role-play" ? "Role play" : "Presentation",
+      title: "Judge round",
+      sub: "Scored on the rating sheet",
+      primary: !testable,
+    });
+  } else if (testable && weakest) {
+    tiles.push({
+      href: `/app/coach?slug=${comp.slug}&topic=${encodeURIComponent(weakest)}&start=1`,
+      kicker: "Drill",
+      title: weakest,
+      sub: "Every question on your weakest topic",
+    });
+  }
+  if (!testable && !judged) {
+    tiles.push({ href: `/competitions/${comp.slug}`, kicker: "Event guide", title: "How it is scored", sub: "Topics and resources", primary: true });
+  }
+
+  return (
+    <nav className="db-moves" aria-label="Practice next">
+      {tiles.map((t) => (
+        <Link key={t.href} href={t.href} className={`db-move${t.primary ? " is-primary" : ""}`}>
+          <span className="db-move-kicker">{t.kicker}</span>
+          <span className="db-move-title">{t.title}</span>
+          <span className="db-move-sub">{t.sub} <Arrow /></span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+// ── Score chart: every scored test for the event ────────────────
+
+function ScoreChart({ comp, logs }: { comp: Competition; logs: PracticeLog[] }) {
+  const pts = logs
+    .filter((l) => l.competitionSlug === comp.slug && isScoredTest(l))
+    .slice(0, 12)
+    .reverse()
+    .map((l) => Math.round((l.score! / l.outOf!) * 100));
+  if (pts.length < 2) return null;
+
+  const W = 960, H = 220, L = 34, R = 24, T = 26, B = 14;
+  const x = (i: number) => L + (i * (W - L - R)) / (pts.length - 1);
+  const y = (v: number) => T + ((100 - v) * (H - T - B)) / 100;
+  const line = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const area = `${line} L${x(pts.length - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`;
+  const ready = READINESS_RULE.testReadyPct;
+  const last = pts[pts.length - 1];
+
+  return (
+    <section className="db-chart-card" aria-labelledby="db-chart-title">
+      <div className="db-chart-top">
+        <h2 id="db-chart-title" className="db-chart-title">Your scores</h2>
+        <span className="db-chart-sub">Last {pts.length} scored tests in {comp.name}</span>
+      </div>
+      <svg className="db-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Scores, oldest to newest: ${pts.join("%, ")}%`}>
+        {[0, 50, 100].map((v) => (
+          <g key={v}>
+            <line className="grid" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
+            <text className="axis" x={L - 8} y={y(v) + 4} textAnchor="end">{v}</text>
+          </g>
+        ))}
+        <line className="ready" x1={L} x2={W - R} y1={y(ready)} y2={y(ready)} />
+        <text className="ready-label" x={L + 6} y={y(ready) - 7}>Ready at {ready}%</text>
+        <path className="area" d={area} />
+        <path className="line" d={line} />
+        {pts.map((v, i) => (
+          <circle key={i} className={`dot${i === pts.length - 1 ? " is-last" : ""}`} cx={x(i)} cy={y(v)} r={i === pts.length - 1 ? 5 : 3.6} />
+        ))}
+        <text className="last-label" x={x(pts.length - 1)} y={y(last) - 12} textAnchor="middle">{last}%</text>
+      </svg>
     </section>
   );
 }
@@ -385,46 +412,47 @@ function useAdvisorView(): AdvisorView | null {
 function AdvisorHero({ view }: { view: AdvisorView }) {
   if (!view.chapterId) {
     return (
-      <section className="dash-hero" aria-labelledby="dash-adv-title">
-        <p className="eyebrow" style={{ marginBottom: 6 }}>For advisors</p>
-        <h2 id="dash-adv-title" className="dash-hero-title">Create your chapter</h2>
-        <p className="dash-hero-lede">
-          Name your chapter and you get an invite link and a QR code. Members who join show up on your readiness report.
-        </p>
-        <div className="dash-hero-actions">
-          <Link href="/app/chapter" className="btn btn-accent btn-lg">Create your chapter</Link>
+      <section className="db-sheet" aria-labelledby="db-adv-title">
+        <div className="db-sheet-head">
+          <span className="db-sheet-kicker">For advisors</span>
+        </div>
+        <div className="db-sheet-body">
+          <h2 id="db-adv-title" className="db-cover-title">Create <em>your chapter.</em></h2>
+          <p className="db-cover-note" style={{ maxWidth: "52ch" }}>
+            Name it and you get an invite link and a QR code. Members who join show up on your readiness report.
+          </p>
+          <div className="db-actions">
+            <Link href="/app/chapter" className="db-begin">Create your chapter <Arrow /></Link>
+          </div>
         </div>
       </section>
     );
   }
   return (
-    <section className="dash-hero" aria-labelledby="dash-adv-title">
-      <div className="dash-hero-top">
-        <div style={{ minWidth: 0 }}>
-          <p className="eyebrow" style={{ marginBottom: 6 }}>Your chapter</p>
-          <h2 id="dash-adv-title" className="dash-hero-title">{view.name ?? "Your chapter"}</h2>
-          <p className="dash-hero-meta">
-            {view.members === 0 ? "No members yet" : `${view.members} ${view.members === 1 ? "member" : "members"}`}
-          </p>
-        </div>
+    <section className="db-sheet" aria-labelledby="db-adv-title">
+      <div className="db-sheet-head">
+        <span className="db-sheet-kicker">Your chapter · <b>{view.members === 1 ? "1 member" : `${view.members} members`}</b></span>
       </div>
-      {view.members === 0 ? (
-        <p className="dash-hero-lede">Share your invite link or QR code from the chapter page. Members join with one tap.</p>
-      ) : view.counts ? (
-        <ul className="dash-adv-counts">
-          {(["ready", "on-track", "attention"] as ReadinessStatus[]).map((s) => (
-            <li key={s} className={STATUS_CLASS[s]}>
-              <span className="dash-score-num">{view.counts![s]}</span>
-              <span className="dash-score-label">{READINESS_LABEL[s]}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      <div className="dash-hero-actions">
-        <Link href="/app/chapter" className="btn btn-accent btn-lg">
-          {view.members === 0 ? "Invite members" : "Open the readiness report"}
-        </Link>
-        <Link href="/app/mock" className="btn btn-ghost btn-lg">Run a Mock Regionals</Link>
+      <div className="db-sheet-body">
+        <h2 id="db-adv-title" className="db-cover-title">{view.name ?? "Your chapter"}</h2>
+        {view.members === 0 ? (
+          <p className="db-cover-note">Share your invite link or QR code from the chapter page. Members join with one tap.</p>
+        ) : view.counts ? (
+          <ul className="db-adv-counts">
+            {(["ready", "on-track", "attention"] as ReadinessStatus[]).map((s) => (
+              <li key={s} className={STATUS_CLASS[s]}>
+                <span className="db-stat-num">{view.counts![s]}</span>
+                <span className="db-stat-label" style={{ display: "block" }}>{READINESS_LABEL[s]}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="db-actions">
+          <Link href="/app/chapter" className="db-begin">
+            {view.members === 0 ? "Invite members" : "Open the readiness report"} <Arrow />
+          </Link>
+          <Link href="/app/mock" className="db-ghost">Run a Mock Regionals</Link>
+        </div>
       </div>
     </section>
   );
@@ -442,27 +470,22 @@ export default function Dashboard() {
   const displayName = getDisplayName();
 
   // Derive everything once per storage change (tick), not on every render.
-  const { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions } = useMemo(() => {
+  const { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, myEvent } = useMemo(() => {
     void tick; // recompute when localStorage changes
-    const registered = getRegistered();
     const logs = getPracticeLogs();
     const saved = getSavedResources();
-
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const logsThisWeek = logs.filter((l) => new Date(l.loggedAt).getTime() >= weekAgo).length;
 
-    // Practice streak: consecutive days (ending today or yesterday) with >=1 log.
+    // Practice streak: consecutive days (ending today or yesterday) with >=1 log,
+    // on the same America/New_York day boundary as the daily AI caps.
     const streakDays = (() => {
-      // Use one fixed day-boundary basis (America/New_York) everywhere so the
-      // streak and the public-chat daily cap agree on when a day rolls over.
       const days = new Set(logs.map((l) => dayKeyET(new Date(l.loggedAt))));
       if (days.size === 0) return 0;
       const oneDay = 86400000;
       const cur = new Date();
       cur.setHours(0, 0, 0, 0);
-      const todayKey = dayKeyET(cur);
-      // Count even if today has no log yet (start from yesterday).
-      if (!days.has(todayKey)) cur.setTime(cur.getTime() - oneDay);
+      if (!days.has(dayKeyET(cur))) cur.setTime(cur.getTime() - oneDay);
       let n = 0;
       while (days.has(dayKeyET(cur))) {
         n++;
@@ -471,17 +494,11 @@ export default function Dashboard() {
       return n;
     })();
 
-    const upcomingDeadlines = getUpcomingDeadlines(3);
-
-    const registeredCompetitions = registered
-      .map((slug) => getCompetition(slug))
-      .filter((c): c is NonNullable<typeof c> => Boolean(c));
-
-    return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions };
+    // Single-event model: you compete in ONE event.
+    const myEvent = getRegistered().map((s) => getCompetition(s)).find(Boolean) ?? null;
+    return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines: getUpcomingDeadlines(3), myEvent };
   }, [tick]);
 
-  // Single-event model: you compete in ONE event.
-  const myEvent = registeredCompetitions[0] ?? null;
   const hasPractice = logs.length > 0;
 
   // The same readiness rule the advisor's report uses, on this student's own logs.
@@ -506,39 +523,41 @@ export default function Dashboard() {
   }, [myEvent, tick]);
 
   const practicedEvent = row ? row.testsTotal + row.judgeRounds > 0 : false;
+  const weakest = myEvent && row
+    ? (row.weakTopics[0]?.topic ?? getWeakTopics(myEvent.slug)[0]?.topic ?? null)
+    : null;
+
   const headline = advisor
-    ? advisor.chapterId ? "Here is your chapter." : "Set up your chapter."
+    ? advisor.chapterId ? <>Here is <em>your chapter.</em></> : <>Set up <em>your chapter.</em></>
     : !myEvent
-      ? hasPractice ? "Pick your event to see where you stand." : "Let's get your first score."
+      ? hasPractice ? <>Pick your event to see <em>where you stand.</em></> : <>Let&apos;s get your <em>first score.</em></>
       : practicedEvent
-        ? "Here is where you stand."
-        : "Take your first test.";
+        ? <>Here is where <em>you stand.</em></>
+        : <>Take your <em>first test.</em></>;
 
   return (
-    <div className="dash" style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 1080 }}>
-      {/* Greeting */}
-      <div>
-        <p className="eyebrow" style={{ marginBottom: 8 }}>
-          {timeOfDay()}{displayName ? `, ${displayName}` : ""}
-        </p>
-        <h1 style={{ fontSize: 30, letterSpacing: "-0.02em" }}>{headline}</h1>
+    <div className="db">
+      <div className="db-greet">
+        <p className="eyebrow">{timeOfDay()}{displayName ? `, ${displayName}` : ""}</p>
+        <h1 className="db-title">{headline}</h1>
       </div>
 
       {advisor && <AdvisorHero view={advisor} />}
 
       {/* The one thing to do next */}
-      {changing || (!myEvent && !advisor) ? (
-        <section className="dash-hero" aria-label="Pick your event">
-          {changing && <p className="eyebrow" style={{ marginBottom: 10 }}>Change event</p>}
-          <EventPicker
-            initial={changing ? myEvent?.slug : undefined}
-            onCancel={changing ? () => setChanging(false) : undefined}
-          />
-        </section>
-      ) : myEvent && row ? (
-        <EventHero comp={myEvent} row={row} mistakes={mistakes} onChange={() => setChanging(true)} />
+      {changing ? (
+        <BookletCover initial={myEvent?.slug} changing onCancel={() => setChanging(false)} />
+      ) : myEvent && row && practicedEvent ? (
+        <>
+          <ReportCard comp={myEvent} row={row} mistakes={mistakes} onChange={() => setChanging(true)} />
+          <Moves comp={myEvent} mistakes={mistakes} weakest={weakest} />
+        </>
+      ) : myEvent && !advisor ? (
+        <BookletCover key={myEvent.slug} initial={myEvent.slug} />
+      ) : !advisor ? (
+        <BookletCover />
       ) : (
-        <p className="dash-aside">
+        <p className="db-aside">
           Want to see what your members see? <Link href="/app/coach">Take a practice test</Link>.
         </p>
       )}
@@ -546,168 +565,89 @@ export default function Dashboard() {
       {/* Chapter standing (renders only for users in a chapter) */}
       <ChapterRankChip />
 
-      {/* Upcoming deadlines strip (only shown when deadlines exist) */}
+      {/* Upcoming chapter deadlines (only when there are any) */}
       {upcomingDeadlines.length > 0 && (
-        <div
-          style={{
-            background: "var(--bg2)",
-            border: "0.5px solid var(--accent-border)",
-            borderRadius: 12,
-            padding: "14px 18px",
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-            </svg>
-            <span className="eyebrow" style={{ fontSize: 11, color: "var(--accent-text)" }}>Upcoming</span>
+        <div className="db-ledger">
+          <div className="db-ledger-head">
+            <h2>Coming up</h2>
+            <Link href="/app/chapter">All deadlines</Link>
           </div>
-          <div style={{ display: "flex", gap: 10, flex: 1, flexWrap: "wrap" }}>
+          <ul>
             {upcomingDeadlines.map((dl) => {
               const days = Math.round(
-                (new Date(dl.dueAt + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) /
-                  (1000 * 60 * 60 * 24)
+                (new Date(dl.dueAt + "T00:00:00").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000
               );
               const comp = dl.competitionSlug ? getCompetition(dl.competitionSlug) : null;
               return (
-                <div
-                  key={dl.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    background: "var(--card-bg)",
-                    border: "0.5px solid var(--border)",
-                  }}
-                >
-                  <span
-                    className="font-mono"
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 700,
-                      color: days === 0 ? "var(--green)" : "var(--accent)",
-                    }}
-                  >
-                    {days === 0 ? "Today" : `${days}d`}
-                  </span>
-                  <span style={{ fontSize: 12, color: "var(--text2)", fontWeight: 500 }}>
+                <li key={dl.id}>
+                  <span className="db-ledger-name">
                     {dl.title}
-                    {comp && (
-                      <span style={{ color: "var(--text3)" }}> ({comp.name})</span>
-                    )}
+                    {comp && <span className="db-ledger-kind">{comp.name}</span>}
                   </span>
-                </div>
+                  <span className="db-ledger-when" />
+                  <span className="db-ledger-score">{days === 0 ? "Today" : `${days}d`}</span>
+                </li>
               );
             })}
-          </div>
-          <Link href="/app/chapter" style={{ fontSize: 12, color: "var(--accent-text)", fontWeight: 500, flexShrink: 0, whiteSpace: "nowrap" }}>
-            View all
-          </Link>
+          </ul>
         </div>
       )}
 
       {/* Season countdown: one line until opened */}
       {myEvent && <StudyPlan />}
 
+      {myEvent && <ScoreChart comp={myEvent} logs={logs} />}
+
       {/* Stats appear once there is something to count */}
       {hasPractice && (
-        <div className="dash-stats">
-          <Stat label="Day streak" value={String(streakDays)} sub={streakDays === 0 ? "Practice today to start one" : streakDays === 1 ? "day in a row" : "days in a row"} />
-          <Stat label="This week" value={String(logsThisWeek)} sub={logsThisWeek === 1 ? "practice session" : "practice sessions"} href="/app/tracker" />
-          <Stat label="All time" value={String(logs.length)} sub={logs.length === 1 ? "practice session" : "practice sessions"} href="/app/tracker" />
+        <div className="db-stats">
+          <div className="db-stat">
+            <div className="db-stat-num">{streakDays}</div>
+            <div className="db-stat-label">{streakDays === 1 ? "Day in a row" : "Days in a row"}</div>
+          </div>
+          <Link href="/app/tracker" className="db-stat">
+            <div className="db-stat-num">{logsThisWeek}</div>
+            <div className="db-stat-label">This week</div>
+          </Link>
+          <Link href="/app/tracker" className="db-stat">
+            <div className="db-stat-num">{logs.length}</div>
+            <div className="db-stat-label">All time</div>
+          </Link>
           {saved.length > 0 && (
-            <Stat label="Saved" value={String(saved.length)} sub={saved.length === 1 ? "study resource" : "study resources"} href="/app/resources" />
+            <Link href="/app/resources" className="db-stat">
+              <div className="db-stat-num">{saved.length}</div>
+              <div className="db-stat-label">Saved resources</div>
+            </Link>
           )}
         </div>
       )}
 
-      {/* Score trends (only shown once there are 3+ scored logs) */}
-      {logs.filter((l) => isScoredTest(l)).length >= 3 && (
-        <ScoreTrends logs={logs} registeredCompetitions={registeredCompetitions} />
-      )}
-
-      {/* Recent activity */}
+      {/* Recent practice */}
       {hasPractice && (
-        <Card>
-          <CardHeader
-            eyebrow="Recent practice"
-            title="Last 5 sessions"
-            right={<Link href="/app/tracker" className="btn btn-ghost btn-sm">All practice</Link>}
-          />
-          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+        <div className="db-ledger">
+          <div className="db-ledger-head">
+            <h2>Recent practice</h2>
+            <Link href="/app/tracker">All practice</Link>
+          </div>
+          <ul>
             {logs.slice(0, 5).map((l) => {
               const c = getCompetition(l.competitionSlug);
-              const judge = parseJudgeNote(l.notes);
               return (
-                <li
-                  key={l.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    background: "var(--bg2)",
-                    border: "0.5px solid var(--border)",
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
-                      {c?.name ?? l.competitionSlug}
-                    </p>
-                    <p style={{ fontSize: 11, color: "var(--text3)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-                      {relativeTime(l.loggedAt)}
-                      {judge && (
-                        <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
-                          AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {l.score != null && l.outOf != null && (
-                    <span
-                      className="font-mono"
-                      style={{
-                        fontSize: 12,
-                        color: "var(--accent-text)",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {l.score}/{l.outOf}
-                    </span>
-                  )}
+                <li key={l.id}>
+                  <span className="db-ledger-name">
+                    {c?.name ?? l.competitionSlug}
+                    <span className="db-ledger-kind">{logKind(l)}</span>
+                  </span>
+                  <span className="db-ledger-when">{relativeTime(l.loggedAt)}</span>
+                  <span className="db-ledger-score">
+                    {l.score != null && l.outOf != null ? `${l.score}/${l.outOf}` : "Done"}
+                  </span>
                 </li>
               );
             })}
           </ul>
-        </Card>
+        </div>
       )}
     </div>
   );
-}
-
-function Stat({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
-  const inner = (
-    <>
-      <p className="dash-stat-label font-mono">{label}</p>
-      <div className="metric-number" style={{ marginTop: 6, color: "var(--text)" }}>{value}</div>
-      {sub && <p className="dash-stat-sub">{sub}</p>}
-    </>
-  );
-  if (href) {
-    return (
-      <Link href={href} className="dash-stat is-link">
-        {inner}
-      </Link>
-    );
-  }
-  return <div className="dash-stat">{inner}</div>;
 }
