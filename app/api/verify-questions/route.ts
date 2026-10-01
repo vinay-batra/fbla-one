@@ -22,18 +22,20 @@ function json(body: unknown, status = 200): Response {
 export async function POST(req: Request): Promise<Response> {
   // Same gate as /api/practice-test: a signed-in session or the preview cookie.
   const cookieStore = await cookies();
-  const inPreview = cookieStore.get("fbla_preview")?.value === "1";
+  // A signed-in account always wins over a leftover preview cookie.
+  const supabase = await getSupabaseServer();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const inPreview = !user && cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
   let identity: { userId: string } | { ip: string };
-  if (inPreview) {
+  if (user) {
+    rateKey = `verify:user:${user.id}`;
+    identity = { userId: user.id };
+  } else if (inPreview) {
     rateKey = `verify:preview:${getClientIP(req)}`;
     identity = { ip: getClientIP(req) };
   } else {
-    const supabase = await getSupabaseServer();
-    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
-    if (!user) return json({ error: "Sign in to check practice questions." }, 401);
-    rateKey = `verify:user:${user.id}`;
-    identity = { userId: user.id };
+    return json({ error: "Sign in to check practice questions." }, 401);
   }
   // Its own namespace so checking never eats into the generation budget. One
   // test is several small batches (a full 100-question simulation is about 15),

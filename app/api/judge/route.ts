@@ -541,20 +541,20 @@ export async function POST(req: Request): Promise<Response> {
   // spending Anthropic tokens. Preview mode is intentionally open (advisors try
   // without signing up), so anonymous preview traffic is rate limited per IP.
   const cookieStore = await cookies();
-  const inPreview = cookieStore.get("fbla_preview")?.value === "1";
+  // A signed-in account always wins over a leftover preview cookie.
+  const supabase = await getSupabaseServer();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const inPreview = !user && cookieStore.get("fbla_preview")?.value === "1";
   let rateKey: string;
   let identity: { userId: string } | { ip: string };
-  if (inPreview) {
+  if (user) {
+    rateKey = `judge:user:${user.id}`;
+    identity = { userId: user.id };
+  } else if (inPreview) {
     rateKey = `judge:preview:${getClientIP(req)}`;
     identity = { ip: getClientIP(req) };
   } else {
-    const supabase = await getSupabaseServer();
-    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
-    if (!user) {
-      return json({ error: "Sign in to practice with the judge." }, 401);
-    }
-    rateKey = `judge:user:${user.id}`;
-    identity = { userId: user.id };
+    return json({ error: "Sign in to practice with the judge." }, 401);
   }
   // Caps judge calls per identity in a 10-minute window (lib/rate-limit, the
   // same in-memory sliding window the practice-test route uses). Keys are

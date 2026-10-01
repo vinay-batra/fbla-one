@@ -4,6 +4,15 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.14.0 - October 1, 2026 - A better way in
+
+- **New sign-in and sign-up page.** Much less text: the form on the right, one line and a graded sample question on the left. Student or advisor is one tap, passwords have a Show button, and errors say what went wrong in plain words.
+- **Forgot password works end to end.** The email link now opens a page to set a new password (it used to sign you in without ever asking for one). An expired link offers to send a new one.
+- **Magic links are gone.** Email and password, or Google.
+- **Signing in always gives you your account.** If you had tried preview mode first, the app kept showing "Preview mode" after you signed in or signed up. Your account now always wins, and the preview is cleared when you sign in.
+- **Light mode by default for everyone.** Dark mode only turns on when you pick it with the toggle. (The site used to start dark.)
+- Branded account emails (confirm, password reset, email change, invite) are ready in `supabase/templates/`.
+
 ## v1.13.0 - October 1, 2026 - A dashboard that starts you practicing
 
 - **New students start a test from the first screen.** Pick your event right on the dashboard and one button starts a 10-question test (or a judge round, for events without a test). No empty stat boxes or blank forms first.

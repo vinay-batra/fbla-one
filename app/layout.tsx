@@ -45,10 +45,7 @@ const spaceMono = Space_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#13110e" },
-    { media: "(prefers-color-scheme: light)", color: "#f5f1e8" },
-  ],
+  themeColor: "#f5f1e8",
   width: "device-width",
   initialScale: 1,
 };
@@ -100,8 +97,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Light unless the visitor picked dark with the toggle. The old key
+// (fbla_theme) was written on every visit, so it cannot tell a real choice from
+// the old dark default; only chapterprep_theme counts.
 const THEME_INIT = `
-(function(){try{var t=localStorage.getItem('fbla_theme');if(t!=='dark'&&t!=='light')t='dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();
+(function(){try{var t=localStorage.getItem('chapterprep_theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
 `;
 
 export default function RootLayout({

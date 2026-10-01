@@ -3,21 +3,49 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { AffiliationNotice } from "@/components/AffiliationNotice";
-import { BrandMark } from "@/components/BrandMark";
+import { AuthFrame } from "@/components/auth/AuthFrame";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-type Mode = "login" | "signup" | "magic" | "reset";
+type Mode = "login" | "signup" | "reset";
 
-// ---------------------------------------------------------------------------
-// Actual form (needs Suspense because of useSearchParams)
-// ---------------------------------------------------------------------------
+const COPY: Record<Mode, { title: string; sub: string; cta: string }> = {
+  signup: { title: "Create your account", sub: "Free, and it takes a minute.", cta: "Create account" },
+  login: { title: "Welcome back", sub: "Log in to keep practicing.", cta: "Log in" },
+  reset: { title: "Reset your password", sub: "We will email you a link to set a new one.", cta: "Send reset link" },
+};
+
+/** Supabase's messages, in plain words. */
+function friendly(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login credentials")) return "That email and password do not match. Try again, or reset your password.";
+  if (m.includes("already registered") || m.includes("already been registered")) return "There is already an account with this email. Log in instead.";
+  if (m.includes("password should be at least") || m.includes("password is too short")) return "Use at least 8 characters for your password.";
+  if (m.includes("rate limit") || m.includes("too many")) return "Too many tries in a row. Wait a minute and try again.";
+  if (m.includes("unable to validate email") || m.includes("invalid email") || (m.includes("email address") && m.includes("invalid"))) {
+    return "We could not send to that address. Check it and try again.";
+  }
+  if (m.includes("email not confirmed")) return "Confirm your email first. The link is in your inbox.";
+  return message || "Something went wrong. Try again.";
+}
+
+/** A leftover preview cookie must never outlive signing in. */
+function clearPreview() {
+  document.cookie = "fbla_preview=; path=/; max-age=0";
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      {/* Google's brand colors: an intentional exception to the token rule. */}
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  );
+}
+
 function AuthForm() {
   const searchParams = useSearchParams();
   // Origin-validated, backslash-safe same-origin redirect (a crafted
@@ -25,117 +53,110 @@ function AuthForm() {
   const nextPath = safeNextPath(searchParams.get("next"), "/app");
 
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [mode, setMode] = useState<Mode>(
-    searchParams.get("mode") === "signup" ? "signup" : "login"
-  );
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = searchParams.get("mode");
+    return m === "signup" || m === "reset" ? m : "login";
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   // "For advisors" links arrive with role=advisor so the choice is already made.
-  const [role, setRole] = useState<"member" | "advisor">(
-    searchParams.get("role") === "advisor" ? "advisor" : "member"
-  );
+  const [role, setRole] = useState<"member" | "advisor">(searchParams.get("role") === "advisor" ? "advisor" : "member");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [focused, setFocused] = useState<string | null>(null);
-  const [magicSent, setMagicSent] = useState(false);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "oauth_failed"
+      ? "That sign-in link did not work or has expired. Try again."
+      : null
+  );
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
 
-
-  // Redirect already-authenticated users
+  // Already signed in: go straight on.
   useEffect(() => {
     const supa = getSupabase();
     if (!supa) { setSessionChecked(true); return; }
     supa.auth.getSession().then(({ data: { session } }) => {
-      if (session) { window.location.replace(nextPath); return; }
+      if (session) { clearPreview(); window.location.replace(nextPath); return; }
       setSessionChecked(true);
     }).catch(() => setSessionChecked(true));
   }, [nextPath]);
 
-  const canSubmit = !loading;
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setError(null);
+    setResetSentTo(null);
+  };
 
   const handle = async () => {
-    if (!canSubmit) return;
+    if (loading) return;
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
-    if (!isSupabaseConfigured) {
-      setError("Auth is not configured. Explore the dashboard in preview mode.");
+    const supa = isSupabaseConfigured ? getSupabase() : null;
+    if (!supa) {
+      setError("Accounts are not available right now. Try again later.");
       setLoading(false);
       return;
     }
-    const supa = getSupabase();
-    if (!supa) { setError("Auth client unavailable."); setLoading(false); return; }
 
     try {
       if (mode === "login") {
-        const { data, error } = await supa.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data, error } = await supa.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        clearPreview();
         // Advisors land on their chapter unless a link asked for somewhere else.
         let dest = nextPath;
         if (nextPath === "/app" && data.user) {
           const { data: prof } = await supa.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
           if (prof?.role === "advisor") dest = "/app/chapter";
         }
-        // Full reload (not router.push) so the server picks up the fresh
-        // session cookie on the very next request and renders the dashboard.
+        // Full reload (not router.push) so the server sees the fresh session cookie.
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = dest;
-      } else if (mode === "signup") {
+        return;
+      }
+
+      if (mode === "signup") {
         // Stash the chosen role so ensureProfile() sets it on the new profile.
         try { localStorage.setItem("fbla_pending_role", role); } catch {}
         const { data, error } = await supa.auth.signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
-        // Email confirmation is disabled, so signUp returns a live session.
-        // Advisors land on the Chapter page to create their chapter + invite
-        // code; students go to the dashboard. If confirmation is ever turned
-        // back on, there's no session and we fall back to the inbox message.
+        // Supabase answers a sign-up for an existing email with a user that
+        // has no identities instead of an error.
+        if (data.user && data.user.identities?.length === 0) {
+          throw new Error("User already registered");
+        }
         if (data.session) {
+          clearPreview();
           let pendingJoin = false;
           try { pendingJoin = !!localStorage.getItem("fbla_pending_join"); } catch {}
-          window.location.href = (role === "advisor" || pendingJoin) ? "/app/chapter" : nextPath;
-        } else {
-          setSuccess("Account created. Check your inbox to confirm, then sign in.");
+          window.location.href = role === "advisor" || pendingJoin ? "/app/chapter" : nextPath;
+          return;
         }
-      } else if (mode === "magic") {
-        const { error } = await supa.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=${nextPath}`,
-          },
-        });
-        if (error) throw error;
-        setSuccess("Magic link sent. Check your inbox.");
-        setMagicSent(true);
-      } else {
-        // reset
-        const { error } = await supa.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback?next=/app`,
-        });
-        if (error) throw error;
-        setSuccess("Password reset email sent.");
+        // Email confirmation is on: there is no session until the link is clicked.
+        setResetSentTo(email);
+        return;
       }
+
+      // reset
+      const { error } = await supa.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+      });
+      if (error) throw error;
+      setResetSentTo(email);
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e.message || "Something went wrong. Try again.");
+      setError(friendly((err as { message?: string }).message ?? ""));
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    if (!isSupabaseConfigured) { setError("OAuth not configured."); return; }
-    const supa = getSupabase();
-    if (!supa) return;
+    const supa = isSupabaseConfigured ? getSupabase() : null;
+    if (!supa) { setError("Google sign-in is not available right now."); return; }
     // Google skips the email form, so carry the Student/Advisor choice the same
     // way email sign-up does, and send advisors to their chapter page.
     let next = nextPath;
@@ -147,750 +168,154 @@ function AuthForm() {
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
-    if (error) setError(error.message);
+    if (error) setError(friendly(error.message));
   };
 
-  const switchMode = (m: Mode) => {
-    setMode(m);
-    setError(null);
-    setSuccess(null);
-    setMagicSent(false);
-  };
+  if (!sessionChecked) return <div className="au" />;
 
-  const inputStyle = (field: string): React.CSSProperties => ({
-    width: "100%",
-    padding: "13px 15px",
-    background: "var(--bg3)",
-    border: `1px solid ${focused === field ? "var(--accent)" : "var(--border)"}`,
-    borderRadius: 11,
-    color: "var(--text)",
-    fontSize: 16, // 16px avoids iOS Safari zoom-on-focus
-    // No `outline: "none"`: inline styles beat the stylesheet, so this removed
-    // the keyboard focus ring from every sign-in field.
-    transition: "border-color 0.18s, box-shadow 0.18s",
-    boxShadow:
-      focused === field
-        ? "0 0 0 4px rgba(var(--accent-rgb), 0.10)"
-        : "none",
-    boxSizing: "border-box",
-  });
-
-  if (!sessionChecked) {
-    return <div style={{ minHeight: "100vh", background: "var(--bg)" }} />;
+  // ── "Check your email" ───────────────────────────────────────
+  if (resetSentTo) {
+    const isReset = mode === "reset";
+    return (
+      <AuthFrame>
+        <div className="au-sent" role="status">
+          <div className="au-sent-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <path d="M3 7l9 6 9-6" />
+            </svg>
+          </div>
+          <h1 className="au-title">Check your email</h1>
+          <p className="au-sub">
+            We sent a link to <strong>{resetSentTo}</strong>.{" "}
+            {isReset ? "Open it on this device to set a new password." : "Open it to finish creating your account."}
+          </p>
+          <p className="au-switch">
+            Nothing after a few minutes? Check spam, or{" "}
+            <button type="button" className="au-link" onClick={() => setResetSentTo(null)}>try again</button>.
+          </p>
+          <p className="au-switch" style={{ marginTop: 8 }}>
+            <button type="button" className="au-link" onClick={() => switchMode("login")}>Back to log in</button>
+          </p>
+        </div>
+      </AuthFrame>
+    );
   }
 
-  const ctaLabel =
-    mode === "login"
-      ? "Log in"
-      : mode === "signup"
-      ? "Create account"
-      : mode === "magic"
-      ? "Send magic link"
-      : "Send reset email";
+  const copy = COPY[mode];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: "var(--bg)",
-        fontFamily: "Inter, sans-serif",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <style>{`@keyframes auth-spin{to{transform:rotate(360deg)}}`}</style>
+    <AuthFrame>
+      <h1 className="au-title">{copy.title}</h1>
+      <p className="au-sub">{copy.sub}</p>
 
-      {/* The grid and glow that used to sit here were the old template look; the
-          paper tooth on <body> is the backdrop now. */}
-      {/* Minimal top bar */}
-      <header
-        style={{
-          position: "relative",
-          zIndex: 10,
-          padding: "18px 28px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "0.5px solid var(--border)",
-        }}
-      >
-        <Logo size="md" />
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link
-            href="/"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              minHeight: 44,
-              fontSize: 13,
-              color: "var(--text3)",
-              textDecoration: "none",
-              transition: "color 0.15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text3)")}
-          >
-            &larr; Back to home
-          </Link>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      {/* Centered card */}
-      <main
-        id="main"
-        tabIndex={-1}
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "48px 20px",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <div
-          style={{
-            width: 460,
-            maxWidth: "calc(100vw - 32px)",
-            background: "var(--card-bg)",
-            border: "0.5px solid var(--border)",
-            borderRadius: 20,
-            padding: "44px 40px 36px",
-            position: "relative",
-            boxShadow:
-              "0 1px 2px rgba(0,0,0,0.04), 0 24px 60px rgba(0,0,0,0.2), 0 0 0 0.5px rgba(var(--accent-rgb),0.08)",
-          }}
-        >
-          {/* Gold top-edge accent line */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "12%",
-              right: "12%",
-              height: 1,
-              background:
-                "linear-gradient(90deg,transparent 0%,rgba(var(--accent-rgb),0.5) 50%,transparent 100%)",
-              borderRadius: 20,
-            }}
-          />
-
-          {/* Preview mode banner */}
-          {!isSupabaseConfigured && (
-            <div
-              style={{
-                marginBottom: 22,
-                padding: "11px 13px",
-                background: "var(--accent-dim)",
-                border: "0.5px solid var(--accent-border)",
-                borderRadius: 8,
-                fontSize: 12,
-                color: "var(--accent)",
-                fontWeight: 600,
-                lineHeight: 1.55,
-              }}
-            >
-              Preview mode. Explore the dashboard at{" "}
-              <Link href="/app" style={{ textDecoration: "underline" }}>
-                /app
-              </Link>
-              .
-            </div>
-          )}
-
-          {/* Logo block */}
-          <div style={{ textAlign: "center", marginBottom: 26 }}>
-            <Link
-              href="/"
-              style={{
-                textDecoration: "none",
-                display: "inline-flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 16,
-                  background: "#ffffff",
-                  border: "0.5px solid var(--border)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 6px 18px rgba(11,26,51,0.18)",
-                }}
-              >
-                <BrandMark size={38} />
-              </div>
-              <span
-                className="font-mono"
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.32em",
-                  color: "var(--text)",
-                }}
-              >
-                CHAPTERPREP
-              </span>
-            </Link>
-          </div>
-
-          {/* Headline */}
-          <div style={{ textAlign: "center", marginBottom: 26 }}>
-            <h1
-              style={{
-                fontSize: 30,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                lineHeight: 1.2,
-                margin: "0 0 6px",
-                color: "var(--text)",
-              }}
-            >
-              {mode === "signup"
-                ? "Get started"
-                : mode === "magic"
-                ? "Magic link"
-                : mode === "reset"
-                ? "Reset password"
-                : "Welcome back"}
-            </h1>
-            <p
-              style={{
-                fontSize: 13,
-                color: "var(--text3)",
-                margin: 0,
-                lineHeight: 1.55,
-              }}
-            >
-              {mode === "signup"
-                ? "Free for every FBLA member. Set up in under a minute."
-                : mode === "magic"
-                ? "We will email you a one-click sign-in link."
-                : mode === "reset"
-                ? "Enter your email to reset your password."
-                : "Sign in to track your prep and access your chapter."}
-            </p>
-          </div>
-
-          {/* Two-tab toggle: Log in / Sign up (hidden on magic/reset) */}
-          {mode !== "magic" && mode !== "reset" && (
-            <div
-              style={{
-                display: "flex",
-                background: "var(--bg3)",
-                borderRadius: 11,
-                padding: 4,
-                marginBottom: 22,
-                border: "0.5px solid var(--border)",
-              }}
-            >
-              {(["login", "signup"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => switchMode(m)}
-                  aria-pressed={m === mode}
-                  style={{
-                    flex: 1,
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: m === mode ? 700 : 500,
-                    background: m === mode ? "var(--btn-bg)" : "transparent",
-                    border: "none",
-                    color: m === mode ? "var(--btn-fg)" : "var(--text3)",
-                    cursor: "pointer",
-                    transition: "background 0.2s, color 0.2s",
-                    letterSpacing: 0.3,
-                  }}
-                >
-                  {m === "login" ? "Log in" : "Sign up"}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Role picker on signup */}
-          {mode === "signup" && (
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 8, letterSpacing: "0.02em" }}>I am a</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {([
-                  { key: "member", label: "Student", sub: "Prep and compete" },
-                  { key: "advisor", label: "Advisor", sub: "Run a chapter" },
-                ] as const).map((opt) => {
-                  const active = role === opt.key;
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setRole(opt.key)}
-                      aria-pressed={active}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 12px",
-                        borderRadius: 11,
-                        border: active ? "1px solid var(--accent)" : "1px solid var(--border)",
-                        background: active ? "var(--accent-dim)" : "var(--bg2)",
-                        cursor: "pointer",
-                        transition: "border-color 0.15s, background 0.15s",
-                      }}
-                    >
-                      <div style={{ fontSize: 13.5, fontWeight: 600, color: active ? "var(--accent-text)" : "var(--text)" }}>{opt.label}</div>
-                      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>{opt.sub}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Google OAuth */}
-          {(mode === "login" || mode === "signup") && isSupabaseConfigured && (
-            <>
-              <button
-                type="button"
-                onClick={handleGoogle}
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  padding: "12px 14px",
-                  borderRadius: 11,
-                  background: "var(--bg3)",
-                  border: "0.5px solid var(--border)",
-                  color: "var(--text)",
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  cursor: loading ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 11,
-                  transition: "border-color 0.18s, background 0.18s",
-                  opacity: loading ? 0.6 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (loading) return;
-                  e.currentTarget.style.borderColor = "rgba(var(--accent-rgb),0.38)";
-                  e.currentTarget.style.background = "var(--bg2)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--border)";
-                  e.currentTarget.style.background = "var(--bg3)";
-                }}
-              >
-                {/* Google brand icon. Colour values are intentional exceptions */}
-                <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Continue with Google
-              </button>
-
-              {/* Divider */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  margin: "18px 0",
-                }}
-              >
-                <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: 11,
-                    color: "var(--text3)",
-                    letterSpacing: "0.22em",
-                    fontWeight: 600,
-                  }}
-                >
-                  OR
-                </span>
-                <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
-              </div>
-            </>
-          )}
-
-          {/* Email + Password - a real <form> so password managers can tie the
-              fields together (save/fill) and Enter submits from any field. */}
-          <form onSubmit={(e) => { e.preventDefault(); if (canSubmit) handle(); }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-            <label htmlFor="auth-email" style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500 }}>Email</label>
-            <input
-              id="auth-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocused("email")}
-              onBlur={() => setFocused(null)}
-              placeholder="you@school.edu"
-              autoComplete="email"
-              aria-label="Email address"
-              style={inputStyle("email")}
-            />
-            {(mode === "login" || mode === "signup") && (
-              <>
-                <label htmlFor="auth-password" style={{ fontSize: 11, color: "var(--text3)", fontWeight: 500, marginTop: 4 }}>Password</label>
-                <input
-                  id="auth-password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocused("password")}
-                  onBlur={() => setFocused(null)}
-                  placeholder="Password"
-                  autoComplete={mode === "login" ? "current-password" : "new-password"}
-                  aria-label="Password"
-                  minLength={8}
-                  style={inputStyle("password")}
-                />
-              </>
-            )}
-          </div>
-
-          {/* Trust strip on signup */}
-          {mode === "signup" && (
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                marginBottom: 14,
-                padding: "9px 12px",
-                background: "rgba(var(--accent-rgb),0.04)",
-                border: "0.5px solid rgba(var(--accent-rgb),0.14)",
-                borderRadius: 8,
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {[
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                  ),
-                  text: "Bank-grade encryption",
-                },
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                    </svg>
-                  ),
-                  text: "We never sell your data",
-                },
-                {
-                  icon: (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ),
-                  text: "Always free",
-                },
-              ].map((item, i) => (
-                <span
-                  key={i}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 5,
-                    fontSize: 11.5,
-                    color: "var(--text3)",
-                    fontWeight: 500,
-                    letterSpacing: 0.2,
-                  }}
-                >
-                  <span style={{ color: "var(--accent)" }} aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  {item.text}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Forgot / Magic link row (login only) */}
-          {mode === "login" && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                gap: 12,
-                marginBottom: 16,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => switchMode("magic")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 12,
-                  color: "var(--accent)",
-                  cursor: "pointer",
-                  opacity: 0.8,
-                  padding: 0,
-                }}
-              >
-                Magic link
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode("reset")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  fontSize: 12,
-                  color: "var(--text3)",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
-
-          {/* Error / success */}
-          {error && (
-            <div
-              role="alert"
-              style={{
-                padding: "10px 12px",
-                background: "rgba(var(--red-rgb),0.1)",
-                border: "1px solid rgba(var(--red-rgb),0.25)",
-                borderRadius: 8,
-                fontSize: 12.5,
-                color: "var(--red)",
-                marginBottom: 12,
-                lineHeight: 1.5,
-              }}
-            >
-              {error}
-            </div>
-          )}
-          {success && (
-            <div
-              style={{
-                padding: "10px 12px",
-                background: "rgba(var(--green-rgb),0.08)",
-                border: "1px solid rgba(var(--green-rgb),0.25)",
-                borderRadius: 8,
-                fontSize: 12.5,
-                color: "var(--green)",
-                marginBottom: 12,
-                lineHeight: 1.5,
-              }}
-            >
-              {success}
-            </div>
-          )}
-
-          {/* Primary CTA - submits the form (free Enter-to-submit from any field) */}
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            style={{
-              width: "100%",
-              padding: "13px",
-              borderRadius: 11,
-              fontSize: 13.5,
-              fontWeight: 700,
-              // Ink, like every primary action on the site. It was near-black
-              // text on the teal accent, which the darker paper teal made
-              // nearly illegible.
-              background: canSubmit ? "var(--btn-bg)" : "var(--bg3)",
-              border: "none",
-              color: canSubmit ? "var(--btn-fg)" : "var(--text3)",
-              cursor: canSubmit ? "pointer" : "default",
-              transition: "filter 0.18s, transform 0.15s, box-shadow 0.18s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              letterSpacing: 0.3,
-              boxShadow: canSubmit
-                ? "0 4px 14px rgba(var(--accent-rgb),0.28)"
-                : "none",
-            }}
-            onMouseEnter={(e) => {
-              if (!canSubmit) return;
-              e.currentTarget.style.filter = "brightness(1.08)";
-              e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(var(--accent-rgb),0.42)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.filter = "none";
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = canSubmit
-                ? "0 4px 14px rgba(var(--accent-rgb),0.28)"
-                : "none";
-            }}
-          >
-            {loading ? (
-              <>
-                <div
-                  style={{
-                    width: 12,
-                    height: 12,
-                    border: "1.5px solid currentColor",
-                    borderTopColor: "transparent",
-                    borderRadius: "50%",
-                    animation: "auth-spin 0.8s linear infinite",
-                  }}
-                />
-                Processing...
-              </>
-            ) : (
-              ctaLabel
-            )}
+      {mode === "signup" && (
+        <div className="au-roles" role="group" aria-label="I am a">
+          <button type="button" className="au-role" aria-pressed={role === "member"} onClick={() => setRole("member")}>
+            I&apos;m a student
           </button>
-          </form>
+          <button type="button" className="au-role" aria-pressed={role === "advisor"} onClick={() => setRole("advisor")}>
+            I&apos;m an advisor
+          </button>
+        </div>
+      )}
 
-          {/* Magic link button (secondary, login mode only, before magic sent) */}
-          {mode === "login" && !magicSent && isSupabaseConfigured && (
-            <button
-              type="button"
-              onClick={() => switchMode("magic")}
-              style={{
-                width: "100%",
-                marginTop: 10,
-                padding: "11px",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                fontSize: 13,
-                color: "var(--text3)",
-                cursor: "pointer",
-                transition: "border-color 0.15s, color 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--border2)";
-                e.currentTarget.style.color = "var(--text)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.color = "var(--text3)";
-              }}
-            >
-              Sign in with magic link instead
-            </button>
-          )}
+      {mode !== "reset" && (
+        <>
+          <button type="button" className="au-google" onClick={handleGoogle} disabled={loading}>
+            <GoogleIcon />
+            Continue with Google
+          </button>
+          <div className="au-or">or with email</div>
+        </>
+      )}
 
-          {/* Already have an account? (signup only) */}
-          {mode === "signup" && (
-            <p
-              style={{
-                marginTop: 14,
-                textAlign: "center",
-                fontSize: 12,
-                color: "var(--text3)",
-              }}
-            >
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => switchMode("login")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  color: "var(--accent)",
-                  cursor: "pointer",
-                  fontSize: 12,
-                  textDecoration: "underline",
-                }}
-              >
-                Log in
-              </button>
-            </p>
-          )}
-
-          {/* Back to log in (magic / reset) */}
-          {(mode === "magic" || mode === "reset") && (
-            <button
-              type="button"
-              onClick={() => switchMode("login")}
-              style={{
-                width: "100%",
-                marginTop: 10,
-                padding: "11px",
-                background: "transparent",
-                border: "1px solid var(--border)",
-                borderRadius: 10,
-                fontSize: 13,
-                color: "var(--text3)",
-                cursor: "pointer",
-                transition: "border-color 0.15s, color 0.15s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--border2)";
-                e.currentTarget.style.color = "var(--text)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border)";
-                e.currentTarget.style.color = "var(--text3)";
-              }}
-            >
-              Back to log in
-            </button>
-          )}
-
-          {/* Terms */}
-          <p
-            style={{
-              marginTop: 20,
-              fontSize: 11.5,
-              color: "var(--text-muted)",
-              lineHeight: 1.55,
-              textAlign: "center",
-            }}
-          >
-            By continuing you agree to the{" "}
-            <Link href="/terms" style={{ color: "var(--text2)" }}>
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" style={{ color: "var(--text2)" }}>
-              Privacy
-            </Link>
-            .
-          </p>
-          <AffiliationNotice
-            variant="compact"
-            style={{ marginTop: 14, textAlign: "center", maxWidth: "none" }}
+      {/* A real <form> so password managers pair the fields and Enter submits. */}
+      <form
+        onSubmit={(e) => { e.preventDefault(); void handle(); }}
+        style={mode === "reset" ? { marginTop: 22 } : undefined}
+      >
+        <div className="au-field">
+          <div className="au-label-row">
+            <label htmlFor="auth-email" className="au-label">Email</label>
+          </div>
+          <input
+            id="auth-email"
+            className="au-input"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@school.edu"
+            autoComplete="email"
           />
         </div>
-      </main>
-    </div>
+
+        {mode !== "reset" && (
+          <div className="au-field">
+            <div className="au-label-row">
+              <label htmlFor="auth-password" className="au-label">Password</label>
+              {mode === "login" && (
+                <button type="button" className="au-link" onClick={() => switchMode("reset")}>
+                  Forgot password?
+                </button>
+              )}
+            </div>
+            <div className="au-input-wrap">
+              <input
+                id="auth-password"
+                className="au-input"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                aria-describedby={mode === "signup" ? "auth-password-hint" : undefined}
+              />
+              <button
+                type="button"
+                className="au-show"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {mode === "signup" && <p id="auth-password-hint" className="au-hint">At least 8 characters.</p>}
+          </div>
+        )}
+
+        {error && <div className="au-msg au-msg-error" role="alert">{error}</div>}
+
+        <button type="submit" className="au-submit" disabled={loading}>
+          {loading && <span className="au-spin" aria-hidden="true" />}
+          {loading ? "One moment" : copy.cta}
+        </button>
+      </form>
+
+      <p className="au-switch">
+        {mode === "signup" ? (
+          <>Already have an account? <button type="button" className="au-link" onClick={() => switchMode("login")}>Log in</button></>
+        ) : mode === "login" ? (
+          <>New here? <button type="button" className="au-link" onClick={() => switchMode("signup")}>Create an account</button></>
+        ) : (
+          <button type="button" className="au-link" onClick={() => switchMode("login")}>Back to log in</button>
+        )}
+      </p>
+
+      {mode === "signup" && (
+        <p className="au-terms">
+          By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+        </p>
+      )}
+    </AuthFrame>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page export. Suspense required for useSearchParams
-// ---------------------------------------------------------------------------
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--bg)" }} />}>
+    <Suspense fallback={<div className="au" />}>
       <AuthForm />
     </Suspense>
   );
