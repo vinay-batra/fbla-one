@@ -4,6 +4,15 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.13.0 - October 1, 2026 - A dashboard that starts you practicing
+
+- **New students start a test from the first screen.** Pick your event right on the dashboard and one button starts a 10-question test (or a judge round, for events without a test). No empty stat boxes or blank forms first.
+- **Once you practice, the dashboard shows where you stand:** your test average, the same Ready / On track / Needs attention status your advisor sees, whether you are trending up or down, your three weakest topics with a one-tap drill each, and how many missed questions are waiting for review.
+- **Every graded test saves itself.** You used to have to press "Log score to tracker", so most scores never reached your history, your streak or your advisor's report. Retrying the questions you just missed is still not counted as a new test.
+- **Advisors land on their chapter.** Signing in as an advisor goes to the chapter page, and the dashboard opens with your chapter: how many members are Ready, On track or Need attention, plus buttons for the readiness report and a Mock Regionals.
+- **The season planner is one line** ("47 days to Regionals") until you open it to edit dates. Its stage numbers were invisible in light mode; fixed.
+- Stats and recent practice only appear once there is practice to show.
+
 ## v1.12.0 - October 1, 2026 - Ready for launch
 
 - **A page for advisors.** `/for-advisors` walks through setting up and running a chapter in six steps, from creating it to regionals. "For advisors" is in the menu, the home page and the footer, and its button starts sign-up with Advisor already picked.

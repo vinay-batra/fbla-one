@@ -69,7 +69,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Do my scores get saved?",
-        a: "Yes. After reviewing your results, click 'Log score to tracker' and the score is saved to your practice tracker. The dashboard shows your score trend over time per competition.",
+        a: "Yes. Every graded test is saved to your practice history automatically. The dashboard shows your average, your weakest topics and your score trend for your event.",
       },
       {
         q: "Is there a limit on how many tests I can generate?",

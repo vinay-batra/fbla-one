@@ -22,7 +22,13 @@ function fmt(iso: string): string {
   return `${months[m - 1]} ${d}`;
 }
 
+/**
+ * Road to Nationals. Collapsed to one line by default (a countdown once a date
+ * is set, a prompt to add one before that); "Add dates" / "Edit dates" opens
+ * the three date pickers.
+ */
 export function StudyPlan() {
+  const [editing, setEditing] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
   void tick;
@@ -43,6 +49,31 @@ export function StudyPlan() {
   // Ramp the suggested cadence as the next competition approaches.
   const targetPerWeek = days != null && days <= 14 ? 5 : 3;
   const onTrack = logsThisWeek >= targetPerWeek;
+
+  if (!editing) {
+    return (
+      <div className="sp-line">
+        <div style={{ minWidth: 0 }}>
+          {upcoming ? (
+            <p className="sp-line-main">
+              <strong className="font-mono">{days}</strong> {days === 1 ? "day" : "days"} to {upcoming.label}
+              <span className="sp-line-sub"> · {fmt(upcoming.iso!)}</span>
+            </p>
+          ) : (
+            <p className="sp-line-main">{anySet ? "Set your next competition date" : "When is regionals?"}</p>
+          )}
+          <p className="sp-line-sub">
+            {upcoming
+              ? `${logsThisWeek} of ${targetPerWeek} practice sessions this week${onTrack ? ", on pace" : ""}`
+              : "Add your dates for a countdown to regionals, states and nationals."}
+          </p>
+        </div>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>
+          {anySet ? "Edit dates" : "Add dates"}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "relative", background: "var(--card-bg)", border: "0.5px solid var(--accent-border)", borderRadius: 16, padding: "22px 24px", overflow: "hidden" }}>
@@ -85,9 +116,9 @@ export function StudyPlan() {
                 background: isNext ? "var(--accent-dim)" : "var(--bg2)",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-mono)", background: passed ? "var(--green)" : isNext ? "var(--accent)" : "var(--bg3)", color: passed || isNext ? "#0a1322" : "var(--text3)" }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 700, fontFamily: "var(--font-mono)", background: passed ? "var(--green)" : isNext ? "var(--accent)" : "var(--bg3)", color: passed || isNext ? "var(--bg)" : "var(--text3)" }}>
                     {passed ? (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0a1322" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
                     ) : (
                       i + 1
                     )}
@@ -106,6 +137,11 @@ export function StudyPlan() {
               </div>
             );
           })}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+          <button type="button" className="btn btn-accent btn-sm btn-pill" onClick={() => setEditing(false)}>
+            Done
+          </button>
         </div>
       </div>
       <style>{`@media (max-width:560px){ .sp-stages { grid-template-columns: 1fr !important; } }`}</style>

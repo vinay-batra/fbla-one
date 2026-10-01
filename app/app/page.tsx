@@ -2,22 +2,45 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
 import { StudyPlan } from "@/components/StudyPlan";
 import { ChapterRankChip } from "@/components/ChapterRankChip";
-import { getCompetition, FORMAT_LABEL } from "@/lib/competitions";
+import { judgeModeFor } from "@/components/judge/rubric";
+import {
+  CATEGORIES,
+  COMPETITIONS,
+  getCompetition,
+  FORMAT_LABEL,
+  isAiTestable,
+} from "@/lib/competitions";
 import {
   getRegistered,
   getPracticeLogs,
   getSavedResources,
   getDisplayName,
   getUpcomingDeadlines,
+  getWeakTopics,
   onStorageChange,
+  registerCompetition,
   type PracticeLog,
 } from "@/lib/storage";
+import { bankCount, onMistakesChange } from "@/lib/mistakes";
+import { getSupabase } from "@/lib/supabase";
 import { relativeTime, dayKeyET } from "@/lib/format";
-import { isScoredTest, parseJudgeNote, judgeModeLabel } from "@/lib/chapter";
+import {
+  isScoredTest,
+  parseJudgeNote,
+  judgeModeLabel,
+  computeReadinessRow,
+  getMyProfile,
+  getChapterById,
+  getChapterReadiness,
+  READINESS_LABEL,
+  type ReadinessRow,
+  type ReadinessStatus,
+} from "@/lib/chapter";
 import type { Competition } from "@/lib/competitions";
 
 // ── Score trend chart ──────────────────────────────────────────
@@ -104,14 +127,322 @@ function timeOfDay(): string {
   return "Good evening";
 }
 
+/** Where "start" goes for an event: an AI test, a Judge round, or its guide. */
+function startFor(comp: Competition): { href: string; label: string } {
+  if (isAiTestable(comp)) return { href: `/app/coach?slug=${comp.slug}&start=1`, label: "Start a 10-question test" };
+  if (judgeModeFor(comp.format)) return { href: `/app/judge?event=${comp.slug}`, label: "Start a judge round" };
+  return { href: `/competitions/${comp.slug}`, label: "Open the event guide" };
+}
+
+// ── Event picker (first run, and "Change") ─────────────────────
+
+const BY_CATEGORY = CATEGORIES.map((cat) => ({
+  cat,
+  events: COMPETITIONS.filter((c) => c.category === cat).sort((a, b) => a.name.localeCompare(b.name)),
+})).filter((g) => g.events.length > 0);
+
+function EventPicker({ initial, onCancel }: { initial?: string; onCancel?: () => void }) {
+  const router = useRouter();
+  const [slug, setSlug] = useState(initial ?? "");
+  const comp = slug ? getCompetition(slug) ?? null : null;
+  const start = comp ? startFor(comp) : null;
+
+  function go() {
+    if (!comp || !start) return;
+    registerCompetition(comp.slug);
+    router.push(start.href);
+  }
+
+  return (
+    <div className="dash-picker">
+      <label htmlFor="dash-event" className="dash-picker-label">Your event</label>
+      <div className="dash-picker-row">
+        <select
+          id="dash-event"
+          className="input-field dash-picker-select"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        >
+          <option value="">Choose your event</option>
+          {BY_CATEGORY.map((g) => (
+            <optgroup key={g.cat} label={g.cat}>
+              {g.events.map((c) => (
+                <option key={c.slug} value={c.slug}>{c.name}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+        <button type="button" className="btn btn-accent btn-lg" onClick={go} disabled={!comp}>
+          {start?.label ?? "Start a 10-question test"}
+        </button>
+      </div>
+      <p className="dash-picker-note">
+        {comp
+          ? `${FORMAT_LABEL[comp.format]}. ${isAiTestable(comp)
+              ? "Every question is checked by a second AI before you see it."
+              : judgeModeFor(comp.format)
+                ? "You are scored on your event's rating sheet."
+                : "This event has no test or judge round to practice here yet."}`
+          : (
+            <>
+              Not sure which event is yours? <Link href="/#find-your-event">Take the one-minute quiz</Link>.
+            </>
+          )}
+        {onCancel && (
+          <>
+            {" "}
+            <button type="button" className="dash-linkbtn" onClick={onCancel}>Cancel</button>
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+// ── Your event, once picked ────────────────────────────────────
+
+const STATUS_CLASS: Record<ReadinessStatus, string> = {
+  attention: "is-attention",
+  "on-track": "is-on-track",
+  ready: "is-ready",
+};
+
+function EventHero({ comp, row, mistakes, onChange }: {
+  comp: Competition;
+  row: ReadinessRow;
+  mistakes: number;
+  onChange: () => void;
+}) {
+  const testable = isAiTestable(comp);
+  const judged = judgeModeFor(comp.format) !== null;
+  const start = startFor(comp);
+  const practiced = row.testsTotal + row.judgeRounds > 0;
+  // Weak topics come from synced test logs; fall back to this device's tallies.
+  const weak = row.weakTopics.length ? row.weakTopics : getWeakTopics(comp.slug).slice(0, 3);
+
+  const bigNumber = row.avgTestPct != null
+    ? { value: `${row.avgTestPct}%`, label: `Test average, last ${Math.min(row.scoredTests, 5)}` }
+    : row.latestJudge
+      ? { value: `${row.latestJudge.score}`, label: "Latest judge score, out of 100" }
+      : null;
+
+  return (
+    <section className="dash-hero" aria-labelledby="dash-hero-title">
+      <div className="dash-hero-top">
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow" style={{ marginBottom: 6 }}>Competing in</p>
+          <h2 id="dash-hero-title" className="dash-hero-title">
+            <Link href={`/competitions/${comp.slug}`}>{comp.name}</Link>
+          </h2>
+          <p className="dash-hero-meta">{comp.category} · {FORMAT_LABEL[comp.format]}</p>
+        </div>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={onChange}>Change event</button>
+      </div>
+
+      {!practiced ? (
+        <div className="dash-hero-first">
+          <p className="dash-hero-lede">
+            {testable
+              ? "Take a 10-question test built from your event's topic outline. You get a score, the answer to every question, and your weakest topics."
+              : judged
+                ? "Draw a case, prep on the clock, and get scored on your event's rating sheet."
+                : "Read the event guide to see how it is scored and what to prepare."}
+          </p>
+          <div className="dash-hero-actions">
+            <Link href={start.href} className="btn btn-accent btn-lg">{start.label}</Link>
+            {testable && judged && (
+              <Link href={`/app/judge?event=${comp.slug}`} className="btn btn-ghost btn-lg">Practice the judged part</Link>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="dash-hero-grid">
+          <div className="dash-score">
+            {bigNumber ? (
+              <>
+                <p className="dash-score-num">{bigNumber.value}</p>
+                <p className="dash-score-label">{bigNumber.label}</p>
+              </>
+            ) : (
+              <>
+                <p className="dash-score-num">{row.testsTotal}</p>
+                <p className="dash-score-label">Practice {row.testsTotal === 1 ? "session" : "sessions"} logged</p>
+              </>
+            )}
+            <p className={`dash-status ${STATUS_CLASS[row.status]}`}>
+              <strong>{READINESS_LABEL[row.status]}</strong>
+              {row.reasons[0] && row.status !== "ready" ? <span>{row.reasons[0]}</span> : null}
+            </p>
+            {row.trendDelta != null && row.trendDelta !== 0 && (
+              <p className="dash-score-trend">
+                Your last 3 tests average {Math.abs(row.trendDelta)} points {row.trendDelta > 0 ? "higher" : "lower"} than the ones before
+              </p>
+            )}
+          </div>
+
+          <div className="dash-focus">
+            {weak.length > 0 && (
+              <div>
+                <p className="dash-focus-head">Your weakest topics</p>
+                <ul className="dash-weak">
+                  {weak.map((t) => (
+                    <li key={t.topic}>
+                      <span className="dash-weak-name">{t.topic}</span>
+                      <span className="dash-weak-pct font-mono">{t.pct}%</span>
+                      {testable && (
+                        <Link
+                          href={`/app/coach?slug=${comp.slug}&topic=${encodeURIComponent(t.topic)}&start=1`}
+                          className="dash-weak-drill"
+                          aria-label={`Drill ${t.topic}`}
+                        >
+                          Drill
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {mistakes > 0 && testable && (
+              <Link href={`/app/coach?slug=${comp.slug}&mode=mistakes&start=1`} className="dash-mistakes">
+                <span className="dash-mistakes-n font-mono">{mistakes}</span>
+                <span>
+                  {mistakes === 1 ? "missed question is" : "missed questions are"} waiting.
+                  <strong> Review them</strong>
+                </span>
+              </Link>
+            )}
+            {weak.length === 0 && mistakes === 0 && (
+              <p className="dash-focus-empty">
+                {testable
+                  ? "Take a couple more tests and your weakest topics show up here."
+                  : "Each judge round is saved here with its score."}
+              </p>
+            )}
+          </div>
+
+          <div className="dash-hero-actions dash-hero-actions-wide">
+            <Link href={testable ? `/app/coach?slug=${comp.slug}&start=1` : start.href} className="btn btn-accent btn-lg">
+              {testable ? "Next test" : start.label}
+            </Link>
+            {testable && judged && (
+              <Link href={`/app/judge?event=${comp.slug}`} className="btn btn-ghost btn-lg">Judge round</Link>
+            )}
+            {testable && (
+              <Link href={`/app/coach?slug=${comp.slug}`} className="dash-linkbtn">Full simulation and more</Link>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Advisors: the chapter comes first ──────────────────────────
+
+type AdvisorView = {
+  chapterId: string | null;
+  name: string | null;
+  members: number;
+  counts: Record<ReadinessStatus, number> | null;
+};
+
+function useAdvisorView(): AdvisorView | null {
+  const [view, setView] = useState<AdvisorView | null>(null);
+  useEffect(() => {
+    const supa = getSupabase();
+    if (!supa) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supa.auth.getSession();
+      const uid = data.session?.user?.id;
+      if (!uid) return;
+      const prof = await getMyProfile(uid);
+      if (cancelled || !prof || prof.role !== "advisor") return;
+      if (!prof.chapter_id) {
+        setView({ chapterId: null, name: null, members: 0, counts: null });
+        return;
+      }
+      const [chapter, readiness] = await Promise.all([
+        getChapterById(prof.chapter_id),
+        getChapterReadiness(prof.chapter_id),
+      ]);
+      if (cancelled) return;
+      const counts: Record<ReadinessStatus, number> = { attention: 0, "on-track": 0, ready: 0 };
+      for (const r of readiness?.rows ?? []) counts[r.status] += 1;
+      setView({
+        chapterId: prof.chapter_id,
+        name: chapter?.name ?? null,
+        members: readiness?.rows.length ?? 0,
+        counts: readiness ? counts : null,
+      });
+    })().catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+  return view;
+}
+
+function AdvisorHero({ view }: { view: AdvisorView }) {
+  if (!view.chapterId) {
+    return (
+      <section className="dash-hero" aria-labelledby="dash-adv-title">
+        <p className="eyebrow" style={{ marginBottom: 6 }}>For advisors</p>
+        <h2 id="dash-adv-title" className="dash-hero-title">Create your chapter</h2>
+        <p className="dash-hero-lede">
+          Name your chapter and you get an invite link and a QR code. Members who join show up on your readiness report.
+        </p>
+        <div className="dash-hero-actions">
+          <Link href="/app/chapter" className="btn btn-accent btn-lg">Create your chapter</Link>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <section className="dash-hero" aria-labelledby="dash-adv-title">
+      <div className="dash-hero-top">
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow" style={{ marginBottom: 6 }}>Your chapter</p>
+          <h2 id="dash-adv-title" className="dash-hero-title">{view.name ?? "Your chapter"}</h2>
+          <p className="dash-hero-meta">
+            {view.members === 0 ? "No members yet" : `${view.members} ${view.members === 1 ? "member" : "members"}`}
+          </p>
+        </div>
+      </div>
+      {view.members === 0 ? (
+        <p className="dash-hero-lede">Share your invite link or QR code from the chapter page. Members join with one tap.</p>
+      ) : view.counts ? (
+        <ul className="dash-adv-counts">
+          {(["ready", "on-track", "attention"] as ReadinessStatus[]).map((s) => (
+            <li key={s} className={STATUS_CLASS[s]}>
+              <span className="dash-score-num">{view.counts![s]}</span>
+              <span className="dash-score-label">{READINESS_LABEL[s]}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <div className="dash-hero-actions">
+        <Link href="/app/chapter" className="btn btn-accent btn-lg">
+          {view.members === 0 ? "Invite members" : "Open the readiness report"}
+        </Link>
+        <Link href="/app/mock" className="btn btn-ghost btn-lg">Run a Mock Regionals</Link>
+      </div>
+    </section>
+  );
+}
+
+// ── Page ───────────────────────────────────────────────────────
+
 export default function Dashboard() {
   const [tick, setTick] = useState(0);
   useEffect(() => onStorageChange(() => setTick((t) => t + 1)), []);
+  useEffect(() => onMistakesChange(() => setTick((t) => t + 1)), []);
+  const [changing, setChanging] = useState(false);
+  const advisor = useAdvisorView();
 
   const displayName = getDisplayName();
 
   // Derive everything once per storage change (tick), not on every render.
-  const { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions, lastPracticeBySlug } = useMemo(() => {
+  const { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions } = useMemo(() => {
     void tick; // recompute when localStorage changes
     const registered = getRegistered();
     const logs = getPracticeLogs();
@@ -146,59 +477,71 @@ export default function Dashboard() {
       .map((slug) => getCompetition(slug))
       .filter((c): c is NonNullable<typeof c> => Boolean(c));
 
-    const lastPracticeBySlug = new Map<string, string>();
-    for (const log of logs) {
-      if (!lastPracticeBySlug.has(log.competitionSlug)) {
-        lastPracticeBySlug.set(log.competitionSlug, log.loggedAt);
-      }
-    }
-
-    return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions, lastPracticeBySlug };
+    return { logs, saved, logsThisWeek, streakDays, upcomingDeadlines, registeredCompetitions };
   }, [tick]);
 
-  // Single-event model: you compete in ONE event. Surface it here on the
-  // dashboard (there is no separate "My event" tab anymore).
+  // Single-event model: you compete in ONE event.
   const myEvent = registeredCompetitions[0] ?? null;
-  const myEventLogs = myEvent ? logs.filter((l) => l.competitionSlug === myEvent.slug) : [];
-  // Test average only: a Judge round is a separate, rubric-based score, so it
-  // is surfaced on its own (latest round) instead of being averaged in.
-  const myEventScored = myEventLogs.filter((l) => isScoredTest(l));
-  const myEventAvg = myEventScored.length
-    ? Math.round(myEventScored.reduce((sum, l) => sum + (l.score! / l.outOf!) * 100, 0) / myEventScored.length)
-    : null;
-  const myEventJudge = myEventLogs.find((l) => parseJudgeNote(l.notes) && l.score != null) ?? null;
+  const hasPractice = logs.length > 0;
+
+  // The same readiness rule the advisor's report uses, on this student's own logs.
+  const row = useMemo(() => {
+    if (!myEvent) return null;
+    return computeReadinessRow(
+      { id: "me", name: "", email: null, eventSlug: myEvent.slug },
+      logs.map((l) => ({
+        slug: l.competitionSlug,
+        score: l.score,
+        outOf: l.outOf,
+        notes: l.notes,
+        t: new Date(l.loggedAt).getTime(),
+        loggedAt: l.loggedAt,
+        topics: l.topicResults ?? null,
+      }))
+    );
+  }, [myEvent, logs]);
+  const mistakes = useMemo(() => {
+    void tick;
+    return myEvent ? bankCount(myEvent.slug) : 0;
+  }, [myEvent, tick]);
+
+  const practicedEvent = row ? row.testsTotal + row.judgeRounds > 0 : false;
+  const headline = advisor
+    ? advisor.chapterId ? "Here is your chapter." : "Set up your chapter."
+    : !myEvent
+      ? "Let's get your first score."
+      : practicedEvent
+        ? "Here is where you stand."
+        : "Take your first test.";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: 1240 }}>
+    <div className="dash" style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 1080 }}>
       {/* Greeting */}
       <div>
         <p className="eyebrow" style={{ marginBottom: 8 }}>
           {timeOfDay()}{displayName ? `, ${displayName}` : ""}
         </p>
-        <h1 style={{ fontSize: 28, letterSpacing: "-0.02em" }}>
-          {registeredCompetitions.length === 0
-            ? "Pick your first event."
-            : `Keep going. ${registeredCompetitions.length === 1 ? "1 event" : `${registeredCompetitions.length} events`} on your plate.`}
-        </h1>
+        <h1 style={{ fontSize: 30, letterSpacing: "-0.02em" }}>{headline}</h1>
       </div>
 
-      {/* Stats */}
-      <div
-        className="dash-stats"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 14,
-        }}
-      >
-        <Stat label="Day streak" value={String(streakDays)} sub={streakDays === 0 ? "Practice today to start" : streakDays === 1 ? "day in a row" : "days in a row"} href="/app/coach" />
-        <Stat label="Logs this week" value={String(logsThisWeek)} sub={logsThisWeek === 0 ? "Log your first practice" : "keep going"} href="/app/tracker" />
-        <Stat label="Total practice" value={String(logs.length)} sub="all-time" href="/app/tracker" />
-        <Stat label="Saved resources" value={String(saved.length)} sub="across all events" href="/app/resources" />
-      </div>
+      {advisor && <AdvisorHero view={advisor} />}
 
-      {/* Road to Nationals: season milestones + practice pacing */}
-      <StudyPlan />
+      {/* The one thing to do next */}
+      {changing || (!myEvent && !advisor) ? (
+        <section className="dash-hero" aria-label="Pick your event">
+          {changing && <p className="eyebrow" style={{ marginBottom: 10 }}>Change event</p>}
+          <EventPicker
+            initial={changing ? myEvent?.slug : undefined}
+            onCancel={changing ? () => setChanging(false) : undefined}
+          />
+        </section>
+      ) : myEvent && row ? (
+        <EventHero comp={myEvent} row={row} mistakes={mistakes} onChange={() => setChanging(true)} />
+      ) : (
+        <p className="dash-aside">
+          Want to see what your members see? <Link href="/app/coach">Take a practice test</Link>.
+        </p>
+      )}
 
       {/* Chapter standing (renders only for users in a chapter) */}
       <ChapterRankChip />
@@ -270,73 +613,20 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Your event (single-event model) */}
-      <Card className="tour-event">
-        <CardHeader
-          eyebrow="Competing in"
-          title="Your event"
-          tagline={myEvent ? "The one event you're competing in this year." : "Pick the one event you're competing in."}
-          right={
-            <Link href="/competitions" className="btn btn-ghost btn-sm">
-              {myEvent ? "Change event" : "Pick event"}
-            </Link>
-          }
-        />
+      {/* Season countdown: one line until opened */}
+      {myEvent && <StudyPlan />}
 
-        {!myEvent ? (
-          <div className="empty-state" style={{ marginTop: 8 }}>
-            <div className="empty-state-icon">+</div>
-            <p className="empty-state-title">No event picked yet</p>
-            <p className="empty-state-msg">Choose the one event you're competing in. We'll track your prep for it.</p>
-            <Link href="/competitions" className="btn btn-accent btn-sm btn-pill" style={{ marginTop: 8 }}>
-              Browse competitions
-            </Link>
-          </div>
-        ) : (
-          <div
-            className="dash-event-row"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `1fr ${myEventJudge ? "auto " : ""}auto auto auto auto`,
-              gap: 14,
-              alignItems: "center",
-              padding: "16px 18px",
-              border: "0.5px solid var(--border)",
-              borderRadius: 12,
-              background: "var(--bg2)",
-              marginTop: 14,
-            }}
-          >
-            <div style={{ minWidth: 0 }}>
-              <Link
-                href={`/competitions/${myEvent.slug}`}
-                style={{ fontSize: 15, fontWeight: 700, color: "var(--text)", transition: "color 0.15s ease" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text)")}
-              >
-                {myEvent.name}
-              </Link>
-              <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 3 }}>
-                {myEvent.category} · {FORMAT_LABEL[myEvent.format]}
-                {(() => { const last = lastPracticeBySlug.get(myEvent.slug); return last ? ` · last ${relativeTime(last)}` : ""; })()}
-              </p>
-            </div>
-
-            <EventStat label="LOGS" value={String(myEventLogs.length)} />
-            <EventStat label="AVG" value={myEventAvg != null ? `${myEventAvg}%` : "-"} accent={myEventAvg != null} title="Average of your scored practice tests (Judge rounds not included)" />
-            {myEventJudge && (
-              <EventStat label="JUDGE" value={`${myEventJudge.score}/100`} title="Latest AI Judge round, rubric points out of 100" />
-            )}
-
-            <Link href={`/competitions/${myEvent.slug}`} className="btn btn-accent btn-sm btn-pill">
-              Prep
-            </Link>
-            <Link href="/competitions" className="btn btn-ghost btn-sm">
-              Change
-            </Link>
-          </div>
-        )}
-      </Card>
+      {/* Stats appear once there is something to count */}
+      {hasPractice && (
+        <div className="dash-stats">
+          <Stat label="Day streak" value={String(streakDays)} sub={streakDays === 0 ? "Practice today to start one" : streakDays === 1 ? "day in a row" : "days in a row"} />
+          <Stat label="This week" value={String(logsThisWeek)} sub={logsThisWeek === 1 ? "practice session" : "practice sessions"} href="/app/tracker" />
+          <Stat label="All time" value={String(logs.length)} sub={logs.length === 1 ? "practice session" : "practice sessions"} href="/app/tracker" />
+          {saved.length > 0 && (
+            <Stat label="Saved" value={String(saved.length)} sub={saved.length === 1 ? "study resource" : "study resources"} href="/app/resources" />
+          )}
+        </div>
+      )}
 
       {/* Score trends (only shown once there are 3+ scored logs) */}
       {logs.filter((l) => isScoredTest(l)).length >= 3 && (
@@ -344,101 +634,62 @@ export default function Dashboard() {
       )}
 
       {/* Recent activity */}
-      <div className="dash-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+      {hasPractice && (
         <Card>
-          <CardHeader eyebrow="Recent practice" title="Last 5 logs" />
-          {logs.length === 0 ? (
-            <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>
-              No practice logs yet. Head to the{" "}
-              <Link href="/app/tracker" style={{ color: "var(--accent-text)" }}>
-                tracker
-              </Link>{" "}
-              to add one.
-            </p>
-          ) : (
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
-              {logs.slice(0, 5).map((l) => {
-                const c = getCompetition(l.competitionSlug);
-                const judge = parseJudgeNote(l.notes);
-                return (
-                  <li
-                    key={l.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      padding: "10px 12px",
-                      borderRadius: 8,
-                      background: "var(--bg2)",
-                      border: "0.5px solid var(--border)",
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
-                        {c?.name ?? l.competitionSlug}
-                      </p>
-                      <p style={{ fontSize: 11, color: "var(--text3)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-                        {relativeTime(l.loggedAt)}
-                        {judge && (
-                          <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
-                            AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    {l.score != null && l.outOf != null && (
-                      <span
-                        className="font-mono"
-                        style={{
-                          fontSize: 12,
-                          color: "var(--accent-text)",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {l.score}/{l.outOf}
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
-          <CardHeader eyebrow="Up next" title="Suggested actions" />
-          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
-            <Suggestion done={registeredCompetitions.length > 0} text="Pick at least 1 competition" href="/competitions" />
-            <Suggestion done={logs.length > 0} text="Log your first practice test" href="/app/tracker" />
-            <Suggestion done={saved.length > 0} text="Save 3 study resources" href="/competitions" />
-            <Suggestion done={Boolean(displayName)} text="Set your display name" href="/app/settings" />
+          <CardHeader
+            eyebrow="Recent practice"
+            title="Last 5 sessions"
+            right={<Link href="/app/tracker" className="btn btn-ghost btn-sm">All practice</Link>}
+          />
+          <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginTop: 6 }}>
+            {logs.slice(0, 5).map((l) => {
+              const c = getCompetition(l.competitionSlug);
+              const judge = parseJudgeNote(l.notes);
+              return (
+                <li
+                  key={l.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    background: "var(--bg2)",
+                    border: "0.5px solid var(--border)",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+                      {c?.name ?? l.competitionSlug}
+                    </p>
+                    <p style={{ fontSize: 11, color: "var(--text3)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+                      {relativeTime(l.loggedAt)}
+                      {judge && (
+                        <span className="chip chip-brand" style={{ fontSize: 12, padding: "1px 7px" }}>
+                          AI Judge: {judgeModeLabel(judge.mode).toLowerCase()}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  {l.score != null && l.outOf != null && (
+                    <span
+                      className="font-mono"
+                      style={{
+                        fontSize: 12,
+                        color: "var(--accent-text)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {l.score}/{l.outOf}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </Card>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .dash-stats { grid-template-columns: 1fr 1fr !important; }
-          .dash-2col { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 600px) {
-          .dash-event-row { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function EventStat({ label, value, accent, title }: { label: string; value: string; accent?: boolean; title?: string }) {
-  return (
-    <div style={{ textAlign: "right", minWidth: 56 }} title={title}>
-      <p className="font-mono" style={{ fontSize: 11, letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
-        {label}
-      </p>
-      <p className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: accent ? "var(--accent)" : "var(--text)" }}>
-        {value}
-      </p>
+      )}
     </div>
   );
 }
@@ -446,103 +697,17 @@ function EventStat({ label, value, accent, title }: { label: string; value: stri
 function Stat({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
   const inner = (
     <>
-      <p
-        className="font-mono"
-        style={{
-          fontSize: 11.5,
-          letterSpacing: "0.18em",
-          color: "var(--text3)",
-          textTransform: "uppercase",
-          fontWeight: 700,
-        }}
-      >
-        {label}
-      </p>
-      <div className="metric-number" style={{ marginTop: 8, color: "var(--text)" }}>{value}</div>
-      {sub && <p style={{ marginTop: 4, fontSize: 11, color: "var(--text3)" }}>{sub}</p>}
+      <p className="dash-stat-label font-mono">{label}</p>
+      <div className="metric-number" style={{ marginTop: 6, color: "var(--text)" }}>{value}</div>
+      {sub && <p className="dash-stat-sub">{sub}</p>}
     </>
   );
-  const baseStyle = {
-    background: "var(--card-bg)",
-    border: "0.5px solid var(--border)",
-    borderRadius: 12,
-    padding: "18px 18px",
-    display: "block",
-    textDecoration: "none",
-    transition: "border-color 0.15s",
-  };
   if (href) {
     return (
-      <Link
-        href={href}
-        style={baseStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent-border)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; }}
-      >
+      <Link href={href} className="dash-stat is-link">
         {inner}
       </Link>
     );
   }
-  return <div style={{ ...baseStyle, cursor: "default" }}>{inner}</div>;
+  return <div className="dash-stat">{inner}</div>;
 }
-
-function Suggestion({ done, text, href }: { done: boolean; text: string; href: string }) {
-  return (
-    <li>
-      <Link
-        href={href}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "10px 12px",
-          borderRadius: 8,
-          border: "0.5px solid var(--border)",
-          background: done ? "rgba(var(--green-rgb), 0.06)" : "var(--bg2)",
-          transition: "all 0.15s ease",
-          textDecoration: "none",
-        }}
-        onMouseEnter={(e) => {
-          if (done) return;
-          e.currentTarget.style.borderColor = "var(--accent-border)";
-        }}
-        onMouseLeave={(e) => {
-          if (done) return;
-          e.currentTarget.style.borderColor = "var(--border)";
-        }}
-      >
-        <span
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: 999,
-            border: done ? "none" : "1.5px solid var(--text3)",
-            background: done ? "var(--green)" : "transparent",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          {done && (
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12l5 5L20 7" />
-            </svg>
-          )}
-        </span>
-        <span
-          style={{
-            fontSize: 13,
-            color: done ? "var(--text3)" : "var(--text)",
-            textDecoration: done ? "line-through" : "none",
-            fontWeight: 500,
-            flex: 1,
-          }}
-        >
-          {text}
-        </span>
-      </Link>
-    </li>
-  );
-}
-

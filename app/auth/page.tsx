@@ -69,14 +69,21 @@ function AuthForm() {
 
     try {
       if (mode === "login") {
-        const { error } = await supa.auth.signInWithPassword({
+        const { data, error } = await supa.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+        // Advisors land on their chapter unless a link asked for somewhere else.
+        let dest = nextPath;
+        if (nextPath === "/app" && data.user) {
+          const { data: prof } = await supa.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+          if (prof?.role === "advisor") dest = "/app/chapter";
+        }
         // Full reload (not router.push) so the server picks up the fresh
         // session cookie on the very next request and renders the dashboard.
-        window.location.href = nextPath;
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = dest;
       } else if (mode === "signup") {
         // Stash the chosen role so ensureProfile() sets it on the new profile.
         try { localStorage.setItem("fbla_pending_role", role); } catch {}

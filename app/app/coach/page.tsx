@@ -156,6 +156,7 @@ function CoachInner() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Option>>({});
   const [logged, setLogged] = useState(false);
+  const loggedRef = useRef(false);
   const [bankResult, setBankResult] = useState<BankResult | null>(null);
   const [confirmTurnIn, setConfirmTurnIn] = useState(false);
   // Review screen: show only the questions you missed.
@@ -247,6 +248,7 @@ function CoachInner() {
     setAnswers({});
     setCurrentIdx(0);
     setLogged(false);
+    loggedRef.current = false;
     setMissesOnly(false);
     setGenError("");
     setBankResult(null);
@@ -455,8 +457,9 @@ function CoachInner() {
   }, [phase, run]);
 
   function logScore() {
-    // Idempotent: a fast double-click must not write two practice_logs rows.
-    if (logged) return;
+    // Idempotent: a double-click or a repeated effect must not write two rows.
+    if (loggedRef.current) return;
+    loggedRef.current = true;
     setLogged(true);
     const correct = questions.filter((q) => answers[q.id - 1] === q.correct).length;
     // A mistakes review is not a fresh AI test, so it does not carry the
@@ -488,6 +491,17 @@ function CoachInner() {
     });
   }
 
+  // Every graded test saves itself to practice history (the dashboard, streak,
+  // assignments and the advisor's readiness report all read it). An in-session
+  // retry of missed questions is not a new test, so it is never saved.
+  const logScoreRef = useRef(logScore);
+  useEffect(() => {
+    logScoreRef.current = logScore;
+  });
+  useEffect(() => {
+    if (phase === "reviewing" && run !== "retry") logScoreRef.current();
+  }, [phase, run]);
+
   function restart() {
     abortRef.current?.abort();
     resetTest();
@@ -514,6 +528,26 @@ function CoachInner() {
     else if (mode === "mistakes") startMistakes();
     else void generate();
   }
+
+  // Dashboard shortcuts: ?slug=X&start=1 begins a test right away, with
+  // &topic=Y for a drill or &mode=mistakes for an instant review. The flags
+  // are dropped from the URL first, so a reload or Back never writes (and
+  // spends quota on) another test.
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current || searchParams.get("start") !== "1") return;
+    if (!initialSlug || selectedSlug !== initialSlug || !ELIGIBLE.some((c) => c.slug === initialSlug)) return;
+    autoStartedRef.current = true;
+    const topic = searchParams.get("topic") ?? undefined;
+    const wantMistakes = searchParams.get("mode") === "mistakes";
+    window.history.replaceState(null, "", `/app/coach?slug=${encodeURIComponent(initialSlug)}`);
+    if (wantMistakes && bankCount(initialSlug) > 0) {
+      setMode("mistakes");
+      startMistakes();
+    } else {
+      void generate(topic);
+    }
+  }, [searchParams, initialSlug, selectedSlug, generate, startMistakes]);
 
   const comp = getCompetition(selectedSlug);
   const answeredCount = questions.reduce((n, _, i) => n + (answers[i] !== undefined ? 1 : 0), 0);
@@ -1123,13 +1157,9 @@ function CoachInner() {
         )}
 
         <div className="sheet-foot coach-report-actions">
-          {!logged ? (
-            <button type="button" onClick={logScore} className="btn btn-accent btn-sm btn-pill">
-              Log score to tracker
-            </button>
-          ) : (
+          {logged && (
             <span className="btn btn-ghost btn-sm btn-pill" style={{ pointerEvents: "none" }}>
-              Logged to your tracker
+              Saved to your practice history
             </span>
           )}
           {correctCount < questions.length && (

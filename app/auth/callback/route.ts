@@ -17,8 +17,13 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await getSupabaseServer();
     if (supabase) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) {
+        // Advisors land on their chapter unless a link asked for somewhere else.
+        if (next === "/app" && data.user) {
+          const { data: prof } = await supabase.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
+          if (prof?.role === "advisor") return NextResponse.redirect(`${origin}/app/chapter`);
+        }
         return NextResponse.redirect(`${origin}${next}`);
       }
     }
