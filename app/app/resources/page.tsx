@@ -49,7 +49,9 @@ export default function ResourcesPage() {
   const suggested = myEvent?.studyResources ?? [];
 
   const groups = Array.from(new Set(saved.map((r) => r.competitionSlug ?? "")));
-  const shown = filter === "all" ? saved : saved.filter((r) => (r.competitionSlug ?? "") === filter);
+  // If the filtered group just emptied (its last item removed), fall back to All.
+  const activeFilter = filter === "all" || groups.includes(filter) ? filter : "all";
+  const shown = activeFilter === "all" ? saved : saved.filter((r) => (r.competitionSlug ?? "") === activeFilter);
 
   function toggle(r: StudyResource) {
     if (!myEvent) return;
@@ -103,9 +105,9 @@ export default function ResourcesPage() {
           <h2 id="rs-saved">Saved{saved.length ? ` (${saved.length})` : ""}</h2>
           {groups.length > 1 && (
             <div className="hs-filters" role="group" aria-label="Show">
-              <button type="button" className="hs-filter" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>All</button>
+              <button type="button" className="hs-filter" aria-pressed={activeFilter === "all"} onClick={() => setFilter("all")}>All</button>
               {groups.map((g) => (
-                <button key={g || "general"} type="button" className="hs-filter" aria-pressed={filter === g} onClick={() => setFilter(g)}>
+                <button key={g || "general"} type="button" className="hs-filter" aria-pressed={activeFilter === g} onClick={() => setFilter(g)}>
                   {g ? getCompetition(g)?.name ?? g : "General"}
                 </button>
               ))}

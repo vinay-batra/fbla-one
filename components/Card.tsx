@@ -46,7 +46,8 @@ export function CardHeader({ eyebrow, title, tagline, right }: HeaderProps) {
     >
       <div style={{ minWidth: 0 }}>
         {eyebrow && <p className="eyebrow" style={{ marginBottom: 6 }}>{eyebrow}</p>}
-        <h3 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em", margin: 0 }}>{title}</h3>
+        {/* h2: a card's title is a section of the page, directly under the page's h1. */}
+        <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.01em", margin: 0 }}>{title}</h2>
         {tagline && (
           <p style={{ fontSize: 13, color: "var(--text3)", marginTop: 4, lineHeight: 1.55 }}>
             {tagline}

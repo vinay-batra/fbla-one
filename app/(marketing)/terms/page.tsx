@@ -12,7 +12,7 @@ export default function Terms() {
   return (
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
-        <HeroBadge>Last updated September 25, 2026</HeroBadge>
+        <HeroBadge>Last updated October 2, 2026</HeroBadge>
         <h1 style={{ marginTop: 18, marginBottom: 28 }}>Terms of <em>service</em></h1>
 
         <Section title="What ChapterPrep is">
@@ -20,7 +20,11 @@ export default function Terms() {
         </Section>
 
         <Section title="Your account">
-          <p>You're responsible for keeping your login credentials secure. One account per person. Share access through chapter membership, not by sharing logins.</p>
+          <p>You must be 13 or older to create an account. You're responsible for keeping your login credentials secure. One account per person. Share access through chapter membership, not by sharing logins.</p>
+        </Section>
+
+        <Section title="AI-generated content">
+          <p>Practice questions, explanations, judge scores and chat answers are written by AI. Every practice question is checked by a second AI before you see it, but AI can still be wrong, and a judge score is practice feedback, not a prediction of how real judges will score you. Check anything important against your event's official guidelines. The AI features have daily limits, which reset at midnight Eastern.</p>
         </Section>
 
         <Section title="Acceptable use">
@@ -48,7 +52,7 @@ export default function Terms() {
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>
-          Questions? Use the feedback button in the corner of any page, or email hello@chapterprep.com.
+          Questions? Use the feedback button (the flag) in the corner of any page.
         </p>
       </div>
     </section>

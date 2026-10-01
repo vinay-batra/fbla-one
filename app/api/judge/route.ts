@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition, FORMAT_LABEL, type Competition } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
-import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
+import { consumeDailyQuota } from "@/lib/ai-quota";
 import {
   criteriaFor,
   judgeModeFor,
@@ -585,8 +585,9 @@ export async function POST(req: Request): Promise<Response> {
 
   // Daily cap, one per judge call (a round is a card plus a score, and a
   // presentation adds follow-up questions).
-  if (!(await consumeDailyQuota(identity, "judge"))) {
-    return json({ error: quotaMessage("judge", "userId" in identity) }, 429);
+  const capped = await consumeDailyQuota(identity, "judge");
+  if (capped) {
+    return json({ error: capped }, 429);
   }
 
   // One attempt, bounded under maxDuration. A retry after a slow timeout would

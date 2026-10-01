@@ -20,15 +20,24 @@ jobs:
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
-      - name: Check for the DB URL secret
+      - name: Check for the DB URL secret, and refuse on a public repo
         id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "SUPABASE_DB_URL secret not set - skipping backup. See docs/DISASTER-RECOVERY.md."
+            echo "SUPABASE_DB_URL secret not set, skipping backup. See docs/DISASTER-RECOVERY.md."
             echo "configured=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          # Artifacts on a public repo can be downloaded by anyone, and this dump
+          # holds every account and password hash. Never upload it from a public repo.
+          PRIVATE="$(gh api "repos/${{ github.repository }}" --jq .private)"
+          if [ "$PRIVATE" != "true" ]; then
+            echo "::error::This repo is public. Refusing to upload a database dump as an artifact."
+            exit 1
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
 
       - name: Install postgres client (pg_dump 16)
         if: steps.guard.outputs.configured == 'true'

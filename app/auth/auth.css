@@ -22,6 +22,8 @@
   align-items: center;
   gap: 6px;
   min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
   padding: 0 6px;
   font-size: 13.5px;
   color: var(--text2);
@@ -155,7 +157,7 @@
   border: 0.5px solid var(--border);
 }
 .au-role {
-  min-height: 42px;
+  min-height: 44px;
   border: 0;
   border-radius: 9px;
   background: transparent;
@@ -229,7 +231,7 @@
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 12px;
   border: 0;
   border-radius: 8px;
@@ -332,4 +334,16 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .au-spin { animation-duration: 1.6s; }
+}
+
+/* Arrived from an invite or Mock Regionals link. */
+.au-joining {
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--brand-dim);
+  border: 0.5px solid var(--brand-border);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text);
 }

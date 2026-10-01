@@ -5,7 +5,7 @@ import { getCompetition } from "@/lib/competitions";
 import { FORMAT_LABEL } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
 import { evaluateExpression } from "@/lib/calc";
-import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
+import { consumeDailyQuota } from "@/lib/ai-quota";
 
 // A 50-question Haiku generation can run well past Vercel's plan default
 // function timeout (~10-15s), which would sever the stream mid-test. Pin the
@@ -15,12 +15,12 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // The model computes every number through this tool (lib/calc evaluates it with a
-// real parser - exact arithmetic, correct precedence and parentheses, never eval),
+// real parser: exact arithmetic, correct precedence and parentheses, never eval),
 // so numeric answer keys are no longer the model's flaky mental math.
 const CALCULATOR_TOOL: Anthropic.Tool = {
   name: "calculator",
   description:
-    "Evaluate an arithmetic expression and return the exact result. You MUST use this for EVERY calculation - never do arithmetic yourself. Supports + - * / and ^ (exponentiation, including negative and fractional exponents), parentheses, and standard operator precedence. Use explicit parentheses so precedence is unambiguous. Examples: '45 * 1.6', '720 + (18 * 1.5 * 2)', '2000 * ((1 - (1.07)^-6) / 0.07)'. Use only digits and the operators + - * / ^ and parentheses - no variables, units, percent signs, or functions (write 5% as 0.05).",
+    "Evaluate an arithmetic expression and return the exact result. You MUST use this for EVERY calculation; never do arithmetic yourself. Supports + - * / and ^ (exponentiation, including negative and fractional exponents), parentheses, and standard operator precedence. Use explicit parentheses so precedence is unambiguous. Examples: '45 * 1.6', '720 + (18 * 1.5 * 2)', '2000 * ((1 - (1.07)^-6) / 0.07)'. Use only digits and the operators + - * / ^ and parentheses, with no variables, units, percent signs, or functions (write 5% as 0.05).",
   input_schema: {
     type: "object",
     properties: {
@@ -40,29 +40,29 @@ function formatNumber(n: number): string {
 
 const SYSTEM_PROMPT = `You are an expert question writer for FBLA (Future Business Leaders of America) competitive events. You write realistic objective questions that match the style, vocabulary, and difficulty of actual FBLA national-level tests, and every keyed answer is factually correct.
 
-CRITICAL OUTPUT FORMAT - follow exactly:
+CRITICAL OUTPUT FORMAT (follow exactly):
 - Output ONLY raw NDJSON: one valid JSON object per line, nothing else
 - No markdown, no code fences, no commentary, no blank lines between questions
 - Each line must be a complete, valid JSON object with this exact schema:
-{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"States the correct answer in words and why it is right, then names the most tempting wrong choice by its wording and why it is wrong. Never mentions option letters.","topic":"Exact topic name from the list","calc":"OPTIONAL: the arithmetic expression that evaluates to the correct numeric answer - include for computed-number questions, omit for conceptual ones"}
+{"id":1,"question":"Question text here?","options":{"A":"First option","B":"Second option","C":"Third option","D":"Fourth option"},"correct":"A","explanation":"States the correct answer in words and why it is right, then names the most tempting wrong choice by its wording and why it is wrong. Never mentions option letters.","topic":"Exact topic name from the list","calc":"OPTIONAL: the arithmetic expression that evaluates to the correct numeric answer; include it for computed-number questions, omit for conceptual ones"}
 
-ACCURACY - this matters more than anything else:
+ACCURACY (this matters more than anything else):
 - Before writing a question, work out its single correct answer yourself. Put that exact answer as the text of one option and set "correct" to that option's letter. Re-read the question and confirm the keyed option genuinely answers it before you emit the line.
-- Only write questions you are certain of. If you are not fully confident the keyed answer is factually correct, write an easier question on a concept you ARE certain about. A wrong answer key is the worst possible failure - it teaches the student the wrong thing.
+- Only write questions you are certain of. If you are not fully confident the keyed answer is factually correct, write an easier question on a concept you ARE certain about. A wrong answer key is the worst possible failure, because it teaches the student the wrong thing.
 - Exactly ONE option may be correct. The other three must be clearly and verifiably wrong, not "also defensible." No two options may mean the same thing.
 - Do not use "All of the above", "None of the above", "Both A and B", or any option that refers to another option.
 - State rules precisely, with their conditions. If a rule only holds in some cases (for example, when title passes under the UCC depends on whether it is a shipment or destination contract; self-employment tax applies to 92.35% of net earnings), either build that condition into the question or pick a rule that holds without qualification. An answer that is "usually" true is not a correct answer.
 - Never use a dash as punctuation (no em dash, no en dash, no spaced hyphen between words). Use a comma, colon, or a new sentence instead. A spaced minus sign is fine only inside arithmetic.
-- CALCULATIONS: You have a calculator tool. For EVERY numeric value that takes any arithmetic - in the question, the correct answer, or a distractor - you MUST call the calculator tool and use its exact returned value. NEVER compute a number yourself, not even a simple one. Write the full expression with explicit parentheses (for example "2000 * ((1 - (1.07)^-6) / 0.07)" for the present value of an annuity, or "720 + (18 * 1.5 * 2)" for overtime pay). Because the calculator guarantees the arithmetic, realistic multi-step calculation questions are encouraged: markup and discount, payroll with overtime, present and future value, annuities, loan payments, ratios, probability, depreciation. Build distractors from common mistakes by computing those with the tool too (for example forgetting to discount, or using the wrong rate). Keep a healthy mix of conceptual and calculation questions - do not make every question a calculation. For every question whose correct answer is a computed number, also include a top-level "calc" field set to the exact expression you sent to the calculator for that answer (digits and + - * / ^ ( ) only); the app re-checks it against the options. Omit "calc" on conceptual questions.
+- CALCULATIONS: You have a calculator tool. For EVERY numeric value that takes any arithmetic (in the question, the correct answer, or a distractor), you MUST call the calculator tool and use its exact returned value. NEVER compute a number yourself, not even a simple one. Write the full expression with explicit parentheses (for example "2000 * ((1 - (1.07)^-6) / 0.07)" for the present value of an annuity, or "720 + (18 * 1.5 * 2)" for overtime pay). Because the calculator guarantees the arithmetic, realistic multi-step calculation questions are encouraged: markup and discount, payroll with overtime, present and future value, annuities, loan payments, ratios, probability, depreciation. Build distractors from common mistakes by computing those with the tool too (for example forgetting to discount, or using the wrong rate). Keep a healthy mix of conceptual and calculation questions; do not make every question a calculation. For every question whose correct answer is a computed number, also include a top-level "calc" field set to the exact expression you sent to the calculator for that answer (digits and + - * / ^ ( ) only); the app re-checks it against the options. Omit "calc" on conceptual questions.
 
-EXPLANATIONS - shown to the student after they submit:
+EXPLANATIONS (shown to the student after they submit):
 - Write 1 to 3 clear sentences: say what the correct answer is (in words) and why it is right, then name the single most tempting wrong choice by its WORDING and why it is wrong.
 - NEVER reference option letters (A, B, C, D) or positions like "the first option." The options are randomly reordered before display, so a letter reference would point at the wrong choice. Refer to each choice by its content. Good: "Net income is revenue minus all expenses, so the 4,200 figure is correct; the 9,000 distractor is gross profit, which ignores operating expenses." Bad: "A is correct because..."
 
 QUESTION QUALITY:
 - The "topic" field MUST be copied verbatim from the numbered topic list in the user message (the single best fit). It powers each student's weak-topic analysis, so it must be accurate.
-- Distractors must be plausible - rooted in common student misconceptions, not obviously wrong.
-- All four options must be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed - that is a giveaway. Give the distractors equal detail.
+- Distractors must be plausible: rooted in common student misconceptions, not obviously wrong.
+- All four options must be similar in length, structure, and specificity. The correct answer must NOT be the longest or most detailed, because that is a giveaway. Give the distractors equal detail.
 - Spread the correct letter roughly evenly across A, B, C, and D; never default to one position.
 - Use precise professional vocabulary. Mix definition (about 25%), scenario or application (about 55%), and compare and contrast (about 20%). Never test the same concept twice in one test.
 - Match real FBLA national difficulty: challenging but fair.
@@ -99,7 +99,7 @@ ${topicList || "General business knowledge relevant to this event"}
 
 Event overview: ${c.longDescription ?? c.description}
 
-Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis. Use the calculator tool for EVERY computation - never do mental math. Write each explanation referring to choices by their wording, never by letter.`;
+Output exactly ${count} questions as NDJSON (one JSON object per line). ${validFocus ? "Stay on the focus topic." : "Cover every major topic area."} Vary difficulty from recall to analysis. Use the calculator tool for EVERY computation; never do mental math. Write each explanation referring to choices by their wording, never by letter.`;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -126,7 +126,7 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
   // Caps practice-test generations per identity in a 10-minute window. Simple
-  // in-memory sliding window (lib/rate-limit) - the same limiter Corvo and Lark
+  // in-memory sliding window (lib/rate-limit), the same limiter Corvo and Lark
   // use, per serverless instance, sufficient for Vercel's single region.
   if (!rateLimit(rateKey, inPreview ? 12 : 40, 10 * 60 * 1000)) {
     return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a few minutes." }), {
@@ -169,8 +169,9 @@ export async function POST(req: Request): Promise<Response> {
 
   // Daily cap, counted in questions (lib/ai-quota). Checked last so a bad
   // request never uses up a student's allowance.
-  if (!(await consumeDailyQuota(identity, "questions", count))) {
-    return new Response(JSON.stringify({ error: quotaMessage("questions", "userId" in identity) }), {
+  const capped = await consumeDailyQuota(identity, "questions", count);
+  if (capped) {
+    return new Response(JSON.stringify({ error: capped }), {
       status: 429,
       headers: { "Content-Type": "application/json" },
     });
@@ -217,6 +218,10 @@ export async function POST(req: Request): Promise<Response> {
             system: SYSTEM_PROMPT,
             tools: [CALCULATOR_TOOL],
             messages,
+          }, {
+            // Stop writing (and billing) as soon as the student cancels or
+            // closes the tab, instead of running on to the 60s limit.
+            signal: req.signal,
           });
           turnStream.on("text", (delta) => controller.enqueue(encoder.encode(delta)));
           const message = await turnStream.finalMessage();
@@ -242,7 +247,10 @@ export async function POST(req: Request): Promise<Response> {
           });
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Generation failed";
+        // The raw SDK message can carry upstream status, request ids or billing
+        // notices; log it here and send students a plain sentence.
+        console.error("practice-test generation failed:", err);
+        const msg = "Something went wrong writing your questions. Try again in a minute.";
         controller.enqueue(encoder.encode(`\n{"error":${JSON.stringify(msg)}}\n`));
       } finally {
         controller.close();

@@ -69,6 +69,14 @@ function AuthForm() {
       : null
   );
   const [resetSentTo, setResetSentTo] = useState<string | null>(null);
+  // Came from a chapter invite (/join/CODE) or a Mock Regionals code (/mock/CODE).
+  const [joining, setJoining] = useState<"chapter" | "mock" | null>(null);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("fbla_pending_join")) setJoining("chapter");
+      else if (nextPath.startsWith("/app/mock")) setJoining("mock");
+    } catch {}
+  }, [nextPath]);
 
   // Already signed in: go straight on.
   useEffect(() => {
@@ -79,8 +87,10 @@ function AuthForm() {
     // to /app, the server bounced you back to /auth, and the two looped.
     supa.auth.getUser().then(async ({ data: { user } }) => {
       if (user) { clearPreview(); window.location.replace(nextPath); return; }
-      // Clear whatever dead session is left so the form starts clean.
-      await supa.auth.signOut({ scope: "local" }).catch(() => {});
+      // A dead session cookie: clear it so the form starts clean. Only when
+      // one exists, since signOut fires SIGNED_OUT even with no session.
+      const { data: { session } } = await supa.auth.getSession();
+      if (session) await supa.auth.signOut({ scope: "local" }).catch(() => {});
       setSessionChecked(true);
     }).catch(() => setSessionChecked(true));
   }, [nextPath]);
@@ -110,7 +120,10 @@ function AuthForm() {
         clearPreview();
         // Advisors land on their chapter unless a link asked for somewhere else.
         let dest = nextPath;
-        if (nextPath === "/app" && data.user) {
+        let pendingJoin = false;
+        try { pendingJoin = !!localStorage.getItem("fbla_pending_join"); } catch {}
+        if (pendingJoin) dest = "/app/chapter"; // finish joining from an invite link
+        else if (nextPath === "/app" && data.user) {
           const { data: prof } = await supa.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
           if (prof?.role === "advisor") dest = "/app/chapter";
         }
@@ -126,7 +139,7 @@ function AuthForm() {
         const { data, error } = await supa.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback`, data: { signup_role: role } },
         });
         if (error) throw error;
         // Supabase answers a sign-up for an existing email with a user that
@@ -169,6 +182,8 @@ function AuthForm() {
       try { localStorage.setItem("fbla_pending_role", role); } catch {}
       if (role === "advisor") next = "/app/chapter";
     }
+    // Arrived from a chapter invite link: land where the join completes.
+    try { if (localStorage.getItem("fbla_pending_join")) next = "/app/chapter"; } catch {}
     const { error } = await supa.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
@@ -209,8 +224,36 @@ function AuthForm() {
 
   const copy = COPY[mode];
 
+  // Supabase's built-in sender only reaches the project's own team, so until
+  // a real email sender is set up (NEXT_PUBLIC_AUTH_EMAILS=on on Vercel), say
+  // so instead of promising an email that will never arrive.
+  if (mode === "reset" && process.env.NEXT_PUBLIC_AUTH_EMAILS !== "on") {
+    return (
+      <AuthFrame>
+        <h1 className="au-title">Reset your password</h1>
+        <p className="au-sub">
+          Reset emails are not switched on yet. If you signed up with Google, use Continue with Google. Otherwise, send us a note with the flag button in the corner and we will help you get back in.
+        </p>
+        <button type="button" className="au-google" onClick={handleGoogle} disabled={loading}>
+          <GoogleIcon />
+          Continue with Google
+        </button>
+        <p className="au-switch">
+          <button type="button" className="au-link" onClick={() => switchMode("login")}>Back to log in</button>
+        </p>
+      </AuthFrame>
+    );
+  }
+
   return (
     <AuthFrame>
+      {joining && (
+        <p className="au-joining" role="status">
+          {joining === "chapter"
+            ? "You're joining a chapter. Create an account or log in and you'll be added."
+            : "You're joining a Mock Regionals. Create an account or log in and you'll go straight to the room."}
+        </p>
+      )}
       <h1 className="au-title">{copy.title}</h1>
       <p className="au-sub">{copy.sub}</p>
 
@@ -311,7 +354,7 @@ function AuthForm() {
 
       {mode === "signup" && (
         <p className="au-terms">
-          By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+          You must be 13 or older. By creating an account you agree to the <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
         </p>
       )}
     </AuthFrame>

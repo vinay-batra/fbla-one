@@ -22,12 +22,15 @@ function matches(list: Competition[], q: string): Competition[] {
     (c) => !starts.includes(c) && c.name.toLowerCase().split(/[\s&-]+/).some((w) => w.startsWith(s))
   );
   const inside = list.filter((c) => !starts.includes(c) && !words.includes(c) && c.name.toLowerCase().includes(s));
-  const byName = [...starts, ...words, ...inside];
+  // Shortest first within each group, so an exact name ("Public Speaking")
+  // beats a longer one that contains it ("Introduction to Public Speaking").
+  const short = (a: Competition, b: Competition) => a.name.length - b.name.length;
+  const byName = [...starts.sort(short), ...words.sort(short), ...inside.sort(short)];
   // Category only when no name matches ("finance" lists the finance events).
   return byName.length ? byName : list.filter((c) => c.category.toLowerCase().includes(s));
 }
 
-export function EventCombobox({ id, value, onChange, events, placeholder = "Type your event", className = "" }: {
+export function EventCombobox({ id, value, onChange, events, placeholder = "Type your event", className = "", disabled = false }: {
   id: string;
   value: string;
   onChange: (slug: string) => void;
@@ -36,6 +39,7 @@ export function EventCombobox({ id, value, onChange, events, placeholder = "Type
   placeholder?: string;
   /** "is-compact" renders it as a normal form field instead of the booklet's big serif line. */
   className?: string;
+  disabled?: boolean;
 }) {
   const ordered = useMemo(
     () => (events ? ALL.filter((c) => events.some((e) => e.slug === c.slug)) : ALL),
@@ -63,13 +67,22 @@ export function EventCombobox({ id, value, onChange, events, placeholder = "Type
   );
 
   function pick(c: Competition) {
-    onChange(c.slug);
+    // Re-picking the current event is not a change (the AI Judge resets a run
+    // on change, which would throw away a pasted script).
+    if (c.slug !== value) onChange(c.slug);
     setQuery(c.name);
     setOpen(false);
   }
 
+  /** Open with the current event highlighted, so Enter keeps it. */
+  function openList() {
+    const i = selected ? results.findIndex((c) => c.slug === selected.slug) : -1;
+    setActive(Math.max(0, i));
+    setOpen(true);
+  }
+
   function move(delta: number) {
-    if (!open) { setOpen(true); return; }
+    if (!open) { openList(); return; }
     const next = Math.max(0, Math.min(results.length - 1, active + delta));
     setActive(next);
     listRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
@@ -89,17 +102,18 @@ export function EventCombobox({ id, value, onChange, events, placeholder = "Type
         spellCheck={false}
         placeholder={placeholder}
         value={query}
-        onFocus={(e) => { setOpen(true); e.currentTarget.select(); }}
+        disabled={disabled}
+        onFocus={(e) => { openList(); e.currentTarget.select(); }}
         onBlur={() => {
           setOpen(false);
           // Leaving with half-typed text: fall back to the picked event's name.
           if (selected) setQuery(selected.name);
         }}
         onChange={(e) => {
+          // Typing filters; the event only changes when a new one is picked.
           setQuery(e.target.value);
           setActive(0);
           setOpen(true);
-          if (selected && e.target.value !== selected.name) onChange("");
         }}
         onKeyDown={(e) => {
           if (e.key === "ArrowDown") { e.preventDefault(); move(1); }

@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { AffiliationNotice } from "@/components/AffiliationNotice";
+
+// Overrides the site-wide "index, follow" so the page does not carry two
+// conflicting robots tags.
+export const metadata: Metadata = {
+  title: "Page not found",
+  robots: { index: false, follow: true },
+};
 
 export default function NotFound() {
   return (
-    <div
+    <main
+      id="main"
+      tabIndex={-1}
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -39,6 +50,7 @@ export default function NotFound() {
         <Link href="/" className="btn btn-accent btn-lg">Back home</Link>
         <Link href="/competitions" className="btn btn-ghost btn-lg">Browse competitions</Link>
       </div>
-    </div>
+      <AffiliationNotice variant="compact" style={{ marginTop: 40, maxWidth: 520 }} />
+    </main>
   );
 }

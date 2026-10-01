@@ -105,6 +105,14 @@ const NAV: NavItem[] = [
 export function AppShell({ children, isPreviewMode = false }: { children: ReactNode; isPreviewMode?: boolean }) {
   const pathname = usePathname() || "/app";
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // Lets globals.css hide the floating chat and feedback buttons on phones
+  // inside the app (the top bar has them instead).
+  useEffect(() => {
+    document.documentElement.classList.add("in-app");
+    return () => document.documentElement.classList.remove("in-app");
+  }, []);
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -225,6 +233,28 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
           <div className="as-top-logo"><Logo size="sm" /></div>
           <div style={{ flex: 1 }} />
           <div className="as-top-actions">
+            {/* Phones only: chat and feedback live here, so the floating
+                buttons never sit on top of a page's main button. */}
+            <button
+              type="button"
+              className="as-top-icon"
+              aria-label="Ask the AI"
+              onClick={() => window.dispatchEvent(new Event("chapterprep:open-chat"))}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="as-top-icon"
+              aria-label="Send feedback"
+              onClick={() => window.dispatchEvent(new Event("chapterprep:open-feedback"))}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 22V4a1 1 0 0 1 1-1h11l-1.5 4L16 11H5" />
+              </svg>
+            </button>
             <ThemeToggle />
             <Link href="/competitions" className="as-top-link">All events</Link>
           </div>
@@ -246,6 +276,7 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
                     // Actually clear the cookie (a plain link left preview active
                     // for the full 1h maxAge), then leave the app.
                     document.cookie = "fbla_preview=; path=/; max-age=0";
+                    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                     window.location.href = "/";
                   }}
                   className="btn btn-ghost btn-sm"
@@ -255,8 +286,13 @@ export function AppShell({ children, isPreviewMode = false }: { children: ReactN
               </div>
             </div>
           )}
-          <DeadlineAlert />
-          {children}
+          {mounted && <DeadlineAlert />}
+          {/* App pages read this device's saved data (localStorage) and the
+              local time while rendering, so a server render could never match
+              and React flashed the wrong screen (hydration error #418). They
+              render in the browser only; the shell around them still renders
+              on the server. */}
+          {mounted ? children : <div className="as-loading" aria-busy="true" />}
           <footer className="as-foot">
             <AffiliationNotice variant="compact" />
           </footer>

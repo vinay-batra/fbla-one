@@ -15,6 +15,7 @@ import {
   canManageDeadlines,
   isInChapter,
   getPracticeLogs,
+  signedUpAsAdvisor,
 } from "@/lib/storage";
 import { getCompetition } from "@/lib/competitions";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -63,6 +64,8 @@ export function useChapterData() {
   const [readiness, setReadiness] = useState<ChapterReadiness | null>(null); // advisor view
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
   const [supaLoading, setSupaLoading] = useState(true);
+  // Signed up as an advisor but has no chapter yet (so profiles.role is still member).
+  const [wantsAdvisor, setWantsAdvisor] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -146,6 +149,7 @@ export function useChapterData() {
     supa.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setSupaLoading(false); return; }
       setUserId(data.user.id);
+      setWantsAdvisor(signedUpAsAdvisor(data.user));
       const prof = await loadChapterData(data.user.id);
       // Auto-join when arriving from a chapter invite link (/join/CODE stashes it).
       let pendingJoin: string | null = null;
@@ -186,6 +190,9 @@ export function useChapterData() {
     } else if (result.data) {
       setChapter(result.data);
       setProfile((p) => p ? { ...p, chapter_id: result.data!.id, role: "advisor" } : p);
+      // Full reload of chapter state: it also sets the chapter context, so the
+      // first deadline an advisor adds is shared, not saved as a personal one.
+      await loadChapterData(userId);
     }
   }
 
@@ -201,7 +208,9 @@ export function useChapterData() {
     } else if (result.data) {
       setChapter(result.data);
       setProfile((p) => p ? { ...p, chapter_id: result.data!.id, role: "member" } : p);
-      invalidateLeaderboard(); // standings changed - drop the dashboard chip's cache
+      invalidateLeaderboard(); // standings changed, so drop the dashboard chip's cache
+      // Load assignments, the leaderboard and shared deadlines now, not on the next visit.
+      await loadChapterData(userId);
     }
   }
 
@@ -289,7 +298,7 @@ export function useChapterData() {
     // my events
     registered,
     // derived flags
-    isAdvisor, hasChapter, signedIn, inChapter, canManage, compOptions, deadlineTagline,
+    isAdvisor, wantsAdvisor, hasChapter, signedIn, inChapter, canManage, compOptions, deadlineTagline,
     // config
     isSupabaseConfigured,
   };

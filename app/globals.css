@@ -69,7 +69,7 @@ body {
 
   --font-body:   var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono:   var(--font-space-mono), 'SF Mono', Menlo, monospace;
-  --font-display: var(--font-space-grotesk), var(--font-inter), sans-serif;
+  --font-display: var(--font-inter), sans-serif;
   --font-size-base: 14px;
   --radius:      8px;
   --radius-lg:   12px;
@@ -1534,3 +1534,7 @@ p { color: var(--text2); line-height: 1.62; }
 @media (max-width: 720px) {
   .sp-line .btn { min-height: 44px; }
 }
+
+/* Study resources on event pages: the title link already opens the resource,
+   so the extra icon goes on phones to give the title room. */
+@media (max-width: 560px) { .resource-link .resource-ext { display: none !important; } }

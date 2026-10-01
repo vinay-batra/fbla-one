@@ -68,7 +68,14 @@ export async function proxy(req: NextRequest) {
           maxAge: 400 * 24 * 60 * 60,
         });
       }
-      res.cookies.set({ name: AUTH_COOKIE_FIX, value: "1", path: "/", sameSite: "lax", maxAge: 400 * 24 * 60 * 60 });
+      res.cookies.set({
+        name: AUTH_COOKIE_FIX,
+        value: "1",
+        path: "/",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 400 * 24 * 60 * 60,
+      });
     }
   }
 
@@ -76,12 +83,9 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static, _next/image, favicon, public files
-     * - api routes (handled separately if added)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)",
-  ],
+  // Only where the server reads the session: the app, auth, the API and the
+  // invite / mock join links. Marketing pages are static and the browser
+  // client refreshes its own session, so running auth on them only added a
+  // Supabase round trip to every page view.
+  matcher: ["/app/:path*", "/auth/:path*", "/api/:path*", "/join/:path*", "/mock/:path*"],
 };

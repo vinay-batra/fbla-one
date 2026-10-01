@@ -211,6 +211,10 @@ export function WhyCarousel() {
             aria-roledescription="slide"
             aria-label={`${i + 1} of ${SLIDES.length}: ${s.tab}`}
             className={`wc-slide${index === i ? " is-active" : ""}`}
+            // Off-screen slides keep their buttons out of the Tab order and away
+            // from screen readers. Swipes start on the visible slide, so this
+            // does not get in the way of scrolling.
+            inert={index !== i}
           >
             <div className="wc-copy">
               <p className="wc-kicker">

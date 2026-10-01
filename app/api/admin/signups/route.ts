@@ -23,7 +23,9 @@ export async function GET() {
   }
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || (user.email || "").toLowerCase() !== adminEmail) {
+  // The email alone is public (it ships in the bundle), so also require a
+  // confirmed address: an unconfirmed sign-up with that email must not pass.
+  if (!user || !user.email_confirmed_at || (user.email || "").toLowerCase() !== adminEmail) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
   }
 

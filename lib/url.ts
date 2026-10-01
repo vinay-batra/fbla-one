@@ -16,7 +16,12 @@ export function safeNextPath(raw: string | null | undefined, fallback = "/app"):
     const base = "https://chapterprep.com";
     const resolved = new URL(raw, base);
     if (resolved.origin !== base) return fallback; // resolved off-origin -> reject
-    return resolved.pathname + resolved.search + resolved.hash;
+    const out = resolved.pathname + resolved.search + resolved.hash;
+    // Check the OUTPUT too: dot segments collapse during parsing, so "/.//evil.com"
+    // passes the input checks above but normalizes to "//evil.com", which a
+    // browser or a Location header treats as another site.
+    if (!out.startsWith("/") || out.startsWith("//") || out.includes("\\")) return fallback;
+    return out;
   } catch {
     return fallback;
   }

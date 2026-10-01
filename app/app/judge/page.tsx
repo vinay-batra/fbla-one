@@ -620,6 +620,7 @@ function SetupPanel({
           events={JUDGE_PICKS}
           placeholder="Type a role play or presentation event"
           className="is-compact"
+          disabled={busy}
         />
         <p className="judge-input-hint">
           Objective-test-only events are not here.{" "}

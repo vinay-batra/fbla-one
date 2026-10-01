@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Mono, Space_Grotesk, Fraunces } from "next/font/google";
+import { Inter, Space_Mono, Fraunces } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DataSync } from "@/components/DataSync";
 import { GlobalShell } from "@/components/GlobalShell";
+import { COMPETITION_STATS } from "@/lib/competitions";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -14,18 +15,13 @@ import "./globals.css";
  * text could paint. next/font also generates a size-adjusted fallback, which
  * removes the layout shift on swap.
  *
- * Inter and Space Grotesk are variable fonts, so the full weight range costs
+ * Inter is a variable font, so the full weight range costs
  * the same as a single weight. Space Mono is static, hence the explicit list.
  */
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-});
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-space-grotesk",
 });
 // The editorial display serif. Every h1/h2/h3 on the site is set in it, so it
 // loads here rather than per page. Variable font: the full weight and optical
@@ -37,10 +33,13 @@ const fraunces = Fraunces({
   axes: ["opsz", "SOFT"],
   variable: "--font-fraunces",
 });
+// Only the exam sheet and invite codes use it, so it is not preloaded on
+// every page; it loads when a page actually needs it.
 const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
+  preload: false,
   variable: "--font-space-mono",
 });
 
@@ -53,11 +52,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://chapterprep.com"),
   title: {
-    default: "ChapterPrep: the all-in-one FBLA chapter platform",
+    default: "ChapterPrep: free FBLA practice tests and prep",
     template: "%s · ChapterPrep",
   },
   description:
-    "Competition guides, study resources, prep tracker, deadline calendar, and chapter management for FBLA chapters. Built for FBLA students, by an FBLA student.",
+    "Free prep for FBLA competitive events: practice tests built from each event's topic outline, an AI judge for role plays and presentations, and a live mock regionals for your chapter. Built by an FBLA student.",
   applicationName: "ChapterPrep",
   appleWebApp: { capable: true, title: "ChapterPrep", statusBarStyle: "black-translucent" },
   authors: [{ name: "ChapterPrep" }],
@@ -72,7 +71,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "ChapterPrep",
-    description: "Everything your FBLA chapter needs, in one place.",
+    description: "Free FBLA practice tests, an AI judge and a live mock regionals for your chapter.",
     type: "website",
     url: "https://chapterprep.com",
     siteName: "ChapterPrep",
@@ -81,7 +80,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ChapterPrep",
-    description: "Everything your FBLA chapter needs, in one place.",
+    description: "Free FBLA practice tests, an AI judge and a live mock regionals for your chapter.",
     images: ["/og-image.png"],
   },
   robots: { index: true, follow: true },
@@ -111,7 +110,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${spaceGrotesk.variable} ${spaceMono.variable} ${fraunces.variable}`}
+      className={`${inter.variable} ${spaceMono.variable} ${fraunces.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
@@ -124,7 +123,7 @@ export default function RootLayout({
           <a href="#main" className="skip-link">Skip to content</a>
           <DataSync />
           {children}
-          <GlobalShell />
+          <GlobalShell eventCount={COMPETITION_STATS.total} />
         </ThemeProvider>
         {/* Vercel Web Analytics: page views and referrers, no cookies. Served
             from this origin (/_vercel/insights), so the CSP needs no change. */}

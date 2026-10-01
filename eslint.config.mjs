@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Gitignored one-off live test scripts (they run against Supabase, not in the app).
+    "_*.mjs",
   ]),
   {
     rules: {

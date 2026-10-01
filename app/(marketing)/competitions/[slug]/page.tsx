@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = getCompetition(slug);
   if (!c) return { title: "Competition not found" };
   return {
-    title: c.name,
+    title: `${c.name}: FBLA prep guide`,
     description: c.description,
     alternates: { canonical: `/competitions/${c.slug}` },
     openGraph: {
@@ -246,7 +246,7 @@ export default async function CompetitionDetail({ params }: Props) {
                                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                               </svg>
                             ),
-                            title: "Computer-graded, instant results",
+                            title: "Machine-scored",
                             body: "Tests are machine-scored. Questions are drawn from the official FBLA topic outline for this event, distributed proportionally across all topic areas. Expect a mix of recall (definitions, formulas), application (scenario-based), and analysis questions.",
                           },
                           {
@@ -258,7 +258,7 @@ export default async function CompetitionDetail({ params }: Props) {
                               </svg>
                             ),
                             title: "Top scorers advance",
-                            body: "The highest-scoring competitors at each regional advance to the state competition. State winners compete at the National Leadership Conference (NLC). Study the official FBLA topic outline, which lists the exact subject areas and their approximate weight on the test.",
+                            body: "Top finishers at regionals advance to states, and top finishers at states qualify for the National Leadership Conference (NLC). How many advance depends on your state's rules. Study the official FBLA topic outline, which lists the exact subject areas and their approximate weight on the test.",
                           },
                         ].map(({ icon, title, body }) => (
                           <div key={title} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>

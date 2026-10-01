@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { HeroBadge } from "@/components/HeroBadge";
 import { COMPETITION_STATS } from "@/lib/competitions";
+import { DAILY_LIMITS } from "@/lib/ai-limits";
 import { PenUnderline } from "@/components/PenUnderline";
 
 type QA = { q: string; a: string };
@@ -15,11 +16,11 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "What is ChapterPrep?",
-        a: "An all-in-one platform for FBLA chapters. Competition guides, study resources, prep tracker, and chapter management: everything you'd otherwise put in a Drive folder, but actually usable.",
+        a: "Free prep for FBLA competitive events: practice tests built from each event's topic outline, an AI judge for role plays and presentations, a guide and study resources for every event, and tools for advisors to run their chapter, including a live mock regionals.",
       },
       {
         q: "Who is it for?",
-        a: "Two audiences: FBLA members preparing for competitions, and FBLA advisors managing their chapter. Both get the full feature set.",
+        a: "Two audiences: FBLA members preparing for competitions, and FBLA advisors running their chapter. Students get the practice tools; advisors also get the chapter tools: invites, assignments, the readiness report and hosting Mock Regionals.",
       },
       {
         q: "Is it really free?",
@@ -48,7 +49,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I suggest a resource?",
-        a: "Yes. Send the event name and the resource URL through the feedback button in the corner of any page, or email hello@chapterprep.com. Good ones get added.",
+        a: "Yes. Send the event name and the resource URL through the feedback button (the flag) in the corner of any page. Good ones get added.",
       },
     ],
   },
@@ -57,11 +58,11 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How does the AI practice test work?",
-        a: "You pick a competition and a question count (10, 25, or 50). ChapterPrep generates realistic multiple-choice questions calibrated to that event's exact topic outline, the same topics listed on the event's page. Questions stream in live, and after you submit, every wrong answer gets a full explanation so you learn from it.",
+        a: "Pick your event and a length (10, 25 or 50 questions), or the full 100-question simulation on a 50-minute clock. ChapterPrep writes multiple-choice questions from that event's topic outline, a second AI checks each answer before you see it, and after you submit every question comes with an explanation. Questions you miss come back in later tests until you get them right twice.",
       },
       {
         q: "How accurate are the AI-generated questions?",
-        a: "The questions are designed to match FBLA national-level difficulty and are built from each event's official topic list. They are a study tool, not official FBLA materials. Use them alongside the official FBLA event description and topic outline.",
+        a: "Every question is built from the event's official topic list, and a second AI answers it on its own without the key; only questions where both agree reach you. If the checker is unavailable the test tells you. AI can still be wrong, so treat the questions as a study tool, not official FBLA materials, and use them alongside the official event guidelines.",
       },
       {
         q: "Which events support AI practice tests?",
@@ -73,7 +74,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Is there a limit on how many tests I can generate?",
-        a: "There is no daily cap. Generate as many as you want, and every test is a fresh set of questions. A brief anti-abuse throttle only kicks in if you generate dozens within a few minutes.",
+        a: `Yes, a generous daily one so the site can stay free: ${DAILY_LIMITS.questions.account} practice questions, ${DAILY_LIMITS.judge.account} AI Judge actions and ${DAILY_LIMITS.chat.account} chat messages a day per account. Limits reset at midnight Eastern, and a normal study day stays well under them.`,
       },
     ],
   },
@@ -82,7 +83,7 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "Do you sell student data?",
-        a: "No. We don't sell, share, or rent your data to anyone. Period.",
+        a: "No. Your data is never sold or shared with advertisers. It is only processed by the services that run the site (Supabase, Vercel and Anthropic), and your chapter advisor can see your practice results. The privacy policy has the details.",
       },
       {
         q: "Where is my data stored?",
@@ -90,7 +91,7 @@ const SECTIONS: Section[] = [
       },
       {
         q: "Can I delete my account?",
-        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registrations, practice logs, and saved resources. If you also joined our email list, use the feedback button on any page or email hello@chapterprep.com to be removed from it.",
+        a: "Yes, from Settings. Deleting your account permanently removes your profile, event registration, practice history, missed-question bank and saved resources.",
       },
     ],
   },
@@ -99,11 +100,11 @@ const SECTIONS: Section[] = [
     items: [
       {
         q: "How do advisors set up a chapter?",
-        a: "Go to Chapter in the left nav, sign in, and click 'Create a chapter.' You'll get an 8-character invite code to share with members. Members enter the code under 'Join a chapter' to link their account to your chapter.",
+        a: "Sign up as an advisor, open Chapter, name your chapter and press Create chapter. You get an invite link, a QR code and an 8-character code. Members who open the link or scan the code join automatically; anyone can also type the code under Join your chapter.",
       },
       {
         q: "What can advisors see?",
-        a: "Advisors see a member roster listing every member who joined, their role, and all the competitions they have registered for. You can also see recent member practice activity: who practiced, what event, and their score.",
+        a: "Advisors see every member who joined, their event, and a readiness report: practice volume, test average, trend, latest judge score, weakest topics and a Ready, On track or Needs attention status. Members only see practice counts for each other on the leaderboard, never scores.",
       },
       {
         q: "Can I export member sign-ups for regionals?",

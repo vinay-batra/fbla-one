@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { DAILY_LIMITS } from "@/lib/ai-limits";
 import { useSignedIn } from "@/components/useSignedIn";
 
 interface Message {
@@ -8,10 +9,10 @@ interface Message {
   content: string;
 }
 
-// Public chat is capped at 7 messages/IP/day server-side (/api/ai-chat). We
+// Public chat is capped per IP per day server side (DAILY_LIMITS.chat.preview) (/api/ai-chat). We
 // mirror that with a client-side daily counter so the header can show
-// "X / 7 today" and we stop wasting calls once the cap is hit.
-const DAILY_LIMIT = 7;
+// "X / N today" and we stop wasting calls once the cap is hit.
+const DAILY_LIMIT = DAILY_LIMITS.chat.preview;
 const SUGGESTIONS = [
   "Which FBLA event should I pick?",
   "How do I prep for an objective test?",
@@ -71,7 +72,7 @@ function PublicAIChatInner() {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   // Signed-in accounts have a larger server-side cap (lib/ai-quota), so the
-  // local 7-message counter only applies to signed-out visitors.
+  // local message counter only applies to signed-out visitors.
   const signedIn = useSignedIn() === true;
   const remaining = Math.max(0, DAILY_LIMIT - used);
   const atLimit = !signedIn && remaining <= 0;
@@ -135,13 +136,13 @@ function PublicAIChatInner() {
     if (!q || loading) return;
     setInput("");
 
-    // Local cap: once today's 7 are used, surface the same nudge the server
+    // Local cap: once today's messages are used, surface the same nudge the server
     // would return without spending a call.
     if (atLimit) {
       setMessages((m) => [
         ...m,
         { role: "user", content: q },
-        { role: "assistant", content: "You've used all 7 free messages for today. Sign up for free to keep going." },
+        { role: "assistant", content: `You've used all ${DAILY_LIMIT} free messages for today. Sign up for free to keep going.` },
       ]);
       return;
     }

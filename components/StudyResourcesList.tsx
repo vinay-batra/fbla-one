@@ -46,26 +46,6 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
             className="resource-link"
             style={{ display: "flex", alignItems: "center", gap: 12 }}
           >
-            {/* Kind badge */}
-            <span
-              className="font-mono"
-              style={{
-                flexShrink: 0,
-                fontSize: 11,
-                letterSpacing: "0.14em",
-                color: "var(--accent)",
-                fontWeight: 700,
-                padding: "5px 9px",
-                borderRadius: 6,
-                background: "var(--accent-dim)",
-                border: "0.5px solid var(--accent-border)",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {r.kind}
-            </span>
-
             {/* Title + note */}
             <a
               href={r.url}
@@ -73,6 +53,14 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
               rel="noopener noreferrer"
               style={{ flex: 1, minWidth: 0, textDecoration: "none" }}
             >
+              {/* The type sits above the title (not beside it) so a long title
+                  keeps the full row width on a phone. */}
+              <span
+                className="font-mono"
+                style={{ display: "block", fontSize: 11, letterSpacing: "0.14em", color: "var(--pen-text)", fontWeight: 700, textTransform: "uppercase", marginBottom: 3 }}
+              >
+                {r.kind}
+              </span>
               <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
                 {r.title}
               </span>
@@ -84,7 +72,7 @@ export function StudyResourcesList({ resources, competitionSlug }: Props) {
             </a>
 
             {/* External link icon */}
-            <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label="Open link" style={{ flexShrink: 0, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44 }}>
+            <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label="Open link" className="resource-ext" style={{ flexShrink: 0, color: "var(--text3)", display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <path d="M15 3h6v6" />

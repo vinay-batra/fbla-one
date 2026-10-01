@@ -91,7 +91,8 @@ export function ChapterSetup({ c }: { c: ChapterController }) {
     </section>
   );
 
-  const [first, second] = c.isAdvisor ? [create, join] : [join, create];
+  const advisorFirst = c.isAdvisor || c.wantsAdvisor;
+  const [first, second] = advisorFirst ? [create, join] : [join, create];
   return (
     <>
       {first}
@@ -99,9 +100,9 @@ export function ChapterSetup({ c }: { c: ChapterController }) {
         second
       ) : (
         <p className="db-aside">
-          {c.isAdvisor ? "Joining someone else's chapter instead? " : "Are you an advisor? "}
+          {advisorFirst ? "Joining someone else's chapter instead? " : "Are you an advisor? "}
           <button type="button" className="db-linkbtn ch-switch" onClick={() => setShowOther(true)}>
-            {c.isAdvisor ? "Enter an invite code" : "Create your chapter"}
+            {advisorFirst ? "Enter an invite code" : "Create your chapter"}
           </button>
         </p>
       )}

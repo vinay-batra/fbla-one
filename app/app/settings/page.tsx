@@ -156,7 +156,7 @@ export default function Settings() {
       if (supa) await supa.auth.signOut();
       router.push("/");
     } catch {
-      setMsg({ text: "Could not delete account. Use the feedback button in the corner of this page to request manual deletion, or email hello@chapterprep.com.", ok: false });
+      setMsg({ text: "Could not delete account. Use the feedback button in the corner of this page and we will delete it for you.", ok: false });
       setDeleting(false);
     }
   };
@@ -277,6 +277,7 @@ export default function Settings() {
               type="button"
               role="switch"
               aria-checked={deadlineAlerts}
+              aria-label="Deadline reminders"
               onClick={toggleDeadlineAlerts}
               style={{
                 flexShrink: 0, width: 44, height: 26, borderRadius: 999,
@@ -293,8 +294,8 @@ export default function Settings() {
             <span style={{ display: "block", fontSize: 12, color: "var(--text3)", marginTop: 2, marginBottom: 10 }}>Pre-selected when you open the practice generator.</span>
             <div style={{ display: "flex", gap: 8 }}>
               {[10, 25, 50].map((n) => (
-                <button key={n} type="button" onClick={() => pickTestLen(n)} style={{
-                  padding: "8px 16px", borderRadius: 9, fontSize: 13, fontWeight: 600,
+                <button key={n} type="button" onClick={() => pickTestLen(n)} aria-pressed={defaultTestLen === n} style={{
+                  minHeight: 44, minWidth: 52, padding: "8px 16px", borderRadius: 9, fontSize: 13, fontWeight: 600,
                   border: defaultTestLen === n ? "1px solid var(--accent)" : "0.5px solid var(--border2)",
                   background: defaultTestLen === n ? "var(--accent-dim)" : "var(--bg2)",
                   color: defaultTestLen === n ? "var(--accent)" : "var(--text2)", cursor: "pointer", transition: "all 0.15s",
@@ -318,8 +319,8 @@ export default function Settings() {
         <CardHeader eyebrow="Appearance" title="Theme" />
         <div style={{ display: "flex", gap: 10 }}>
           {(["light", "dark"] as const).map((t) => (
-            <button key={t} type="button" onClick={() => setTheme(t)} style={{
-              padding: "10px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+            <button key={t} type="button" onClick={() => setTheme(t)} aria-pressed={theme === t} style={{
+              minHeight: 44, padding: "10px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
               border: theme === t ? "1px solid var(--accent)" : "0.5px solid var(--border2)",
               background: theme === t ? "var(--accent-dim)" : "var(--bg2)",
               color: theme === t ? "var(--accent)" : "var(--text2)",

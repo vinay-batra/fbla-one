@@ -3,15 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { COMPETITION_STATS } from "@/lib/competitions";
 
 const KEY = "fbla_onboarded";
 
-const STEPS = [
+// The event count comes from the server (app/layout.tsx -> GlobalShell) so the
+// whole events registry does not ship to every page just for one number.
+const steps = (eventCount: number) => [
   {
     num: "01",
     title: "Pick your event",
-    body: `Browse all ${COMPETITION_STATS.total} FBLA events, then register for the one you are competing in to track your prep.`,
+    body: `Browse all ${eventCount} FBLA events, then register for the one you are competing in to track your prep.`,
     href: "/competitions",
     cta: "Browse events",
     icon: (
@@ -49,7 +50,7 @@ const STEPS = [
   },
 ];
 
-export function OnboardingModal() {
+export function OnboardingModal({ eventCount }: { eventCount: number }) {
   const pathname = usePathname();
   const [show, setShow] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -173,7 +174,7 @@ export function OnboardingModal() {
 
         {/* Steps */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-          {STEPS.map((s) => (
+          {steps(eventCount).map((s) => (
             <Link
               key={s.title}
               href={s.href.startsWith("/app") && !signedIn ? "/auth?mode=signup" : s.href}

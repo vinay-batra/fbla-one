@@ -36,11 +36,11 @@ function useTuckFabsOnScroll() {
   }, []);
 }
 
-export function GlobalShell() {
+export function GlobalShell({ eventCount }: { eventCount: number }) {
   useTuckFabsOnScroll();
   return (
     <>
-      <OnboardingModal />
+      <OnboardingModal eventCount={eventCount} />
       <FeedbackButton />
       <PublicAIChat />
     </>

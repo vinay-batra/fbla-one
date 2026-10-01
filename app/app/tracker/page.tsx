@@ -193,9 +193,16 @@ function ManualLog({ defaultSlug, onDone }: { defaultSlug: string; onDone: () =>
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [formError, setFormError] = useState("");
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!slug) return;
+    // A score above the maximum would count as over 100% in averages and readiness.
+    if (score && outOf && Number(score) > Number(outOf)) {
+      setFormError(`The score can't be higher than ${outOf}.`);
+      return;
+    }
+    setFormError("");
     addPracticeLog({
       competitionSlug: slug,
       score: score ? Number(score) : null,
@@ -234,6 +241,7 @@ function ManualLog({ defaultSlug, onDone }: { defaultSlug: string; onDone: () =>
           <textarea className="input-field" rows={3} placeholder="What did you study? What needs more work?" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ resize: "vertical", lineHeight: 1.55 }} />
         </label>
         <div className="hs-wide">
+          {formError && <p className="ch-error" role="alert" style={{ marginBottom: 10 }}>{formError}</p>}
           <button type="submit" className="db-begin" disabled={!slug}>Save to history</button>
         </div>
       </form>

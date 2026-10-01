@@ -4,7 +4,7 @@ import { HeroBadge } from "@/components/HeroBadge";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "How ChapterPrep collects, uses and deletes your data, including what we store for chapter members, what we never sell, and how to request removal.",
+    "How ChapterPrep collects, uses and deletes your data: what we store, what your chapter advisor can see, what we never sell, and how to delete it.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -12,39 +12,44 @@ export default function Privacy() {
   return (
     <section style={{ padding: "100px 0 80px" }}>
       <div className="container" style={{ maxWidth: 760, marginInline: "auto" }}>
-        <HeroBadge>Last updated September 25, 2026</HeroBadge>
+        <HeroBadge>Last updated October 2, 2026</HeroBadge>
         <h1 style={{ marginTop: 18, marginBottom: 28 }}>Privacy <em>policy</em></h1>
 
         <Section title="What we collect">
-          <p>When you sign up we collect your email address, display name, and (optionally) your school or chapter affiliation. As you use the platform we collect data you create: practice test logs, saved resources, competition registrations, progress, and any feedback you send through the in-app feedback form. If you enter your email in our landing-page sign-up form, we store it on a notification list. We also automatically log your IP address to rate-limit our AI features and prevent abuse.</p>
+          <p>When you sign up we collect your email address and display name, and, if you join one, your chapter. As you use ChapterPrep we store what you create: your event, practice test results (scores and the topics you got right or wrong), AI Judge rounds and their scores, questions you missed (so they can come back in later tests), saved resources, and anything you send through the feedback button. We use your IP address to enforce daily limits on the AI features and prevent abuse.</p>
+        </Section>
+
+        <Section title="Who can see it">
+          <p>If you join a chapter, its advisor can see your event and your practice results, including scores, judge rounds and your weakest topics, on their readiness report. Other members only see practice counts on the chapter leaderboard, never your scores.</p>
         </Section>
 
         <Section title="How AI features work">
-          <p>The AI practice tests and the in-app assistant are powered by Anthropic (Claude). When you generate a test or chat with the assistant, the prompt and your message are sent to Anthropic to produce a response. Anthropic processes this on our behalf as a sub-processor and, under our API terms, does not use it to train its models.</p>
+          <p>Practice tests, the answer check, the AI Judge and the chat assistant are powered by Anthropic (Claude). When you use them, the request is sent to Anthropic to produce a response, including anything you type or say for a judge round. Anthropic processes it on our behalf and, under our API terms, does not use it to train its models.</p>
+          <p style={{ marginTop: 12 }}>If you use the Speak button in the AI Judge, your browser&apos;s built-in speech recognition turns your voice into text. In some browsers, including Chrome, that audio is processed by the browser maker (for example Google). Typing your answer avoids this.</p>
         </Section>
 
         <Section title="What we don't do">
-          <p>We do not sell your data. We do not share it with advertisers. We do not use it to train AI models. We do not transfer it to third parties other than the service providers below who process it on our behalf.</p>
+          <p>We do not sell your data. We do not share it with advertisers. We do not use it to train AI models. We do not transfer it to anyone other than the service providers below, who process it on our behalf.</p>
         </Section>
 
         <Section title="Where it lives">
-          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Authentication emails are sent through Supabase Auth. Hosting is on Vercel. AI requests are processed by Anthropic. Logs that include personal data (such as IP addresses) are retained for 30 days.</p>
+          <p>Account data and your prep history are stored in Supabase (Postgres on AWS US-East), encrypted at rest. Sign-in is handled by Supabase Auth, and by Google if you choose Continue with Google. Hosting is on Vercel, which also provides our page-view analytics: it counts visits without cookies and without identifying you. AI requests are processed by Anthropic. Daily usage counters, some of which are keyed by IP address, are deleted after 7 days.</p>
         </Section>
 
         <Section title="Your rights">
-          <p>You can delete your account anytime from Settings, which removes your profile, registrations, practice logs, and saved resources. To also be removed from our email notification list, or to request a copy of your data, use the feedback button in the corner of any page, or email privacy@chapterprep.com. We honor GDPR and CCPA requests within 30 days.</p>
+          <p>You can delete your account anytime from Settings, which removes your profile, registrations, practice logs, missed-question bank and saved resources. To request a copy of your data or anything else about your privacy, use the feedback button in the corner of any page. We honor GDPR and CCPA requests within 30 days.</p>
         </Section>
 
         <Section title="Children">
-          <p>FBLA is primarily a high-school activity, so most users are 13-18. ChapterPrep is not directed to children under 13, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has created an account, tell us through the feedback button on any page or email privacy@chapterprep.com, and we will delete it. For school-managed deployments, the school or district is responsible for obtaining any consent required for its students.</p>
+          <p>ChapterPrep is for high school students and their advisors. You must be 13 or older to create an account, and we do not knowingly collect personal information from anyone under 13. If you believe a child under 13 has created an account, tell us through the feedback button on any page and we will delete it. For school-managed deployments, the school or district is responsible for obtaining any consent required for its students.</p>
         </Section>
 
         <Section title="Changes">
-          <p>If we materially change this policy we'll post a notice on this page and in the app at least 30 days before the change takes effect. The "Last updated" date at the top of this page always reflects the current version.</p>
+          <p>If we materially change this policy we will post a notice on this page and in the app at least 30 days before the change takes effect. The &quot;Last updated&quot; date at the top of this page always reflects the current version.</p>
         </Section>
 
         <p style={{ marginTop: 36, fontSize: 13, color: "var(--text-muted)" }}>
-          Questions? Use the feedback button in the corner of any page, or email privacy@chapterprep.com. We respond within 3 business days.
+          Questions? Use the feedback button (the flag) in the corner of any page. We respond within 3 business days.
         </p>
       </div>
     </section>

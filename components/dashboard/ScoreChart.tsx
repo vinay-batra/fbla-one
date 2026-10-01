@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { getCompetition } from "@/lib/competitions";
 import type { Competition } from "@/lib/competitions";
 import type { PracticeLog } from "@/lib/storage";
@@ -28,9 +29,24 @@ export function ScoreChart({ comp, logs }: { comp: Competition; logs: PracticeLo
     .slice(0, 12)
     .reverse()
     .map((l) => Math.round((l.score! / l.outOf!) * 100));
+  // Draw at the card's real width (1 unit = 1 px), so labels stay 12px on a
+  // phone instead of shrinking with a fixed 960-wide drawing.
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(640);
+  const shown = pts.length >= 2;
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    // Measure now, then keep up with resizes.
+    setW(Math.max(260, Math.round(el.clientWidth)));
+    const ro = new ResizeObserver(([e]) => setW(Math.max(260, Math.round(e.contentRect.width))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [shown]);
+
   if (pts.length < 2) return null;
 
-  const W = 960, H = 220, L = 34, R = 24, T = 26, B = 14;
+  const H = W < 480 ? 180 : 220, L = 34, R = 24, T = 26, B = 14;
   const x = (i: number) => L + (i * (W - L - R)) / (pts.length - 1);
   const y = (v: number) => T + ((100 - v) * (H - T - B)) / 100;
   const line = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
@@ -44,6 +60,7 @@ export function ScoreChart({ comp, logs }: { comp: Competition; logs: PracticeLo
         <h2 id="db-chart-title" className="db-chart-title">Your scores</h2>
         <span className="db-chart-sub">Last {pts.length} scored tests in {comp.name}</span>
       </div>
+      <div ref={boxRef}>
       <svg className="db-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Scores, oldest to newest: ${pts.join("%, ")}%`}>
         {[0, 50, 100].map((v) => (
           <g key={v}>
@@ -60,6 +77,7 @@ export function ScoreChart({ comp, logs }: { comp: Competition; logs: PracticeLo
         ))}
         <text className="last-label" x={x(pts.length - 1)} y={y(last) - 12} textAnchor="middle">{last}%</text>
       </svg>
+      </div>
     </section>
   );
 }

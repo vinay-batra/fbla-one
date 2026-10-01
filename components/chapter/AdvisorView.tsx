@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { QrImage } from "@/components/QrImage";
 import { Card, CardHeader } from "@/components/Card";
 import { Sparkbars } from "@/components/Sparkbars";
 import { getCompetition, COMPETITIONS } from "@/lib/competitions";
@@ -27,10 +27,6 @@ import { judgeModeLabel } from "@/lib/chapter";
 
 export function AdvisorView({ c }: { c: ChapterController }) {
   const { isAdvisor, hasChapter, chapter, board, stats, members, activity } = c;
-  const qrSrc = useMemo(
-    () => `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${encodeURIComponent(c.joinLink)}`,
-    [c.joinLink]
-  );
   if (!isAdvisor || !hasChapter) return null;
 
   return (
@@ -62,15 +58,7 @@ export function AdvisorView({ c }: { c: ChapterController }) {
               {/* White plate is intentional and theme-independent: a QR code needs a
                 light quiet zone to scan reliably (dark mode would break scanning). */}
             <div style={{ padding: 10, background: "#fff", borderRadius: 12, border: "0.5px solid var(--border)", display: "inline-block" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={qrSrc}
-                  alt="Chapter invite QR code"
-                  width={150}
-                  height={150}
-                  loading="lazy"
-                  decoding="async"
-                />
+                <QrImage text={c.joinLink} size={150} alt="Chapter invite QR code" />
               </div>
               <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 8 }}>Scan to join</p>
             </div>

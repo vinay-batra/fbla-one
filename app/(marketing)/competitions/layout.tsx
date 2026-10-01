@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Competitions",
+  title: "All FBLA events",
   description:
-    "Browse every FBLA competitive event. Filter by category, format, and content depth. Each event has a prep page with test topics, curated study resources, and a link to FBLA's official event guidelines.",
+    "Every FBLA competitive event, filterable by category and format. Each one has a prep page with its format, test topics, study resources and a link to FBLA's official guidelines.",
   alternates: { canonical: "/competitions" },
 };
 

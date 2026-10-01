@@ -23,6 +23,7 @@ import {
   getWeakTopics,
   onStorageChange,
   registerCompetition,
+  signedUpAsAdvisor,
 } from "@/lib/storage";
 import { bankCount, onMistakesChange } from "@/lib/mistakes";
 import { getSupabase } from "@/lib/supabase";
@@ -93,7 +94,7 @@ function BookletCover({ initial, changing, onCancel }: { initial?: string; chang
   }
 
   return (
-    <section className="db-sheet" aria-labelledby="db-cover-title">
+    <section className="db-sheet tour-event" aria-labelledby="db-cover-title">
       <div className="db-sheet-head">
         <span className="db-sheet-kicker">{changing ? "Change event" : "Practice booklet"}</span>
         <span className="db-sheet-kicker"><b>{changing ? "" : "No. 1"}</b></span>
@@ -101,7 +102,13 @@ function BookletCover({ initial, changing, onCancel }: { initial?: string; chang
       <div className="db-sheet-body db-cover">
         <div style={{ minWidth: 0 }}>
           <h2 id="db-cover-title" className="db-cover-title">
-            {changing ? <>Switch to a <em>new event.</em></> : <>Fill in your event, <em>then begin.</em></>}
+            {changing ? (
+              <>Switch to a <em>new event.</em></>
+            ) : initial ? (
+              <>Ready when <em>you are.</em></>
+            ) : (
+              <>Fill in your event, <em>then begin.</em></>
+            )}
           </h2>
           <div className="db-fields">
             <div className="db-field">
@@ -120,7 +127,7 @@ function BookletCover({ initial, changing, onCancel }: { initial?: string; chang
           <p className="db-cover-note">
             {changing && onCancel ? (
               <button type="button" className="db-linkbtn" onClick={onCancel}>Keep my current event</button>
-            ) : (
+            ) : slug ? null : (
               <>Not sure which event is yours? <Link href="/#find-your-event">Take the one-minute quiz</Link>.</>
             )}
           </p>
@@ -154,7 +161,7 @@ function ReportCard({ comp, row, mistakes, onChange }: {
       : { value: String(row.testsTotal), unit: "", label: row.testsTotal === 1 ? "Practice session logged" : "Practice sessions logged" };
 
   return (
-    <section className="db-sheet" aria-labelledby="db-report-title">
+    <section className="db-sheet tour-event" aria-labelledby="db-report-title">
       <div className="db-sheet-head">
         <span className="db-sheet-kicker">Report card · <b id="db-report-title">{comp.name}</b></span>
         <button type="button" className="db-linkbtn" onClick={onChange}>Change event</button>
@@ -177,7 +184,9 @@ function ReportCard({ comp, row, mistakes, onChange }: {
           )}
           <div className={`db-stamp ${STATUS_CLASS[row.status]}`}>
             <strong>{READINESS_LABEL[row.status]}</strong>
-            {row.status !== "ready" && row.reasons[0] && <span>{row.reasons[0]}</span>}
+            {row.status !== "ready" && row.reasons[0] && (
+              <span>{row.status === "on-track" ? `To reach Ready: ${row.reasons[0]}` : row.reasons[0]}</span>
+            )}
           </div>
         </div>
 
@@ -308,7 +317,11 @@ function useAdvisorView(): AdvisorView | null {
       const uid = data.session?.user?.id;
       if (!uid) return;
       const prof = await getMyProfile(uid);
-      if (cancelled || !prof || prof.role !== "advisor") return;
+      if (cancelled || !prof) return;
+      // An advisor without a chapter is still "member" in profiles.role, so
+      // also trust the role they picked at sign-up.
+      const advisor = prof.role === "advisor" || (!prof.chapter_id && signedUpAsAdvisor(data.session?.user));
+      if (!advisor) return;
       if (!prof.chapter_id) {
         setView({ chapterId: null, name: null, members: 0, counts: null });
         return;
@@ -405,14 +418,15 @@ export default function Dashboard() {
     const streakDays = (() => {
       const days = new Set(logs.map((l) => dayKeyET(new Date(l.loggedAt))));
       if (days.size === 0) return 0;
-      const oneDay = 86400000;
+      // Step by calendar day at noon, not by 24 hours from midnight: across a
+      // daylight saving change, midnight minus 24h lands on the wrong day.
       const cur = new Date();
-      cur.setHours(0, 0, 0, 0);
-      if (!days.has(dayKeyET(cur))) cur.setTime(cur.getTime() - oneDay);
+      cur.setHours(12, 0, 0, 0);
+      if (!days.has(dayKeyET(cur))) cur.setDate(cur.getDate() - 1);
       let n = 0;
       while (days.has(dayKeyET(cur))) {
         n++;
-        cur.setTime(cur.getTime() - oneDay);
+        cur.setDate(cur.getDate() - 1);
       }
       return n;
     })();

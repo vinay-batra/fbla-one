@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getSupabase } from "@/lib/supabase";
 
 const TYPES = ["Bug", "Feedback", "Feature request"] as const;
 type FeedbackType = (typeof TYPES)[number];
@@ -11,6 +10,12 @@ export function FeedbackButton() {
   // feedback flag always sits to its left at right 96.
   const fabRight = 96;
   const [open, setOpen] = useState(false);
+  // The app's top bar on phones opens this instead of the floating flag.
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener("chapterprep:open-feedback", show);
+    return () => window.removeEventListener("chapterprep:open-feedback", show);
+  }, []);
   const [type, setType] = useState<FeedbackType>("Bug");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -62,6 +67,9 @@ export function FeedbackButton() {
   const submit = async () => {
     if (submitting) return; // in-flight guard: a fast double-activation must not double-insert
     if (!message.trim()) { setError("Please enter a message."); return; }
+    // Loaded on submit, not at import: this button is on every page, and a
+    // static import put the whole Supabase client in every page's bundle.
+    const { getSupabase } = await import("@/lib/supabase");
     const supa = getSupabase();
     if (!supa) { setError("Feedback is temporarily unavailable."); return; }
     setSubmitting(true);

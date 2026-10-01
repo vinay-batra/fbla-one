@@ -14,7 +14,8 @@
 
 import { getSupabase } from "./supabase";
 import { getMyProfile, getChapterById, type ChapterInfo, type ChapterProfile } from "./chapter";
-import { buildPaper } from "@/components/coach/engine";
+import { buildPaper, splitTopics } from "@/components/coach/engine";
+import { getCompetition } from "./competitions";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -128,10 +129,6 @@ export function joinUrl(code: string): string {
   return `${origin}/mock/${code}`;
 }
 
-export function qrUrl(data: string, size: number): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&margin=0&data=${encodeURIComponent(data)}`;
-}
-
 /** M:SS for a remaining-time countdown. */
 export function formatCountdown(ms: number): string {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -194,14 +191,30 @@ export async function generateMockQuestions(
   if (signal?.aborted) ctrl.abort();
   signal?.addEventListener("abort", forward);
   try {
-    const { questions } = await buildPaper({
+    // Ask for a little extra up front (the checker sets some aside), in
+    // parallel batches of at most 25 so no request nears the 60s limit.
+    const total = count + Math.ceil(count * 0.2);
+    const parts = Math.ceil(total / 25);
+    const slices = parts > 1 ? splitTopics(getCompetition(slug)?.topics ?? [], parts) : null;
+    const { questions, checker, shortReason } = await buildPaper({
       slug,
       target: count,
-      // Ask for a little extra up front: the checker sets some aside.
-      batches: [{ count: Math.min(50, count + Math.ceil(count * 0.2)) }],
+      batches: Array.from({ length: parts }, (_, i) => ({
+        count: Math.ceil(total / parts),
+        ...(slices ? { section: { topics: slices[i], part: i + 1, parts } } : {}),
+      })),
       signal: ctrl.signal,
       onProgress: (p) => onProgress(p.kept),
     });
+    // The whole chapter sits this paper, so never hand them unchecked or
+    // short papers without the advisor knowing. Practice tests say so on the
+    // report instead; here we stop before anything is saved.
+    if (checker === "off") {
+      throw new Error("The answer checker is unavailable right now, so this paper was not saved. Try again in a few minutes.");
+    }
+    if (questions.length < count) {
+      throw new Error(shortReason ?? `Only ${questions.length} of ${count} questions passed the answer check. Try again, or pick a shorter paper.`);
+    }
     return questions.slice(0, count).map((q) => ({
       question: q.question,
       options: q.options,

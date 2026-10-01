@@ -4,7 +4,8 @@ import { AppShell } from "@/components/AppShell";
 import { getSupabaseServer, isSupabaseConfiguredServer } from "@/lib/supabase-server";
 
 export const metadata = {
-  title: "Dashboard",
+  // The app's pages each set a short title; this template adds the brand.
+  title: { default: "Dashboard", template: "%s · ChapterPrep" },
   robots: { index: false, follow: false },
 };
 

@@ -39,8 +39,11 @@ export async function GET() {
   }
 
   const ok = Object.values(checks).every(Boolean) && supabaseReachable;
+  // Public endpoint: say whether it is healthy, not which keys are configured.
+  // The status code is what a monitor watches; the detail goes to the logs.
+  if (!ok) console.error("health check failed:", { ...checks, supabaseReachable });
   return NextResponse.json(
-    { ok, checks: { ...checks, supabaseReachable }, ts: new Date().toISOString() },
+    { ok, ts: new Date().toISOString() },
     { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } }
   );
 }

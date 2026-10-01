@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES, COMPETITIONS, formatGroup, type FormatGroup } from "@/lib/competitions";
+import { CATEGORIES, COMPETITIONS, formatGroup, type Competition, type FormatGroup } from "@/lib/competitions";
 import { IndexCollapse } from "@/components/landing/IndexCollapse";
 
 /**
@@ -20,6 +20,13 @@ const TAG: Record<FormatGroup, { letter: string; label: string }> = {
   "role-play": { letter: "R", label: "test, then role play" },
   presentation: { letter: "P", label: "presentation or interview" },
 };
+/** Events with both a test and a presentation (Future Business Leader,
+ *  Business Ethics) were tagged P alone, hiding that they have a test too. */
+function tagFor(c: Competition): { letter: string; label: string } {
+  if (c.format === "test-and-presentation") return { letter: "T+P", label: "test and presentation" };
+  return TAG[formatGroup(c)];
+}
+
 export function EventIndex() {
   const groups = CATEGORIES.map((cat) => ({
     cat,
@@ -44,9 +51,9 @@ export function EventIndex() {
                 <Link href={`/competitions/${c.slug}`} className="index-link">
                   {c.name}
                 </Link>
-                <span className={`index-tag index-tag-${formatGroup(c)}`} title={TAG[formatGroup(c)].label}>
-                  <span aria-hidden="true">{TAG[formatGroup(c)].letter}</span>
-                  <span className="sr-only"> ({TAG[formatGroup(c)].label})</span>
+                <span className={`index-tag index-tag-${formatGroup(c)}`} title={tagFor(c).label}>
+                  <span aria-hidden="true">{tagFor(c).letter}</span>
+                  <span className="sr-only"> ({tagFor(c).label})</span>
                 </span>
               </li>
             ))}

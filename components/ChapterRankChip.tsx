@@ -18,9 +18,12 @@ export function ChapterRankChip() {
     let cancelled = false;
     // getSession() reads the stored session (no network round-trip), and the
     // cached leaderboard is shared with the chapter page so the RPC fires once.
-    Promise.all([supa.auth.getSession(), getLeaderboardCached()]).then(([{ data }, lb]) => {
+    // Signed out (preview) has no leaderboard: skip the call instead of a 401.
+    supa.auth.getSession().then(async ({ data }) => {
       const uid = data.session?.user?.id;
-      if (cancelled || !uid || lb.length < 2) return; // need at least 2 to be a "leaderboard"
+      if (cancelled || !uid) return;
+      const lb = await getLeaderboardCached();
+      if (cancelled || lb.length < 2) return; // need at least 2 to be a "leaderboard"
       const idx = lb.findIndex((r) => r.userId === uid);
       if (idx < 0) return;
       setInfo({ rank: idx + 1, total: lb.length });

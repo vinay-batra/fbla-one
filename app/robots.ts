@@ -6,9 +6,9 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Trailing slashes matter: robots.txt matches by PREFIX, so a bare "/app"
-      // also blocked /apple-touch-icon.png. /join/ holds chapter invite links,
-      // which should never be crawled.
-      disallow: ["/app/", "/auth/", "/join/"],
+      // also blocked /apple-touch-icon.png. /join/ and /mock/ hold invite and
+      // room codes, which should never be crawled.
+      disallow: ["/app/", "/auth", "/join/", "/mock/"],
     },
     sitemap: "https://chapterprep.com/sitemap.xml",
     host: "https://chapterprep.com",

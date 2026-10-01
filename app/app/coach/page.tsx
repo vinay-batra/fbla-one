@@ -154,6 +154,8 @@ function CoachInner() {
   const [paperTotal, setPaperTotal] = useState(0);
   const [building, setBuilding] = useState(false);
   const [checkerOff, setCheckerOff] = useState(false);
+  // Why a paper came out shorter than asked (usually a daily cap), shown on the report.
+  const [shortReason, setShortReason] = useState("");
   const [genError, setGenError] = useState("");
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Option>>({});
@@ -266,6 +268,7 @@ function CoachInner() {
     setPaperTotal(0);
     setBuilding(false);
     setCheckerOff(false);
+    setShortReason("");
     setTimedOut(false);
     setPoliteNote("");
     setUrgentNote("");
@@ -299,19 +302,31 @@ function CoachInner() {
     const abort = new AbortController();
     abortRef.current = abort;
 
+    // A little over the target: the second model sets some aside. More than 25
+    // goes out as parallel batches (each with its own slice of the outline,
+    // unless this is a one-topic drill) so no single request nears the 60s
+    // function limit.
+    const total = Math.max(5, need + Math.ceil(need * 0.2));
+    const parts = Math.ceil(total / 25);
+    const slices = focusTopic || parts === 1 ? null : splitTopics(getCompetition(selectedSlug)?.topics ?? [], parts);
+    const batches = Array.from({ length: parts }, (_, i) => ({
+      count: Math.ceil(total / parts),
+      ...(slices ? { section: { topics: slices[i], part: i + 1, parts } } : {}),
+    }));
+
     try {
       const result = await buildPaper({
         slug: selectedSlug,
         target: need,
         focusTopic,
-        // A little over the target: the second model sets some aside.
-        batches: [{ count: Math.min(50, Math.max(5, need + Math.ceil(need * 0.2))) }],
+        batches,
         exclude: bankPicks.map((b) => questionKey(b.question)),
         signal: abort.signal,
         onProgress: setProgress,
       });
       const paper = shuffled([...result.questions, ...bankPicks.map(fromBank)]).map((q, i) => ({ ...q, id: i + 1 }));
       setCheckerOff(result.checker === "off");
+      setShortReason(result.shortReason ?? "");
       setQuestions(paper);
       setBuilding(false);
       setPhase("taking");
@@ -375,6 +390,7 @@ function CoachInner() {
         onAccept: (q) => setQuestions((prev) => [...prev, { ...q, id: prev.length + 1 }]),
       });
       setCheckerOff(result.checker === "off");
+      setShortReason(result.shortReason ?? "");
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setGenError((err as Error).message ?? "Something went wrong");
@@ -1049,6 +1065,9 @@ function CoachInner() {
           <p className="coach-report-sub">
             The second-model answer check was unavailable during this test, so some questions carry the calculator check only.
           </p>
+        )}
+        {shortReason && (
+          <p className="coach-report-sub">This paper came out shorter than you asked for. {shortReason}</p>
         )}
 
         {topicRows.length > 1 && (

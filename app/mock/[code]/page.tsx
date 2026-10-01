@@ -18,11 +18,11 @@ export default function MockByCode() {
     const room = `/app/mock/join/${code}`;
     const supa = getSupabase();
     if (!supa) {
-      router.replace(`/auth?next=${encodeURIComponent(room)}`);
+      router.replace(`/auth?mode=signup&next=${encodeURIComponent(room)}`);
       return;
     }
     supa.auth.getUser().then(({ data }) => {
-      router.replace(data.user ? room : `/auth?next=${encodeURIComponent(room)}`);
+      router.replace(data.user ? room : `/auth?mode=signup&next=${encodeURIComponent(room)}`);
     });
   }, [params, router]);
 

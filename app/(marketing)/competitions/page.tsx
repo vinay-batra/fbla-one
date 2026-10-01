@@ -20,16 +20,22 @@ import {
 type FormatFilter = "all" | CompetitionFormat;
 
 export default function CompetitionsListPage() {
+  // The fallback is the full, unfiltered list, so the prerendered HTML (what
+  // search engines and slow phones see first) has every event in it. A
+  // fallback of null shipped an empty page until the scripts ran.
   return (
-    <Suspense fallback={null}>
-      <CompetitionsList />
+    <Suspense fallback={<CompetitionsList initialCategory="all" />}>
+      <CompetitionsFromUrl />
     </Suspense>
   );
 }
 
-function CompetitionsList() {
+function CompetitionsFromUrl() {
   const sp = useSearchParams();
-  const initialCategory = (sp.get("category") as CompetitionCategory) || "all";
+  return <CompetitionsList initialCategory={(sp.get("category") as CompetitionCategory) || "all"} />;
+}
+
+function CompetitionsList({ initialCategory }: { initialCategory: CompetitionCategory | "all" }) {
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CompetitionCategory | "all">(initialCategory);

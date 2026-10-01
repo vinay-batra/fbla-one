@@ -22,8 +22,8 @@ const CSP = [
   // Fonts are self-hosted via next/font, so the Google Fonts origins are gone.
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
-  "img-src 'self' data: https://api.qrserver.com https://*.supabase.co https://lh3.googleusercontent.com",
-  "connect-src 'self' https://*.supabase.co https://api.anthropic.com",
+  "img-src 'self' data: https://*.supabase.co https://lh3.googleusercontent.com",
+  "connect-src 'self' https://*.supabase.co",
   "frame-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -47,6 +47,8 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // No "x-powered-by: Next.js" header: it only tells attackers what to probe.
+  poweredByHeader: false,
   images: {
     // The optimizer inherited `max-age=0, must-revalidate` from its upstream in
     // public/, so every repeat navigation paid a conditional round-trip per

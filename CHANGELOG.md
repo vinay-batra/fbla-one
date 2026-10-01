@@ -4,6 +4,22 @@ All notable changes to ChapterPrep. Live at [chapterprep.com](https://chapterpre
 
 The product shipped as **FBLA One** at `fbla.one` through v1.7.1. It was renamed in v1.8.0. Entries below v1.8.0 use the original name and domain on purpose: that is what was released at the time.
 
+## v1.17.0 - October 2, 2026 - Full audit
+
+A five-part audit (security, bugs, browser and accessibility, content and claims, performance) and fixes for what it found.
+
+- **Your preview practice is safe.** Opening the sign-in page from preview could erase everything you had done. It no longer does, and preview practice carries into a new account.
+- **Advisors get the advisor setup.** Signing up as an advisor now shows "Create your chapter" first, and a new advisor's first deadline is shared with the chapter instead of silently saved as personal.
+- **Deleting stays deleted.** A practice log or saved resource deleted on one device used to come back from another.
+- **Shared computers:** the next person never sees the previous student's weak topics, season dates or data.
+- **Tests:** long tests are written in parallel so they never hit the server time limit; if a daily limit cuts a test short, the report says why; closing the tab stops the writing.
+- **Mock Regionals** never uses questions the answer checker could not confirm. If the checker is down, the advisor is told and nothing is saved.
+- **Phones:** chat and feedback live in the app's top bar, so they never cover a button; the score chart labels are readable; the dashboard no longer flashes the wrong screen on load.
+- **Honest pages:** the FAQ shows the real daily limits; contact emails that could not receive mail are gone (use the feedback button); password reset says plainly that reset email is not switched on yet; the privacy policy now covers analytics, the AI Judge, spoken answers and what advisors can see; the terms add a 13+ rule and a note that AI can be wrong.
+- **Security:** an open redirect is closed, a site-wide daily cap limits total AI spend, error details stay on the server, invite and Mock Regionals QR codes are drawn in the browser instead of by an outside service, and the backup workflow refuses to publish a database dump from a public repo.
+- **Speed:** about 80KB less JavaScript on every page, one fewer font, and no auth check on static pages.
+- Invite links remember you are joining a chapter through log in and Google; every app page has its own tab title; event pages show the right test-and-presentation tag; four dead study links replaced.
+
 ## v1.16.0 - October 1, 2026 - Every app page, rebuilt
 
 - **One look across the whole app.** Every page has the same big serif header, the same paper cards and the same width.

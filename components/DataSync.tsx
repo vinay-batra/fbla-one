@@ -21,7 +21,7 @@ export function DataSync() {
     let unsubscribe: (() => void) | null = null;
 
     (async () => {
-      const [{ getSupabase }, { pullFromSupabase, clearSyncedData, setSyncUser, ensureProfile }] =
+      const [{ getSupabase }, { pullFromSupabase, clearSyncedData, setSyncUser, ensureProfile, getDataOwner, setDataOwner }] =
         await Promise.all([import("@/lib/supabase"), import("@/lib/storage")]);
       if (cancelled) return;
 
@@ -39,6 +39,15 @@ export function DataSync() {
         if (inFlight.has(user.id)) return;
         inFlight.add(user.id);
         lastUserId = user.id;
+        // Data left by a different account (its session died without a
+        // sign-out reaching this tab) must not be uploaded into this one.
+        // Preview data (no owner) is kept and migrates up, as intended.
+        const owner = getDataOwner();
+        if (owner && owner !== user.id) {
+          clearSyncedData();
+          import("@/lib/mistakes").then((m) => m.clearLocalMistakes()).catch(() => {});
+        }
+        setDataOwner(user.id);
         const name =
           (user.user_metadata?.full_name as string) ||
           (user.user_metadata?.name as string) ||
@@ -52,17 +61,29 @@ export function DataSync() {
           .finally(() => inFlight.delete(user.id));
       };
 
-      supa.auth.getUser().then(({ data }) => {
+      supa.auth.getUser().then(async ({ data, error }) => {
         if (cancelled) return;
-        if (data.user) onUser(data.user);
+        if (data.user) { onUser(data.user); return; }
+        // A stored session the server rejects (expired, revoked, deleted
+        // account) would otherwise sit there and fail every request on every
+        // page. Clear it locally; the data owner check decides what to wipe.
+        if (error) {
+          const { data: { session } } = await supa.auth.getSession();
+          if (session) await supa.auth.signOut({ scope: "local" }).catch(() => {});
+        }
       });
 
       const { data: { subscription } } = supa.auth.onAuthStateChange((event, session) => {
         const user = session?.user ?? null;
         if (event === "SIGNED_OUT") {
           lastUserId = null;
-          clearSyncedData();
-          import("@/lib/mistakes").then((m) => m.clearLocalMistakes()).catch(() => {});
+          // Supabase also fires SIGNED_OUT when there was no session at all
+          // (e.g. /auth clearing a dead cookie). Only wipe data that belongs to
+          // an account; preview data stays so it can migrate on sign-up.
+          if (getDataOwner()) {
+            clearSyncedData();
+            import("@/lib/mistakes").then((m) => m.clearLocalMistakes()).catch(() => {});
+          }
           return;
         }
         if (user && user.id !== lastUserId) {

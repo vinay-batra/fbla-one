@@ -250,3 +250,27 @@
 
 /* Older app pages still use <Card>; match the paper sheets around them. */
 .as-main .card { border-color: var(--border2); border-radius: 14px; }
+
+/* Placeholder while an app page mounts (a frame or two). */
+.as-loading { min-height: 60vh; }
+
+/* Chat and feedback in the top bar: phones only (desktop keeps the floating buttons). */
+.as-top-icon {
+  display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 0.5px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.as-top-icon:hover { background: var(--bg2); }
+@media (max-width: 768px) {
+  .as-top-icon { display: inline-flex; }
+  html.in-app .fbla-ai-chat-btn,
+  html.in-app .fbla-feedback-btn { display: none !important; }
+  .as-top-actions { gap: 6px; }
+}

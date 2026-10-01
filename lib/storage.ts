@@ -58,6 +58,10 @@ const KEYS = {
   chapterDeadlines: "fbla_chapter_deadlines",
   topicStats: "fbla_topic_stats",
   milestones: "fbla_milestones",
+  /** Which account the synced data on this device belongs to (absent = preview data). */
+  dataOwner: "fbla_data_owner",
+  /** When this device last pulled from the account: { userId, at }. */
+  lastPull: "fbla_last_pull",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -147,6 +151,9 @@ export async function pullFromSupabase(userId: string): Promise<void> {
     devError("pullFromSupabase chapter context:", e);
   }
 
+  // Stamp the pull with when the server was READ, so a row added while it was
+  // in flight is never mistaken for one deleted elsewhere.
+  const readAt = new Date().toISOString();
   try {
     const [
       { data: regs, error: regsErr },
@@ -177,6 +184,15 @@ export async function pullFromSupabase(userId: string): Promise<void> {
       write(KEYS.registered, []);
     }
 
+    // Rows that exist only on this device are either new (push them up) or were
+    // deleted on another device after this one last synced (drop them, or they
+    // come back). Anything created before this device's last pull for this same
+    // account was on the server then, so if it is gone now it was deleted.
+    const last = read<{ userId: string; at: string } | null>(KEYS.lastPull, null);
+    const syncedBefore = last && last.userId === userId ? new Date(last.at).getTime() : null;
+    const deletedElsewhere = (createdAt: string) =>
+      syncedBefore != null && new Date(createdAt).getTime() < syncedBefore;
+
     // ── Practice logs: union by id, push local-only up ──
     const localLogs = getPracticeLogs();
     const localById = new Map(localLogs.map((l) => [l.id, l]));
@@ -189,7 +205,7 @@ export async function pullFromSupabase(userId: string): Promise<void> {
       return remote;
     });
     const remoteLogIds = new Set(remoteLogs.map((l) => l.id));
-    const onlyLocalLogs = localLogs.filter((l) => !remoteLogIds.has(l.id));
+    const onlyLocalLogs = localLogs.filter((l) => !remoteLogIds.has(l.id) && !deletedElsewhere(l.loggedAt));
     if (onlyLocalLogs.length) {
       // upsert (not insert) so an id already present remotely - e.g. a just-added
       // log whose async insert raced this pull, or a concurrent DataSync run -
@@ -206,7 +222,7 @@ export async function pullFromSupabase(userId: string): Promise<void> {
     const remoteSaved: SavedResource[] = (saved ?? []).map(dbToSaved);
     const remoteSavedIds = new Set(remoteSaved.map((r) => r.id));
     const localSaved = getSavedResources();
-    const onlyLocalSaved = localSaved.filter((r) => !remoteSavedIds.has(r.id));
+    const onlyLocalSaved = localSaved.filter((r) => !remoteSavedIds.has(r.id) && !deletedElsewhere(r.createdAt));
     if (onlyLocalSaved.length) {
       await supa.from("saved_resources").upsert(
         onlyLocalSaved.map((r) => savedToDb(r, userId)),
@@ -214,6 +230,8 @@ export async function pullFromSupabase(userId: string): Promise<void> {
       );
     }
     write(KEYS.saved, [...remoteSaved, ...onlyLocalSaved]);
+    // Only after a successful pull; a failed one must not mark rows as synced.
+    if (!regsErr && !logsErr && !savedErr) write(KEYS.lastPull, { userId, at: readAt });
   } catch (e) {
     devError("pullFromSupabase failed:", e);
   }
@@ -239,11 +257,33 @@ export async function ensureProfile(userId: string, email: string | null, name: 
     const row: Record<string, unknown> = { id: userId, email, display_name: name };
     if (role) row.role = role;
     await supa.from("profiles").upsert(row, { onConflict: "id", ignoreDuplicates: true });
+    // profiles.role cannot hold "advisor" until the user owns a chapter (0013
+    // pins inserts to member; create_chapter promotes). Keep the sign-up
+    // choice on the account so the app can show advisors the advisor setup.
+    // UX only: user_metadata is user-editable and grants nothing.
+    if (role) await supa.auth.updateUser({ data: { signup_role: role } }).catch(() => {});
     try {
       localStorage.removeItem("fbla_pending_role");
     } catch {}
   } catch (e) {
     devError("ensureProfile:", e);
+  }
+}
+
+/** True when the account signed up as an advisor (see ensureProfile), whatever profiles.role says yet. */
+export function signedUpAsAdvisor(user: { user_metadata?: Record<string, unknown> } | null | undefined): boolean {
+  return user?.user_metadata?.signup_role === "advisor";
+}
+
+/** The account whose data is in localStorage, or null for preview (no account) data. */
+export function getDataOwner(): string | null {
+  return read<string | null>(KEYS.dataOwner, null);
+}
+
+export function setDataOwner(userId: string | null): void {
+  if (userId) write(KEYS.dataOwner, userId);
+  else if (typeof window !== "undefined") {
+    try { window.localStorage.removeItem(KEYS.dataOwner); } catch {}
   }
 }
 
@@ -260,6 +300,11 @@ export function clearSyncedData(): void {
   // shared computer never sees the previous user's name / chapter / deadlines.
   write(KEYS.displayName, "");
   write(KEYS.chapterName, "");
+  // Derived from this user's tests; the next person must not see them either.
+  write(KEYS.topicStats, {});
+  write(KEYS.milestones, {});
+  write(KEYS.lastPull, null);
+  setDataOwner(null);
 }
 
 function dbToLog(r: Record<string, unknown>): PracticeLog {
@@ -725,7 +770,10 @@ export function removeDeadline(id: string): void {
 }
 
 export function getUpcomingDeadlines(limit = 10): Deadline[] {
-  const today = new Date().toISOString().slice(0, 10);
+  // Local date, not UTC: toISOString() rolls over at 8pm Eastern, which hid
+  // a deadline due today for the whole evening.
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   return getDeadlines()
     .filter((dl) => dl.dueAt >= today)
     .sort((a, b) => a.dueAt.localeCompare(b.dueAt))

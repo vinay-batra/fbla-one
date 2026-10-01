@@ -23,11 +23,11 @@ export default function JoinByCode() {
     }
     const supa = getSupabase();
     if (!supa) {
-      router.replace("/auth?mode=signup");
+      router.replace("/auth?mode=signup&next=/app/chapter");
       return;
     }
     supa.auth.getUser().then(({ data }) => {
-      router.replace(data.user ? "/app/chapter" : "/auth?mode=signup");
+      router.replace(data.user ? "/app/chapter" : "/auth?mode=signup&next=/app/chapter");
     });
   }, [params, router]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { QrImage } from "@/components/QrImage";
 import Link from "next/link";
 import { getCompetition } from "@/lib/competitions";
 import { PenCheck } from "@/components/PenMarks";
@@ -13,7 +14,6 @@ import {
   hardestQuestion,
   joinUrl,
   ordinal,
-  qrUrl,
   rankParticipants,
   removeParticipant,
   startSession,
@@ -202,8 +202,7 @@ export function MockStage({ sessionId }: { sessionId: string }) {
             {/* White plate is intentional and theme-independent: a QR code needs a
                 light quiet zone to scan reliably. */}
             <div className="mock-qr-plate">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrUrl(link, 320)} alt={`QR code that opens the join link for code ${code}`} width={320} height={320} />
+              <QrImage text={link} size={320} alt={`QR code that opens the join link for code ${code}`} />
             </div>
             <p className="mock-stage-sub">or scan to join</p>
           </div>

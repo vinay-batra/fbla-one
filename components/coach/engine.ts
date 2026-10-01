@@ -256,7 +256,13 @@ export type BuildOptions = {
   skipCheck?: boolean;
 };
 
-export type BuildResult = { questions: Question[]; checker: "on" | "off"; dropped: number };
+export type BuildResult = {
+  questions: Question[];
+  checker: "on" | "off";
+  dropped: number;
+  /** Set when the paper came out short because the server refused more (e.g. a daily cap). */
+  shortReason?: string;
+};
 
 /**
  * Write, check and top up until `target` questions are accepted or the top-up
@@ -370,7 +376,12 @@ export async function buildPaper(opts: BuildOptions): Promise<BuildResult> {
   if (accepted.length === 0) {
     throw failure.last ?? new Error("No questions passed the answer check. Try again.");
   }
-  return { questions: accepted.map((q, i) => ({ ...q, id: i + 1 })), checker: progress.checker, dropped: progress.dropped };
+  return {
+    questions: accepted.map((q, i) => ({ ...q, id: i + 1 })),
+    checker: progress.checker,
+    dropped: progress.dropped,
+    shortReason: accepted.length < target && failure.last ? failure.last.message : undefined,
+  };
 }
 
 /** Split an outline into `parts` interleaved slices, so each section gets a spread. */

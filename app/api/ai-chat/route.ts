@@ -4,6 +4,8 @@ import { rateLimit, getClientIP } from "@/lib/rate-limit";
 import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
 import { COMPETITIONS, FORMAT_LABEL } from "@/lib/competitions";
 
+export const maxDuration = 30;
+
 // The real event list, so the chat never has to guess which events are tests,
 // role plays or presentations (it once called Business Ethics a role play).
 const EVENT_LIST = COMPETITIONS.map((c) => `- ${c.name}: ${FORMAT_LABEL[c.format]}.${c.duration ? ` ${c.duration}` : ""}`).join("\n");
@@ -75,8 +77,9 @@ export async function POST(req: NextRequest) {
   if (!userId && !rateLimit(`aichat:${getClientIP(req)}`, IP_LIMIT, WINDOW_MS)) {
     return Response.json({ content: quotaMessage("chat", false) }, { status: 429 });
   }
-  if (!(await consumeDailyQuota(userId ? { userId } : { ip: getClientIP(req) }, "chat"))) {
-    return Response.json({ content: quotaMessage("chat", !!userId) }, { status: 429 });
+  const capped = await consumeDailyQuota(userId ? { userId } : { ip: getClientIP(req) }, "chat");
+  if (capped) {
+    return Response.json({ content: capped }, { status: 429 });
   }
 
   try {
@@ -101,6 +104,8 @@ export async function POST(req: NextRequest) {
         system: SYSTEM,
         messages,
       }),
+      // A hung upstream must not hold the function open until the platform kills it.
+      signal: AbortSignal.timeout(20000),
     });
 
     if (!r.ok) {

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getSupabaseServer } from "@/lib/supabase-server";
 import { getCompetition } from "@/lib/competitions";
 import { rateLimit, getClientIP } from "@/lib/rate-limit";
-import { consumeDailyQuota, quotaMessage } from "@/lib/ai-quota";
+import { consumeDailyQuota } from "@/lib/ai-quota";
 import { MAX_VERIFY_BATCH, VERIFIER_MODEL, parseVerifyInput, verifyQuestions, type VerifyInput } from "./verifier";
 
 // Two claude-sonnet-5 calls run side by side per request (a blind solve and a
@@ -65,8 +65,9 @@ export async function POST(req: Request): Promise<Response> {
 
   // Daily cap, counted in questions checked. It sits above the question cap,
   // so a real student runs out of new questions before checks.
-  if (!(await consumeDailyQuota(identity, "checks", questions.length))) {
-    return json({ error: quotaMessage("checks", "userId" in identity) }, 429);
+  const capped = await consumeDailyQuota(identity, "checks", questions.length);
+  if (capped) {
+    return json({ error: capped }, 429);
   }
 
   // One attempt, bounded under maxDuration. The coach treats any failure as
@@ -81,7 +82,7 @@ export async function POST(req: Request): Promise<Response> {
     );
     return json({ results, audited, model: VERIFIER_MODEL });
   } catch (err) {
-    if (process.env.NODE_ENV !== "production") console.error("verify-questions:", err);
+    console.error("verify-questions:", err); // server side: goes to the private Vercel logs
     return json({ error: "The answer checker is unavailable right now." }, 502);
   }
 }
