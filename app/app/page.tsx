@@ -509,7 +509,7 @@ export default function Dashboard() {
   const headline = advisor
     ? advisor.chapterId ? "Here is your chapter." : "Set up your chapter."
     : !myEvent
-      ? "Let's get your first score."
+      ? hasPractice ? "Pick your event to see where you stand." : "Let's get your first score."
       : practicedEvent
         ? "Here is where you stand."
         : "Take your first test.";
