@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RotatingWord, HOLD_MS } from "@/components/landing/RotatingWord";
+import { useState } from "react";
+import { RotatingWord } from "@/components/landing/RotatingWord";
 
 /**
- * The sign-in page's left side: "Walk into regionals / states / nationals"
- * (the landing hero's rotating word) with a graded sample question that
- * changes in step with it, one question per level, on the same clock.
+ * The sign-in page's left side: "Walk into regionals / states / nationals",
+ * the landing hero's rotating word on its own clock exactly as on the landing,
+ * and a graded sample question with an arrow to flip through three of them.
  *
  * Every answer is worked out in the "Why" line, so the samples are checkable:
  *   regionals  (50,000 - 5,000) / 5 = 9,000
@@ -43,21 +43,17 @@ const SAMPLES = [
 ];
 
 export function AuthSide() {
-  // Same turn shape as RotatingWord: the current card slides up and out while
-  // the next rises in, with the same easing, delay and clock as the word.
+  // The sample flips only when the arrow is pressed. Same turn shape as the
+  // rotating word: the current sheet slides up and out, the next rises in.
   const [{ i, prev }, setTurn] = useState<{ i: number; prev: number | null }>({ i: 0, prev: null });
-
-  useEffect(() => {
-    if (typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setTurn((t) => ({ i: (t.i + 1) % LEVELS.length, prev: t.i })), HOLD_MS);
-    return () => window.clearInterval(id);
-  }, []);
+  const next = () => setTurn((t) => ({ i: (t.i + 1) % SAMPLES.length, prev: t.i }));
 
   return (
-    <aside className="au-side" aria-hidden="true">
+    <aside className="au-side" aria-label="Sample questions">
       <p className="au-side-title">
-        Walk into <RotatingWord words={LEVELS} index={i} /> <em>already knowing the test.</em>
+        Walk into <RotatingWord words={LEVELS} /> <em>already knowing the test.</em>
       </p>
+      <div className="au-sample">
       <div className="au-stack">
         <div className="au-sheet-back" />
         {/* All three sheets share one grid cell, so the stack is always as
@@ -66,7 +62,11 @@ export function AuthSide() {
             draw in once the new sheet has risen. */}
         <div className="au-sheets">
           {SAMPLES.map((s, n) => (
-            <div className={`au-sheet${n === i ? " is-in" : ""}${n === prev ? " is-out" : ""}`} key={n}>
+            <div
+              className={`au-sheet${n === i ? " is-in" : ""}${n === prev ? " is-out" : ""}`}
+              key={n}
+              aria-hidden={n !== i}
+            >
               <div className="au-sheet-meta">
                 <span>{s.meta}</span>
                 <b>{s.event}</b>
@@ -76,14 +76,14 @@ export function AuthSide() {
                 {s.opts.map((o, k) => (
                   <li key={o} className={k === s.right ? "is-right" : undefined}>
                     {k === s.right && (
-                      <svg className="au-pen au-pen-circle" viewBox="0 0 52 46">
+                      <svg className="au-pen au-pen-circle" viewBox="0 0 52 46" aria-hidden="true">
                         <path pathLength={1} d="M8 17C12 6 28 2 38 6c9 4 12 14 8 23-5 11-22 14-32 9C5 34 3 25 8 17c3-5 9-8 15-9" />
                       </svg>
                     )}
                     <span className="bub">{"ABCD"[k]}</span>
                     {o}
                     {k === s.right && (
-                      <svg className="au-pen au-pen-check" viewBox="0 0 30 24">
+                      <svg className="au-pen au-pen-check" viewBox="0 0 30 24" aria-hidden="true">
                         <path pathLength={1} d="M3 13c3 2 6 5 8 8 4-8 9-14 16-18" />
                       </svg>
                     )}
@@ -94,6 +94,15 @@ export function AuthSide() {
             </div>
           ))}
         </div>
+      </div>
+      <div className="au-flip">
+        <button type="button" className="au-next" onClick={next} aria-label="Show another sample question">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+        <span className="au-flip-count" aria-live="polite">{i + 1} of {SAMPLES.length}</span>
+      </div>
       </div>
     </aside>
   );
