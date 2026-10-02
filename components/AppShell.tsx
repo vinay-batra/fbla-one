@@ -67,7 +67,7 @@ const NAV: NavItem[] = [
     label: "AI Judge",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 20h10M6 16l8-8M9 5l6 6M12 2l6 6M16 14l5 5" />
+        <path d="m14.5 12.5-8 8a2.12 2.12 0 1 1-3-3l8-8M16 16l6-6M8 8l6-6M9 7l8 8M21 11l-8-8" />
       </svg>
     ),
   },
