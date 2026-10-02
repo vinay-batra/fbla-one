@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AuthFrame } from "@/components/auth/AuthFrame";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { safeNextPath } from "@/lib/url";
+import { isAdvisorAccount } from "@/lib/roles";
 
 type Mode = "login" | "signup" | "reset";
 
@@ -124,8 +125,8 @@ function AuthForm() {
         try { pendingJoin = !!localStorage.getItem("fbla_pending_join"); } catch {}
         if (pendingJoin) dest = "/app/chapter"; // finish joining from an invite link
         else if (nextPath === "/app" && data.user) {
-          const { data: prof } = await supa.from("profiles").select("role").eq("id", data.user.id).maybeSingle();
-          if (prof?.role === "advisor") dest = "/app/chapter";
+          const { data: prof } = await supa.from("profiles").select("role, chapter_id").eq("id", data.user.id).maybeSingle();
+          if (isAdvisorAccount(prof, data.user)) dest = "/app/chapter";
         }
         // Full reload (not router.push) so the server sees the fresh session cookie.
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
@@ -184,9 +185,12 @@ function AuthForm() {
     }
     // Arrived from a chapter invite link: land where the join completes.
     try { if (localStorage.getItem("fbla_pending_join")) next = "/app/chapter"; } catch {}
+    // The role rides along to /auth/callback, which saves it on the account
+    // before the first page loads (the localStorage copy is a fallback).
+    const roleParam = mode === "signup" ? `&role=${role}` : "";
     const { error } = await supa.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}${roleParam}` },
     });
     if (error) setError(friendly(error.message));
   };

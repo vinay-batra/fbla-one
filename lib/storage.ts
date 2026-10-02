@@ -270,10 +270,7 @@ export async function ensureProfile(userId: string, email: string | null, name: 
   }
 }
 
-/** True when the account signed up as an advisor (see ensureProfile), whatever profiles.role says yet. */
-export function signedUpAsAdvisor(user: { user_metadata?: Record<string, unknown> } | null | undefined): boolean {
-  return user?.user_metadata?.signup_role === "advisor";
-}
+export { signedUpAsAdvisor, isAdvisorAccount } from "./roles";
 
 /** The account whose data is in localStorage, or null for preview (no account) data. */
 export function getDataOwner(): string | null {

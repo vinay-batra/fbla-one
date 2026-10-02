@@ -23,7 +23,7 @@ import {
   getWeakTopics,
   onStorageChange,
   registerCompetition,
-  signedUpAsAdvisor,
+  isAdvisorAccount,
 } from "@/lib/storage";
 import { bankCount, onMistakesChange } from "@/lib/mistakes";
 import { getSupabase } from "@/lib/supabase";
@@ -318,10 +318,7 @@ function useAdvisorView(): AdvisorView | null {
       if (!uid) return;
       const prof = await getMyProfile(uid);
       if (cancelled || !prof) return;
-      // An advisor without a chapter is still "member" in profiles.role, so
-      // also trust the role they picked at sign-up.
-      const advisor = prof.role === "advisor" || (!prof.chapter_id && signedUpAsAdvisor(data.session?.user));
-      if (!advisor) return;
+      if (!isAdvisorAccount(prof, data.session?.user)) return;
       if (!prof.chapter_id) {
         setView({ chapterId: null, name: null, members: 0, counts: null });
         return;

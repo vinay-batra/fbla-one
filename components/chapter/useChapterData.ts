@@ -15,8 +15,8 @@ import {
   canManageDeadlines,
   isInChapter,
   getPracticeLogs,
-  signedUpAsAdvisor,
 } from "@/lib/storage";
+import { signedUpAsAdvisor } from "@/lib/roles";
 import { getCompetition } from "@/lib/competitions";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import {

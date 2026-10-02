@@ -43,11 +43,13 @@ const SAMPLES = [
 ];
 
 export function AuthSide() {
-  const [i, setI] = useState(0);
+  // Same turn shape as RotatingWord: the current card slides up and out while
+  // the next rises in, with the same easing, delay and clock as the word.
+  const [{ i, prev }, setTurn] = useState<{ i: number; prev: number | null }>({ i: 0, prev: null });
 
   useEffect(() => {
     if (typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setInterval(() => setI((n) => (n + 1) % LEVELS.length), HOLD_MS);
+    const id = window.setInterval(() => setTurn((t) => ({ i: (t.i + 1) % LEVELS.length, prev: t.i })), HOLD_MS);
     return () => window.clearInterval(id);
   }, []);
 
@@ -59,12 +61,12 @@ export function AuthSide() {
       <div className="au-stack">
         <div className="au-sheet-back" />
         {/* All three sheets share one grid cell, so the stack is always as
-            tall as the longest question and nothing around it moves. Only
-            the current one shows; its key changes when it comes up, so it
-            slides in and the pen marks redraw. */}
+            tall as the longest question and nothing around it moves. They
+            crossfade with CSS transitions (never remount), and the pen marks
+            draw in once the new sheet has risen. */}
         <div className="au-sheets">
           {SAMPLES.map((s, n) => (
-            <div className={`au-sheet${n === i ? " is-on" : ""}`} key={n === i ? `on-${n}` : `off-${n}`}>
+            <div className={`au-sheet${n === i ? " is-in" : ""}${n === prev ? " is-out" : ""}`} key={n}>
               <div className="au-sheet-meta">
                 <span>{s.meta}</span>
                 <b>{s.event}</b>

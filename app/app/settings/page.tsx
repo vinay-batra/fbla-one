@@ -11,6 +11,7 @@ import { getSupabase } from "@/lib/supabase";
 import { getDisplayName, setDisplayName, getChapterName, setChapterName, onStorageChange } from "@/lib/storage";
 import { getChapterById } from "@/lib/chapter";
 import { useFocusTrap } from "@/components/useFocusTrap";
+import { isAdvisorAccount } from "@/lib/roles";
 
 export default function Settings() {
   const router = useRouter();
@@ -36,6 +37,21 @@ export default function Settings() {
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [roleLabel, setRoleLabel] = useState<string | null>(null);
+  const [roleLocked, setRoleLocked] = useState(false);
+  const [roleSaving, setRoleSaving] = useState(false);
+
+  // Before joining or creating a chapter, an account can switch between
+  // student and advisor (it only changes which setup the app shows; see
+  // lib/roles.ts). After that, the chapter decides.
+  async function switchRole() {
+    const supa = getSupabase();
+    if (!supa || roleSaving) return;
+    const next = roleLabel === "advisor" ? "member" : "advisor";
+    setRoleSaving(true);
+    const { error } = await supa.auth.updateUser({ data: { signup_role: next } });
+    setRoleSaving(false);
+    if (!error) setRoleLabel(next);
+  }
   // When the user belongs to a chapter, the chapter name is authoritative and
   // synced from the chapters table (not free-text). inChapter gates the input.
   const [inChapter, setInChapter] = useState(false);
@@ -84,7 +100,8 @@ export default function Settings() {
       if (p) {
         setAvatarUrl(p.avatar_url ?? null);
         setDbName(p.display_name ?? null);
-        setRoleLabel(p.role ?? "member");
+        setRoleLabel(isAdvisorAccount(p, data.user) ? "advisor" : "member");
+        setRoleLocked(Boolean(p.chapter_id)); // in a chapter, the chapter decides
         if (p.display_name && !getDisplayName()) {
           setDisplayName(p.display_name);
           setNameDraft(p.display_name);
@@ -258,6 +275,11 @@ export default function Settings() {
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 11.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "3px 9px", borderRadius: 6, background: "var(--accent-dim)", color: "var(--accent-text)", border: "0.5px solid var(--accent-border)" }}>
                   {roleLabel === "advisor" ? "Advisor" : "Student"}
                 </span>
+                {userId && roleLabel && !roleLocked && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={switchRole} disabled={roleSaving} style={{ minHeight: 44 }}>
+                    {roleSaving ? "Saving" : roleLabel === "advisor" ? "I'm a student" : "I'm an advisor"}
+                  </button>
+                )}
               </span>
             }
           />
