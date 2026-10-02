@@ -1,0 +1,34 @@
+/* Rotating word in a headline (components/landing/RotatingWord.tsx). Its own
+   file so the landing hero and the sign-in page can both use it. */
+.rw { white-space: nowrap; }
+.rw.is-live {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  transition: width 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  /* Clip the words sliding in and out to roughly the line box, with room for
+     descenders ("g") and side bearings. clip-path, not overflow, so the slot
+     keeps its text baseline. */
+  clip-path: inset(-0.06em -0.12em -0.24em -0.12em);
+}
+.rw-sizer { visibility: hidden; }
+.rw-word,
+.rw-measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+}
+.rw-word {
+  opacity: 0;
+  transform: translateY(0.62em);
+  transition:
+    transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.45s ease;
+}
+.rw-word.is-in { opacity: 1; transform: none; }
+/* The incoming word waits a beat so the slot has mostly widened first;
+   otherwise "regionals" shows up clipped while it grows from "states". */
+.rw-word.is-in { transition-delay: 0.16s; }
+.rw-word.is-out { opacity: 0; transform: translateY(-0.62em); }
+.rw-measure { visibility: hidden; pointer-events: none; }

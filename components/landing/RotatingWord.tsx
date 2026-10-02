@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./rotating-word.css";
 
 /**
  * One word in a headline that cycles through a list: the current word slides
@@ -18,11 +19,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
  * readers except the word currently showing. With reduced motion the first
  * word just stays put.
  */
-const HOLD_MS = 3500;
+export const HOLD_MS = 3500;
 const MOVE_MS = 700;
 
-export function RotatingWord({ words }: { words: string[] }) {
-  const [{ index, prev }, setTurn] = useState<{ index: number; prev: number | null }>({ index: 0, prev: null });
+/**
+ * Pass `index` to drive it from a parent (the sign-in page keeps its sample
+ * question in step with the word); leave it out and it runs its own clock.
+ */
+export function RotatingWord({ words, index: controlled }: { words: string[]; index?: number }) {
+  const [{ index, prev }, setTurn] = useState<{ index: number; prev: number | null }>({ index: controlled ?? 0, prev: null });
   const [widths, setWidths] = useState<number[] | null>(null);
   const [mounted, setMounted] = useState(false);
   const measureRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -43,13 +48,20 @@ export function RotatingWord({ words }: { words: string[] }) {
     return () => window.removeEventListener("resize", measure);
   }, [mounted]);
 
+  // Controlled: follow the parent's index.
   useEffect(() => {
+    if (controlled === undefined) return;
+    setTurn((t) => (t.index === controlled ? t : { index: controlled, prev: t.index }));
+  }, [controlled]);
+
+  useEffect(() => {
+    if (controlled !== undefined) return;
     if (typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       setTurn((t) => ({ index: (t.index + 1) % words.length, prev: t.index }));
     }, HOLD_MS);
     return () => window.clearInterval(id);
-  }, [words.length]);
+  }, [words.length, controlled]);
 
   // Keep the underline glued to the text while the slot changes width.
   useEffect(() => {

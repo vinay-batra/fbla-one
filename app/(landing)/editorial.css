@@ -685,40 +685,6 @@
   .adv-arrive { animation: none; }
 }
 
-/* ── Rotating word in the hero headline (components/landing/RotatingWord.tsx) ── */
-.ed .rw { white-space: nowrap; }
-.ed .rw.is-live {
-  position: relative;
-  display: inline-block;
-  vertical-align: baseline;
-  transition: width 0.45s cubic-bezier(0.65, 0, 0.35, 1);
-  /* Clip the words sliding in and out to roughly the line box, with room for
-     descenders ("g") and side bearings. clip-path, not overflow, so the slot
-     keeps its text baseline. */
-  clip-path: inset(-0.06em -0.12em -0.24em -0.12em);
-}
-.ed .rw-sizer { visibility: hidden; }
-.ed .rw-word,
-.ed .rw-measure {
-  position: absolute;
-  left: 0;
-  top: 0;
-  white-space: nowrap;
-}
-.ed .rw-word {
-  opacity: 0;
-  transform: translateY(0.62em);
-  transition:
-    transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
-    opacity 0.45s ease;
-}
-.ed .rw-word.is-in { opacity: 1; transform: none; }
-/* The incoming word waits a beat so the slot has mostly widened first;
-   otherwise "regionals" shows up clipped while it grows from "states". */
-.ed .rw-word.is-in { transition-delay: 0.16s; }
-.ed .rw-word.is-out { opacity: 0; transform: translateY(-0.62em); }
-.ed .rw-measure { visibility: hidden; pointer-events: none; }
-
 /* ── Hero claims, advisor button, close actions (Oct 2026 pass) ── */
 
 /* The three differentiators under the hero lede, each with a red-pen check

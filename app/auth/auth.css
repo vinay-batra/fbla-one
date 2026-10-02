@@ -347,3 +347,21 @@
   line-height: 1.5;
   color: var(--text);
 }
+
+/* Each new sample question (AuthSide) slides in, then the pen circles and
+   ticks the answer, in time with the rotating word in the line above. */
+.au-sheets { display: grid; position: relative; }
+.au-sheets > .au-sheet { grid-area: 1 / 1; visibility: hidden; }
+.au-sheets > .au-sheet.is-on { visibility: visible; animation: au-sheet-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+@keyframes au-sheet-in {
+  from { opacity: 0; transform: translateY(10px) rotate(-2deg); }
+  to { opacity: 1; transform: rotate(-1.2deg); }
+}
+.au-pen path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: au-pen-draw 0.5s ease-out forwards; }
+.au-pen-circle path { animation-delay: 0.5s; }
+.au-pen-check path { animation-delay: 0.85s; animation-duration: 0.3s; }
+@keyframes au-pen-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .au-sheets > .au-sheet.is-on { animation: none; }
+  .au-pen path { animation: none; stroke-dashoffset: 0; }
+}
